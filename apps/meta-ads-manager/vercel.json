@@ -1,12 +1,3 @@
 {
-  "buildCommand": "next build",
-  "outputDirectory": ".next",
-  "env": {
-    "INNGEST_EVENT_KEY": "@INNGEST_EVENT_KEY",
-    "INNGEST_SIGNING_KEY": "@INNGEST_SIGNING_KEY",
-    "META_ACCESS_TOKEN": "@META_ACCESS_TOKEN",
-    "NEXT_PUBLIC_SUPABASE_URL": "@NEXT_PUBLIC_SUPABASE_URL",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@NEXT_PUBLIC_SUPABASE_ANON_KEY",
-    "SUPABASE_SERVICE_ROLE_KEY": "@SUPABASE_SERVICE_ROLE_KEY"
-  }
+  "framework": "nextjs"
 }
