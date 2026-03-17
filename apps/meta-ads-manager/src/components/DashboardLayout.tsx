@@ -1,5 +1,4 @@
 import React, { useState, ReactNode } from 'react';
-import classNames from 'classnames';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -29,7 +28,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className={classNames(darkMode && 'dark')}>
+    <div className={darkMode ? 'dark' : ''}>
       <div className="min-h-screen bg-white dark:bg-gray-900">
         {/* Header */}
         <header className="sticky top-0 z-40 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
@@ -82,22 +81,20 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         <div className="flex">
           {/* Sidebar */}
           <aside
-            className={classNames(
-              'fixed inset-y-0 left-0 z-30 w-64 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 pt-20 transition-transform lg:relative lg:pt-0 lg:translate-x-0',
+            className={`fixed inset-y-0 left-0 z-30 w-64 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 pt-20 transition-transform lg:relative lg:pt-0 lg:translate-x-0 ${
               sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-            )}
+            }`}
           >
             <nav className="space-y-1 px-4 py-6">
               {navLinks.map((link) => (
                 <a
                   key={link.name}
                   href={link.href}
-                  className={classNames(
-                    'group flex items-center gap-3 rounded-lg px-4 py-2 text-sm font-medium transition-colors',
+                  className={`group flex items-center gap-3 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                     link.current
                       ? 'bg-gray-100 dark:bg-gray-700 text-blue-600 dark:text-blue-400'
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                  )}
+                  }`}
                 >
                   <span className="text-lg">{link.icon}</span>
                   {link.name}

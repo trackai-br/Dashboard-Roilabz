@@ -1,5 +1,4 @@
 import React from 'react';
-import classNames from 'classnames';
 
 interface KPICardProps {
   title: string;
@@ -22,12 +21,7 @@ export const KPICard: React.FC<KPICardProps> = ({
 }) => {
   return (
     <div
-      className={classNames(
-        'rounded-lg border border-gray-200 dark:border-gray-700',
-        'bg-white dark:bg-gray-800 p-6',
-        'shadow-sm hover:shadow-md transition-shadow',
-        className
-      )}
+      className={`rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm hover:shadow-md transition-shadow${className ? ` ${className}` : ''}`}
     >
       <div className="flex items-center justify-between">
         <div className="flex-1">
@@ -52,12 +46,11 @@ export const KPICard: React.FC<KPICardProps> = ({
           </div>
           {trend !== undefined && !loading && (
             <p
-              className={classNames(
-                'mt-2 text-sm font-medium',
+              className={`mt-2 text-sm font-medium ${
                 trend >= 0
                   ? 'text-green-600 dark:text-green-400'
                   : 'text-red-600 dark:text-red-400'
-              )}
+              }`}
             >
               {trend >= 0 ? '+' : ''}{trend}% from last month
             </p>
