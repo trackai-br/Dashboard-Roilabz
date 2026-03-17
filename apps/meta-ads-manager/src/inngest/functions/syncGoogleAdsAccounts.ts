@@ -15,9 +15,16 @@ interface GoogleAdsAccount {
 }
 
 interface GoogleAdsCampaign {
-  campaignId: string;
-  campaignName: string;
+  id: string;
+  name: string;
   status: string;
+  advertisingChannelType: string;
+  budgetAmountMicros: number;
+  spendMicros?: number;
+  impressions?: number;
+  clicks?: number;
+  averageCpcMicros?: number;
+  costMicros?: number;
 }
 
 let supabase: ReturnType<typeof createClient> | null = null;
@@ -113,7 +120,7 @@ export const syncGoogleAdsAccounts = inngest.createFunction(
                 `sync-account-${user.id}-${account.customerId}`,
                 async () => {
                   // Upsert account
-                  const { error: accountError } = await supabase
+                  const { error: accountError } = await getSupabase()
                     .from('google_ads_accounts')
                     .upsert(
                       {
@@ -123,7 +130,7 @@ export const syncGoogleAdsAccounts = inngest.createFunction(
                         currency_code: account.currencyCode,
                         time_zone: account.timeZone,
                         last_synced: new Date(),
-                      },
+                      } as any,
                       { onConflict: 'user_id, google_customer_id' }
                     );
 
@@ -137,18 +144,19 @@ export const syncGoogleAdsAccounts = inngest.createFunction(
 
                   // Get account ID for campaigns
                   const { data: accountData, error: accountQueryError } =
-                    await supabase
+                    await getSupabase()
                       .from('google_ads_accounts')
                       .select('id')
                       .eq('user_id', user.id)
                       .eq('google_customer_id', account.customerId)
-                      .single();
+                      .single() as { data: { id: string } | null; error: any };
 
                   if (accountQueryError) throw accountQueryError;
+                  if (!accountData) throw new Error('Account data not found');
 
                   // Upsert campaigns
                   for (const campaign of campaigns) {
-                    const { error: campaignError } = await supabase
+                    const { error: campaignError } = await getSupabase()
                       .from('google_ads_campaigns')
                       .upsert(
                         {
@@ -165,7 +173,7 @@ export const syncGoogleAdsAccounts = inngest.createFunction(
                           average_cpc_micros: campaign.averageCpcMicros || 0,
                           cost_micros: campaign.costMicros || 0,
                           last_synced: new Date(),
-                        },
+                        } as any,
                         { onConflict: 'account_id, google_campaign_id' }
                       );
 

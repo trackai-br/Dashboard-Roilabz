@@ -45,7 +45,7 @@ export const syncMetaAdAccounts = inngest.createFunction(
                 currency,
                 timezone,
                 last_synced: new Date(),
-              },
+              } as any,
               { onConflict: "meta_account_id" }
             );
 
