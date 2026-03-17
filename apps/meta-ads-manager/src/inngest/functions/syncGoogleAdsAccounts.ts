@@ -1,6 +1,12 @@
 import { inngest } from '../client';
 import { createClient } from '@supabase/supabase-js';
 
+interface GoogleUser {
+  id: string;
+  google_access_token: string | null;
+  google_refresh_token: string | null;
+}
+
 let supabase: ReturnType<typeof createClient> | null = null;
 
 function getSupabase() {
@@ -69,10 +75,11 @@ export const syncGoogleAdsAccounts = inngest.createFunction(
       if (usersError) throw usersError;
       if (!users) return { synced: 0, campaigns: 0 };
 
+      const typedUsers = users as GoogleUser[];
       let totalSynced = 0;
       let totalCampaigns = 0;
 
-      for (const user of users) {
+      for (const user of typedUsers) {
         await step.run(`sync-user-${user.id}`, async () => {
           try {
             if (!user.google_access_token) return;
