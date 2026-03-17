@@ -73,9 +73,11 @@ export const syncGoogleAdsAccounts = inngest.createFunction(
       );
 
       if (usersError) throw usersError;
-      if (!users) return { synced: 0, campaigns: 0 };
+      if (!users || users.length === 0) return { synced: 0, campaigns: 0 };
 
-      const typedUsers = users as GoogleUser[];
+      const typedUsers = (users as (GoogleUser | null)[]).filter(
+        (u): u is GoogleUser => u !== null
+      );
       let totalSynced = 0;
       let totalCampaigns = 0;
 
