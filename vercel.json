@@ -1,0 +1,7 @@
+{
+  "buildCommand": "cd apps/meta-ads-manager && npm run build",
+  "installCommand": "cd apps/meta-ads-manager && npm install",
+  "outputDirectory": "apps/meta-ads-manager/.next",
+  "framework": "nextjs",
+  "rootDirectory": "apps/meta-ads-manager"
+}
