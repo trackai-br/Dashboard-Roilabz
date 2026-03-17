@@ -71,7 +71,7 @@ export const syncGoogleAdsAccounts = inngest.createFunction(
       let totalSynced = 0;
       let totalCampaigns = 0;
 
-      for (const user of users || []) {
+      for (const user of (users || []).filter((u): u is NonNullable<typeof u> => u !== null)) {
         await step.run(`sync-user-${user.id}`, async () => {
           try {
             if (!user.google_access_token) return;
