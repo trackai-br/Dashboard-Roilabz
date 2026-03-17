@@ -1,10 +1,17 @@
 import { inngest } from "../client";
 import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ""
-);
+let supabase: ReturnType<typeof createClient> | null = null;
+
+function getSupabase() {
+  if (!supabase) {
+    supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+      process.env.SUPABASE_SERVICE_ROLE_KEY || ""
+    );
+  }
+  return supabase;
+}
 
 export const syncMetaAdAccounts = inngest.createFunction(
   { id: "sync-meta-ad-accounts", retries: 3 },
@@ -29,7 +36,7 @@ export const syncMetaAdAccounts = inngest.createFunction(
         await step.run(`sync-account-${account.id}`, async () => {
           const { id: meta_account_id, name, currency, timezone } = account;
 
-          const { error } = await supabase
+          const { error } = await getSupabase()
             .from("meta_accounts")
             .upsert(
               {
