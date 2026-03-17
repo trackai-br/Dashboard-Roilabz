@@ -67,6 +67,7 @@
   "dependencies": {
     "@clack/prompts": "^0.11.0",
     "@kayvan/markdown-tree-parser": "^1.5.0",
+    "@tanstack/react-query": "^5.90.21",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
     "ansi-to-html": "^0.7.2",
