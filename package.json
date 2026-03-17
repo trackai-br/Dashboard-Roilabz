@@ -72,7 +72,6 @@
     "ansi-to-html": "^0.7.2",
     "chalk": "^4.1.2",
     "chokidar": "^3.5.3",
-    "classnames": "^2.5.1",
     "cli-progress": "^3.12.0",
     "commander": "^12.1.0",
     "execa": "^5.1.1",

@@ -1,5 +1,4 @@
 import React, { useMemo, useState } from 'react';
-import classNames from 'classnames';
 
 interface Campaign {
   id: string;
@@ -163,14 +162,13 @@ export const CampaignTable: React.FC<CampaignTableProps> = ({
                   </td>
                   <td className="px-6 py-4">
                     <span
-                      className={classNames(
-                        'inline-flex items-center rounded-full px-3 py-1 text-xs font-medium',
+                      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${
                         campaign.status === 'ACTIVE'
                           ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200'
                           : campaign.status === 'PAUSED'
                           ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200'
                           : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
-                      )}
+                      }`}
                     >
                       {campaign.status}
                     </span>
