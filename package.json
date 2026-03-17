@@ -67,7 +67,9 @@
   "dependencies": {
     "@clack/prompts": "^0.11.0",
     "@kayvan/markdown-tree-parser": "^1.5.0",
+    "@supabase/supabase-js": "^2.99.2",
     "@tanstack/react-query": "^5.90.21",
+    "@testing-library/react": "^16.3.2",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
     "ansi-to-html": "^0.7.2",
@@ -80,6 +82,7 @@
     "fs-extra": "^11.3.2",
     "glob": "^10.4.4",
     "handlebars": "^4.7.8",
+    "inngest": "^4.0.0",
     "inquirer": "^8.2.6",
     "js-yaml": "^4.1.0",
     "ora": "^5.4.1",
