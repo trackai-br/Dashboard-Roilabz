@@ -1,4 +1,5 @@
 import React, { useState, ReactNode } from 'react';
+import { NotificationBell } from './NotificationBell';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -15,6 +16,8 @@ interface NavLink {
 
 const navLinks: NavLink[] = [
   { name: 'Dashboard', href: '/dashboard', icon: '📊', current: true },
+  { name: 'Campanhas', href: '/campaigns', icon: '📢' },
+  { name: 'Alertas', href: '/alerts', icon: '⚠️' },
   { name: 'Insights', href: '/insights', icon: '📈' },
   { name: 'Creatives', href: '/creatives', icon: '🎨' },
   { name: 'Settings', href: '/settings', icon: '⚙️' },
@@ -58,13 +61,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 </button>
 
                 {/* Notifications */}
-                <button
-                  className="inline-flex items-center justify-center rounded-md p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 relative"
-                  aria-label="Notifications"
-                >
-                  🔔
-                  <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
-                </button>
+                <NotificationBell darkMode={darkMode} />
 
                 {/* User profile */}
                 <button

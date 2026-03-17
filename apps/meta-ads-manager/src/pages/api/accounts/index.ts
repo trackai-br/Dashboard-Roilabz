@@ -14,7 +14,13 @@ export default async function handler(
   }
 
   try {
-    const user = await requireAuth(req);
+    const { user, error: authError } = await requireAuth(req);
+
+    if (authError || !user) {
+      return res.status(401).json({
+        error: { message: "Unauthorized" },
+      });
+    }
 
     // Log access
     await logAccess({
@@ -35,14 +41,6 @@ export default async function handler(
       data: accounts,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-
-    if (message === "Unauthorized") {
-      return res.status(401).json({
-        error: { message: "Unauthorized" },
-      });
-    }
-
     console.error("Error in GET /accounts:", error);
     return res.status(500).json({
       error: { message: "Internal server error" },

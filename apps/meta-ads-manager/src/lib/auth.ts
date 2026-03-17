@@ -28,14 +28,21 @@ export async function getUserFromRequest(req: NextApiRequest) {
 }
 
 /**
- * Check if user is authenticated, throw error if not
+ * Check if user is authenticated, return {user, error} tuple
  */
 export async function requireAuth(req: NextApiRequest) {
-  const user = await getUserFromRequest(req);
+  try {
+    const user = await getUserFromRequest(req);
 
-  if (!user) {
-    throw new Error("Unauthorized");
+    if (!user) {
+      return { user: null, error: "Unauthorized" };
+    }
+
+    return { user, error: null };
+  } catch (error) {
+    return {
+      user: null,
+      error: error instanceof Error ? error.message : "Authentication failed"
+    };
   }
-
-  return user;
 }
