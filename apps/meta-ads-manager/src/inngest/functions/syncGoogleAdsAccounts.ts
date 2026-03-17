@@ -7,6 +7,19 @@ interface GoogleUser {
   google_refresh_token: string | null;
 }
 
+interface GoogleAdsAccount {
+  customerId: string;
+  descriptiveName: string;
+  currencyCode: string;
+  timeZone: string;
+}
+
+interface GoogleAdsCampaign {
+  campaignId: string;
+  campaignName: string;
+  status: string;
+}
+
 let supabase: ReturnType<typeof createClient> | null = null;
 
 function getSupabase() {
@@ -21,7 +34,10 @@ function getSupabase() {
 
 // This is a mock sync function that would normally use the Google Ads API
 // In production, you would use the google-ads-api package to fetch real data
-async function fetchGoogleAdsAccountsForUser(userId: string, token: string) {
+async function fetchGoogleAdsAccountsForUser(
+  userId: string,
+  token: string
+): Promise<GoogleAdsAccount[]> {
   try {
     // Mock data - in production, this would call the Google Ads API
     // const response = await googleAdsService.getCustomers(token);
@@ -40,7 +56,7 @@ async function fetchGoogleAdsAccountsForUser(userId: string, token: string) {
 async function fetchGoogleAdsCampaignsForAccount(
   token: string,
   customerId: string
-) {
+): Promise<GoogleAdsCampaign[]> {
   try {
     // Mock data - in production, this would call the Google Ads API
     // const response = await googleAdsService.getCampaigns(token, customerId);
