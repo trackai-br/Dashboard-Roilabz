@@ -1,1 +1,8 @@
 node_modules
+
+# Credentials & Secrets (NEVER commit these)
+*client_secret*
+*.credentials.json
+.env.local
+.env*.local
+Jsons/
