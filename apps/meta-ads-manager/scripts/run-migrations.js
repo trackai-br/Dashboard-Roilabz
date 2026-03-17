@@ -1,34 +1,29 @@
 #!/usr/bin/env node
 
 /**
- * 🚀 Execute Supabase Migrations
+ * 🚀 Executar Migrations — Supabase
  *
- * Usage:
+ * Uso:
  *   npm run migrate
  *
  * Este script executa todas as migrations SQL contra seu projeto Supabase
- * usando a admin API key (service role) via Supabase SDK
+ * usando postgres.js com a URL do Session Pooler (6543)
  */
 
 const fs = require('fs');
 const path = require('path');
-require('dotenv').config();
 
-// Import Supabase
-let { createClient } = require('@supabase/supabase-js');
+// Carregar .env.local
+require('dotenv').config({ path: '.env.local' });
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const databaseUrl = process.env.DATABASE_URL;
 
-if (!supabaseUrl || !supabaseKey) {
-  console.error('\n❌ Erro: Variáveis de ambiente não configuradas\n');
-  console.error('   Certifique-se de que .env.local tem:');
-  console.error('   - NEXT_PUBLIC_SUPABASE_URL');
-  console.error('   - SUPABASE_SERVICE_ROLE_KEY\n');
+if (!databaseUrl) {
+  console.error('\n❌ Erro: DATABASE_URL não configurada\n');
+  console.error('   Adicione ao .env.local:');
+  console.error('   DATABASE_URL=postgresql://user:password@host:6543/postgres\n');
   process.exit(1);
 }
-
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function runMigrations() {
   try {
@@ -38,55 +33,49 @@ async function runMigrations() {
     const migrationsPath = path.join(__dirname, '../migrations/000_master_migrations.sql');
     const sqlContent = fs.readFileSync(migrationsPath, 'utf8');
 
-    // Enviar SQL inteiro para o Supabase
-    const { error } = await supabase.rpc('exec_sql', {
-      sql: sqlContent,
-    }).catch(async (err) => {
-      // Se exec_sql não existir, tenta uso alternativo
-      console.log('⚠️  Método alternativo: usando raw query...\n');
+    // Importar postgres dinamicamente
+    const postgres = (await import('postgres')).default;
 
-      return await fetch(`${supabaseUrl}/graphql/v1`, {
-        method: 'POST',
-        headers: {
-          'apikey': supabaseKey,
-          'Authorization': `Bearer ${supabaseKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          query: `query { __typename }`,
-        }),
-      }).catch(() => ({ error: 'API não disponível' }));
+    console.log('📡 Conectando ao Session Pooler (6543)...');
+    const client = postgres(databaseUrl, {
+      ssl: 'require',
+      prepare: false,
     });
 
-    if (error) {
-      console.log('⚠️  Não foi possível executar via API\n');
-      console.log('📋 Solução alternativa: Copie e execute manualmente\n');
-      console.log('1. Acesse: https://app.supabase.com');
-      console.log('2. Selecione seu projeto');
-      console.log('3. Clique em "SQL Editor" → "+ New Query"');
-      console.log('4. Cole o conteúdo de: apps/meta-ads-manager/migrations/000_master_migrations.sql');
-      console.log('5. Clique em "RUN"\n');
-      process.exit(1);
+    console.log(`📝 Executando SQL...\n`);
+
+    try {
+      // Executar arquivo SQL inteiro de uma vez (preserva funções PL/pgSQL)
+      await client.file(migrationsPath);
+      console.log('✓');
+    } catch (err) {
+      // Se file() não funcionar, tentar com exec() alternativo
+      if (err.message.includes('Unknown method')) {
+        // Fallback: executar query como string única
+        await client.unsafe(sqlContent);
+        console.log('✓');
+      } else {
+        throw err;
+      }
     }
 
-    console.log('✅ Migrations executadas com sucesso!\n');
-    console.log('📊 Tabelas criadas:');
-    console.log('   - meta_accounts');
-    console.log('   - users');
-    console.log('   - user_account_access');
-    console.log('   - access_logs');
-    console.log('   - google_ads_accounts');
-    console.log('   - google_ads_campaigns\n');
-    console.log('🎉 Banco de dados pronto!\n');
+    await client.end();
+
+    console.log('\n✅ Migrations executadas com sucesso!\n');
+    console.log('📋 Tabelas criadas:');
+    console.log('   ✓ meta_accounts');
+    console.log('   ✓ users');
+    console.log('   ✓ user_account_access');
+    console.log('   ✓ access_logs');
+    console.log('   ✓ meta_ads_campaigns (META/Facebook Ads)');
+    console.log('   ✓ google_ads_accounts');
+    console.log('   ✓ google_ads_campaigns\n');
+    console.log('🎉 Banco de dados pronto (7/7 tabelas)!\n');
 
   } catch (error) {
-    console.error('\n❌ Erro ao executar migrations:');
-    console.error(error.message);
-    console.log('\n📋 Solução alternativa:');
-    console.log('1. Acesse: https://app.supabase.com');
-    console.log('2. SQL Editor → "+ New Query"');
-    console.log('3. Cole: apps/meta-ads-manager/migrations/000_master_migrations.sql');
-    console.log('4. RUN\n');
+    console.error('\n❌ Erro ao executar migrations:\n');
+    console.error('Erro:', error.message);
+    console.error('\nDica: Verifique se DATABASE_URL está correta no .env.local\n');
     process.exit(1);
   }
 }

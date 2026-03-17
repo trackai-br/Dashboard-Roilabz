@@ -8,17 +8,20 @@
     "start": "next start",
     "lint": "next lint",
     "test": "jest",
-    "migrate": "node scripts/run-migrations.js"
+    "migrate": "node scripts/run-migrations.js",
+    "check-tables": "node scripts/check-tables.js"
   },
   "dependencies": {
     "@supabase/auth-helpers-nextjs": "^0.15.0",
     "@supabase/auth-ui-react": "^0.4.7",
     "@supabase/supabase-js": "^2.99.2",
     "@tanstack/react-query": "^5.90.21",
+    "dotenv": "^17.3.1",
     "facebook-nodejs-business-sdk": "^19.0.0",
     "google-ads-api": "^23.0.0",
     "inngest": "^3.52.7",
     "next": "^14.1.0",
+    "postgres": "^3.4.8",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
