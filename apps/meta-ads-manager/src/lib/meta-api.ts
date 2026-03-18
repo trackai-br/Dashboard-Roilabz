@@ -123,12 +123,12 @@ class MetaAPIClient {
    */
   async getAdAccounts(): Promise<MetaAccount[]> {
     try {
-      // Use the System User to access business accounts
-      const systemUser = new Business.SystemUser(this.systemUserId);
+      // Use the authenticated user to access ad accounts
+      // The token must belong to a user who has access to the ad accounts
+      const user = new (Business as any).User('me');
       const fields = ['id', 'name', 'currency', 'timezone'];
 
-      // SystemUser has access to getAssignedAdAccounts method
-      const response = await systemUser.getAssignedAdAccounts(fields);
+      const response = await user.getAdAccounts(fields);
 
       return response.map((account: any) => ({
         id: account.id,
