@@ -1,4 +1,5 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
+import { createClient } from '@supabase/supabase-js';
 
 export interface MetaAccount {
   id: string;
@@ -20,14 +21,36 @@ interface KPIMetrics {
 
 /**
  * Fetch Meta accounts from authenticated API endpoint
- * Uses /api/accounts which enforces RLS and authentication via service role
+ * Uses /api/accounts which requires JWT Bearer token in Authorization header
  * Only returns accounts the authenticated user has access to
  */
 export const useMetaAccounts = (): UseQueryResult<MetaAccount[], Error> => {
   return useQuery<MetaAccount[], Error>({
     queryKey: ['meta-accounts'],
     queryFn: async () => {
-      const response = await fetch('/api/accounts');
+      // Get Supabase client to extract session token
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+      );
+
+      // Get current session with access token
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError || !session?.access_token) {
+        throw new Error('No valid session - user must be logged in');
+      }
+
+      // Fetch with Authorization header containing JWT token
+      const response = await fetch('/api/accounts', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+      });
 
       if (!response.ok) {
         throw new Error(`Failed to fetch accounts: ${response.statusText}`);

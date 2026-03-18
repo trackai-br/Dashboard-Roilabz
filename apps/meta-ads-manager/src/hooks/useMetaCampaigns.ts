@@ -1,4 +1,5 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
+import { createClient } from '@supabase/supabase-js';
 
 export interface Campaign {
   id: string;
@@ -23,7 +24,7 @@ interface UseMetaCampaignsOptions {
 
 /**
  * Fetch campaigns from authenticated API endpoint
- * Uses /api/meta/campaigns which fetches from DB + enriches with Meta API metrics
+ * Uses /api/meta/campaigns which requires JWT Bearer token in Authorization header
  * Only returns campaigns for the specified accountId
  */
 export const useMetaCampaigns = (
@@ -34,6 +35,22 @@ export const useMetaCampaigns = (
   return useQuery<Campaign[], Error>({
     queryKey: ['meta-campaigns', accountId, limit, offset],
     queryFn: async () => {
+      // Get Supabase client to extract session token
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+      );
+
+      // Get current session with access token
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError || !session?.access_token) {
+        throw new Error('No valid session - user must be logged in');
+      }
+
       const params = new URLSearchParams();
       if (accountId) {
         params.append('accountId', accountId);
@@ -45,7 +62,13 @@ export const useMetaCampaigns = (
         params.append('offset', offset.toString());
       }
 
-      const response = await fetch(`/api/meta/campaigns?${params.toString()}`);
+      // Fetch with Authorization header containing JWT token
+      const response = await fetch(`/api/meta/campaigns?${params.toString()}`, {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+      });
 
       if (!response.ok) {
         throw new Error(`Failed to fetch campaigns: ${response.statusText}`);
