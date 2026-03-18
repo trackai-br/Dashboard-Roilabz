@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useRouter } from 'next/router';
-import { CreateCampaignModal } from './CreateCampaignModal';
 
 interface HeaderProps {
   title?: string;
@@ -14,8 +13,6 @@ export function Header({
   onMenuClick,
 }: HeaderProps) {
   const router = useRouter();
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-
   return (
     <>
       <header
@@ -65,7 +62,7 @@ export function Header({
           <div className="flex items-center gap-3">
             {/* Botão Criar Campanha */}
             <button
-              onClick={() => setIsCreateModalOpen(true)}
+              onClick={() => router.push('/campaigns/setup')}
               className="px-4 py-2 font-medium rounded-lg transition-all duration-200"
               style={{
                 backgroundColor: 'var(--neon-green)',
@@ -135,12 +132,6 @@ export function Header({
           </div>
         </div>
       </header>
-
-      {/* Modal de Criação */}
-      <CreateCampaignModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-      />
     </>
   );
 }
