@@ -218,7 +218,7 @@ export default function CreateCampaignPage() {
             <option value="">Select an account</option>
             {accounts?.map((account) => (
               <option key={account.id} value={account.id}>
-                {account.account_name}
+                {account.meta_account_name}
               </option>
             ))}
           </select>

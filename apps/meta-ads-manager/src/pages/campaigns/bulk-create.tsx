@@ -314,10 +314,10 @@ export default function BulkCreateCampaignPage() {
                         />
                         <div className="flex-1">
                           <h4 className="font-medium" style={{ color: 'var(--color-primary)' }}>
-                            {account.account_name}
+                            {account.meta_account_name}
                           </h4>
                           <p className="text-sm" style={{ color: 'var(--color-secondary)' }}>
-                            {account.account_id}
+                            {account.meta_account_id}
                           </p>
                         </div>
                       </div>

@@ -143,7 +143,7 @@ export default function AlertsPage() {
             <option value="">Todas as contas</option>
             {accounts?.map((account) => (
               <option key={account.id} value={account.id}>
-                {account.account_name}
+                {account.meta_account_name}
               </option>
             ))}
           </select>

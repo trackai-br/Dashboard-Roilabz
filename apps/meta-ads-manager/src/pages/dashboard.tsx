@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { KPISection } from '@/components/KPISection';
 import { CampaignsTableNew } from '@/components/CampaignsTableNew';
@@ -8,6 +9,9 @@ import { useMetaCampaigns } from '@/hooks/useMetaCampaigns';
 export default function Dashboard() {
   const [selectedAccountId, setSelectedAccountId] = useState<string | undefined>();
   const [pageOffset, setPageOffset] = useState(0);
+  const [syncLoading, setSyncLoading] = useState(false);
+  const [syncMessage, setSyncMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const queryClient = useQueryClient();
 
   // Queries
   const { data: accounts, isLoading: accountsLoading, error: accountsError } = useMetaAccounts();
@@ -29,6 +33,43 @@ export default function Dashboard() {
     }
   }, [accounts, selectedAccountId]);
 
+  // Handle account sync
+  const handleSyncAccounts = async () => {
+    setSyncLoading(true);
+    setSyncMessage(null);
+
+    try {
+      const response = await fetch('/api/meta/sync-accounts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Sync failed: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      setSyncMessage({
+        type: 'success',
+        text: `✅ ${data.synced} conta(s) sincronizada(s) do Meta`,
+      });
+
+      // Refetch accounts
+      queryClient.invalidateQueries({ queryKey: ['meta-accounts'] });
+
+      // Auto-hide message after 3 seconds
+      setTimeout(() => setSyncMessage(null), 3000);
+    } catch (error) {
+      setSyncMessage({
+        type: 'error',
+        text: `❌ Erro ao sincronizar: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      });
+      setTimeout(() => setSyncMessage(null), 5000);
+    } finally {
+      setSyncLoading(false);
+    }
+  };
+
   const errorMessage = accountsError?.message || kpisError?.message || campaignsError?.message;
 
   return (
@@ -41,7 +82,36 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Account Selector */}
+        {/* Sync Message */}
+        {syncMessage && (
+          <div
+            className="mb-6 rounded-lg border p-4"
+            style={{
+              backgroundColor:
+                syncMessage.type === 'success'
+                  ? 'var(--color-success-bg)'
+                  : 'var(--color-danger-bg)',
+              borderColor:
+                syncMessage.type === 'success'
+                  ? 'var(--color-success)'
+                  : 'var(--color-danger)',
+            }}
+          >
+            <p
+              className="text-sm font-medium"
+              style={{
+                color:
+                  syncMessage.type === 'success'
+                    ? 'var(--color-success)'
+                    : 'var(--color-danger)',
+              }}
+            >
+              {syncMessage.text}
+            </p>
+          </div>
+        )}
+
+        {/* Account Selector + Sync Button */}
         <div className="mb-8 flex items-center gap-4">
           <label htmlFor="account-select" className="font-medium" style={{ color: 'var(--color-primary)' }}>
             Conta:
@@ -59,10 +129,24 @@ export default function Dashboard() {
             <option value="">Todas as Contas</option>
             {accounts?.map((account) => (
               <option key={account.id} value={account.id}>
-                {account.account_name} ({account.account_id})
+                {account.meta_account_name} ({account.meta_account_id})
               </option>
             ))}
           </select>
+
+          {accounts && accounts.length === 0 && (
+            <button
+              onClick={handleSyncAccounts}
+              disabled={syncLoading}
+              className="rounded-lg px-4 py-2 font-medium transition-colors disabled:opacity-50"
+              style={{
+                backgroundColor: 'var(--color-brand)',
+                color: '#ffffff',
+              }}
+            >
+              {syncLoading ? 'Sincronizando...' : 'Sincronizar Contas'}
+            </button>
+          )}
         </div>
 
         {/* KPI Section */}
