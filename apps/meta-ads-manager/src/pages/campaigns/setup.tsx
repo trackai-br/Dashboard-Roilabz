@@ -29,6 +29,8 @@ interface WizardFormData {
   adSetBillingEvent: string;
   adSetBidStrategy: string;
   adSetBidAmount?: number;
+  adSetDailyBudget?: number;
+  adSetLifetimeBudget?: number;
   adSetTargeting: Record<string, unknown>;
 
   // Step 4: Ad
@@ -64,7 +66,7 @@ const initialState: WizardFormData = {
   adSetTargeting: {},
   adName: '',
   adStatus: 'ACTIVE',
-  creativeFormat: 'SINGLE_IMAGE',
+  creativeFormat: 'single_image',
   creativeHeadline: '',
   creativeBody: '',
   creativeUrl: '',
@@ -186,6 +188,8 @@ export default function CampaignSetupPage() {
               adSetBillingEvent: formData.adSetBillingEvent,
               adSetBidStrategy: formData.adSetBidStrategy,
               adSetBidAmount: formData.adSetBidAmount,
+              adSetDailyBudget: formData.adSetDailyBudget,
+              adSetLifetimeBudget: formData.adSetLifetimeBudget,
               adSetTargeting: formData.adSetTargeting,
             }}
             onChange={handleAdSetChange}
