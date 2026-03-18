@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
 import { DashboardLayout } from '@/components/DashboardLayout';
-import { KPICard } from '@/components/KPICard';
-import { CampaignTable } from '@/components/CampaignTable';
+import { KPISection } from '@/components/KPISection';
+import { CampaignsTableNew } from '@/components/CampaignsTableNew';
 import { useMetaAccounts, useMetaAccountsKPIs } from '@/hooks/useMetaAccounts';
 import { useMetaCampaigns } from '@/hooks/useMetaCampaigns';
 
 export default function Dashboard() {
-  const router = useRouter();
   const [darkMode, setDarkMode] = useState(false);
   const [selectedAccountId, setSelectedAccountId] = useState<string | undefined>();
   const [pageOffset, setPageOffset] = useState(0);
@@ -53,118 +51,84 @@ export default function Dashboard() {
   const errorMessage = accountsError?.message || kpisError?.message || campaignsError?.message;
 
   return (
-    <DashboardLayout darkMode={darkMode} onDarkModeToggle={handleDarkModeToggle}>
-      {errorMessage && (
-        <div className="mb-6 rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-4">
-          <p className="text-sm font-medium text-red-800 dark:text-red-200">
-            Error loading dashboard: {errorMessage}
-          </p>
-        </div>
-      )}
+    <DashboardLayout
+      darkMode={darkMode}
+      onDarkModeToggle={handleDarkModeToggle}
+    >
+        {errorMessage && (
+          <div className="mb-6 rounded-lg border border-red-500/30 bg-red-500/10 p-4">
+            <p className="text-sm font-medium text-red-300">
+              ⚠️ {errorMessage}
+            </p>
+          </div>
+        )}
 
-      {/* Account Selector */}
-      <div className="mb-8 flex items-center gap-4">
-        <label htmlFor="account-select" className="font-medium text-gray-700 dark:text-gray-300">
-          Account:
-        </label>
-        <select
-          id="account-select"
-          value={selectedAccountId || ''}
-          onChange={(e) => {
-            setSelectedAccountId(e.target.value || undefined);
-            setPageOffset(0);
-          }}
-          disabled={accountsLoading}
-          className="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-gray-900 dark:text-white disabled:opacity-50"
-        >
-          <option value="">All Accounts</option>
-          {accounts?.map((account) => (
-            <option key={account.id} value={account.id}>
-              {account.account_name} ({account.account_id})
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* KPI Cards */}
-      <section className="mb-8">
-        <h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
-          Key Performance Indicators
-        </h2>
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <KPICard
-            title="Total Spend (MTD)"
-            value={`$${kpis?.totalSpend.toFixed(2) || '0.00'}`}
-            unit="USD"
-            icon="💰"
-            loading={kpisLoading}
-          />
-          <KPICard
-            title="Impressions (7d)"
-            value={kpis?.impressions.toLocaleString() || '0'}
-            icon="👁️"
-            loading={kpisLoading}
-          />
-          <KPICard
-            title="Avg CPC"
-            value={`$${kpis?.avgCpc.toFixed(2) || '0.00'}`}
-            icon="💵"
-            loading={kpisLoading}
-          />
-          <KPICard
-            title="Avg ROAS"
-            value={kpis?.avgRoas.toFixed(2) || '0.00'}
-            unit="x"
-            icon="📈"
-            loading={kpisLoading}
-          />
-        </div>
-      </section>
-
-      {/* Campaign Table */}
-      <section>
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-            All Campaigns
-          </h2>
-          <button
-            onClick={() => router.push('/campaigns/create')}
-            className="rounded-lg bg-blue-600 px-6 py-2 font-medium text-white hover:bg-blue-700 transition-colors"
+        {/* Account Selector */}
+        <div className="mb-8 flex items-center gap-4">
+          <label htmlFor="account-select" className="font-medium text-gray-300">
+            Conta:
+          </label>
+          <select
+            id="account-select"
+            value={selectedAccountId || ''}
+            onChange={(e) => {
+              setSelectedAccountId(e.target.value || undefined);
+              setPageOffset(0);
+            }}
+            disabled={accountsLoading}
+            className="rounded-lg border border-dark-600/50 bg-dark-800 px-4 py-2 text-white disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-growth-500/50"
           >
-            + Criar Campanha
-          </button>
+            <option value="">Todas as Contas</option>
+            {accounts?.map((account) => (
+              <option key={account.id} value={account.id}>
+                {account.account_name} ({account.account_id})
+              </option>
+            ))}
+          </select>
         </div>
-        <CampaignTable
-          campaigns={campaigns || []}
-          loading={campaignsLoading}
-          error={campaignsError?.message}
-          accountSelector={
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Filter by: {selectedAccountId ? 'Selected Account' : 'All Accounts'}
-            </label>
-          }
+
+        {/* KPI Section */}
+        <KPISection
+          data={{
+            roas: kpis?.avgRoas || 0,
+            activeCampaigns: campaigns?.length || 0,
+            dailySpend: kpis?.totalSpend || 0,
+            monthlySpend: kpis?.totalSpend || 0,
+            conversions: 0,
+          }}
         />
 
-        {/* Pagination */}
-        <div className="mt-4 flex items-center justify-between">
-          <button
-            onClick={() => setPageOffset(Math.max(0, pageOffset - 50))}
-            disabled={pageOffset === 0}
-            className="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-gray-900 dark:text-white disabled:opacity-50"
-          >
-            Previous
-          </button>
-          <span className="text-sm text-gray-600 dark:text-gray-400">
-            Showing campaigns {pageOffset + 1} to {pageOffset + 50}
-          </span>
-          <button
-            onClick={() => setPageOffset(pageOffset + 50)}
-            className="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
-          >
-            Next
-          </button>
-        </div>
-      </section>
-    </DashboardLayout>
+        {/* Campaign Table */}
+        <section className="mt-8">
+          <h2 className="mb-4 text-lg font-semibold text-white">
+            Campanhas
+          </h2>
+          <CampaignsTableNew
+            campaigns={campaigns || []}
+            loading={campaignsLoading}
+            error={campaignsError?.message}
+          />
+
+          {/* Pagination */}
+          <div className="mt-4 flex items-center justify-between">
+            <button
+              onClick={() => setPageOffset(Math.max(0, pageOffset - 50))}
+              disabled={pageOffset === 0}
+              className="rounded-lg border border-dark-600/50 bg-dark-800 px-4 py-2 text-gray-300 disabled:opacity-50 hover:bg-dark-700 transition-colors"
+            >
+              ← Anterior
+            </button>
+            <span className="text-sm text-gray-400">
+              Mostrando {pageOffset + 1} a {pageOffset + 50}
+            </span>
+            <button
+              onClick={() => setPageOffset(pageOffset + 50)}
+              className="rounded-lg border border-dark-600/50 bg-dark-800 px-4 py-2 text-gray-300 hover:bg-dark-700 transition-colors"
+            >
+              Próximo →
+            </button>
+          </div>
+        </section>
+      </DashboardLayout>
   );
 }

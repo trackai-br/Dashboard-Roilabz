@@ -1,121 +1,64 @@
-import React, { useState, ReactNode } from 'react';
-import { NotificationBell } from './NotificationBell';
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { Sidebar } from './Sidebar';
+import { Header } from './Header';
+import { BottomNav } from './BottomNav';
 
 interface DashboardLayoutProps {
-  children: ReactNode;
+  children: React.ReactNode;
+  title?: string;
   darkMode?: boolean;
   onDarkModeToggle?: (enabled: boolean) => void;
 }
 
-interface NavLink {
-  name: string;
-  href: string;
-  icon: string;
-  current?: boolean;
-}
-
-const navLinks: NavLink[] = [
-  { name: 'Dashboard', href: '/dashboard', icon: '📊', current: true },
-  { name: 'Campanhas', href: '/campaigns', icon: '📢' },
-  { name: 'Alertas', href: '/alerts', icon: '⚠️' },
-  { name: 'Insights', href: '/insights', icon: '📈' },
-  { name: 'Creatives', href: '/creatives', icon: '🎨' },
-  { name: 'Settings', href: '/settings', icon: '⚙️' },
-];
-
-export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
+export function DashboardLayout({
   children,
-  darkMode = false,
-  onDarkModeToggle,
-}) => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  title,
+  darkMode = true,
+  onDarkModeToggle
+}: DashboardLayoutProps) {
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   return (
-    <div className={darkMode ? 'dark' : ''}>
-      <div className="min-h-screen bg-white dark:bg-gray-900">
-        {/* Header */}
-        <header className="sticky top-0 z-40 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
-          <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setSidebarOpen(!sidebarOpen)}
-                  className="inline-flex items-center justify-center rounded-md p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 lg:hidden"
-                >
-                  <span className="sr-only">Open sidebar</span>
-                  {sidebarOpen ? '✕' : '☰'}
-                </button>
-                <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-                  Meta Ads Manager
-                </h1>
-              </div>
+    <div className={`flex h-screen overflow-hidden ${darkMode ? 'dark' : ''}`}>
+      <style>{`
+        :root {
+          color-scheme: ${darkMode ? 'dark' : 'light'};
+        }
+      `}</style>
 
-              <div className="flex items-center gap-4">
-                {/* Dark mode toggle */}
-                <button
-                  onClick={() => onDarkModeToggle?.(!darkMode)}
-                  className="inline-flex items-center justify-center rounded-md p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  aria-label="Toggle dark mode"
-                >
-                  {darkMode ? '☀️' : '🌙'}
-                </button>
+      {/* Sidebar - Desktop only */}
+      {!isMobile && (
+        <Sidebar open={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
+      )}
 
-                {/* Notifications */}
-                <NotificationBell darkMode={darkMode} />
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col overflow-hidden bg-dark-950 dark:bg-dark-950">
+        {/* Header com action buttons */}
+        <Header
+          title={title}
+          onMenuClick={() => setSidebarOpen(!sidebarOpen)}
+          darkMode={darkMode}
+          onDarkModeToggle={onDarkModeToggle}
+        />
 
-                {/* User profile */}
-                <button
-                  className="inline-flex items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 w-10 h-10 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600"
-                  aria-label="User menu"
-                >
-                  👤
-                </button>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        <div className="flex">
-          {/* Sidebar */}
-          <aside
-            className={`fixed inset-y-0 left-0 z-30 w-64 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 pt-20 transition-transform lg:relative lg:pt-0 lg:translate-x-0 ${
-              sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-            }`}
-          >
-            <nav className="space-y-1 px-4 py-6">
-              {navLinks.map((link) => (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  className={`group flex items-center gap-3 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-                    link.current
-                      ? 'bg-gray-100 dark:bg-gray-700 text-blue-600 dark:text-blue-400'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                  }`}
-                >
-                  <span className="text-lg">{link.icon}</span>
-                  {link.name}
-                </a>
-              ))}
-            </nav>
-          </aside>
-
-          {/* Main content */}
-          <main className="flex-1 overflow-auto">
-            <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-              {children}
-            </div>
-          </main>
-        </div>
-
-        {/* Mobile sidebar overlay */}
-        {sidebarOpen && (
-          <div
-            className="fixed inset-0 z-20 bg-black/50 lg:hidden"
-            onClick={() => setSidebarOpen(false)}
-          />
-        )}
+        {/* Content */}
+        <main className="flex-1 overflow-y-auto bg-gradient-to-br from-dark-950 via-dark-900 to-dark-950">
+          {children}
+        </main>
       </div>
+
+      {/* Bottom Nav - Mobile only */}
+      {isMobile && <BottomNav />}
     </div>
   );
-};
+}
