@@ -123,15 +123,18 @@ class MetaAPIClient {
    */
   async getAdAccounts(): Promise<MetaAccount[]> {
     try {
+      // Use the System User to access business accounts
       const systemUser = new Business.SystemUser(this.systemUserId);
       const fields = ['id', 'name', 'currency', 'timezone'];
-      const response = await systemUser.getAdAccounts(fields);
+
+      // SystemUser has access to getAssignedAdAccounts method
+      const response = await systemUser.getAssignedAdAccounts(fields);
 
       return response.map((account: any) => ({
         id: account.id,
-        name: account.name,
-        currency: account.currency,
-        timezone: account.timezone,
+        name: account.name || '',
+        currency: account.currency || 'USD',
+        timezone: account.timezone || 'America/Los_Angeles',
       }));
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
