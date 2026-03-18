@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import { useMetaAccounts, MetaAccount } from '../../hooks/useMetaAccounts';
 
 interface Step0AccountPickerProps {
@@ -12,34 +13,57 @@ export function Step0AccountPicker({ selectedAccountId, onSelectAccount }: Step0
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <p className="text-gray-500">Loading accounts...</p>
+        <p style={{ color: 'var(--color-secondary)' }}>Loading accounts...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-4 rounded-lg bg-red-50">
-        <p className="text-red-700">Error loading accounts: {error.message}</p>
+      <div className="p-4 rounded-lg border border-red-500/30" style={{ backgroundColor: 'rgba(255, 51, 51, 0.1)' }}>
+        <p style={{ color: '#ff3333' }}>⚠️ Error loading accounts: {error.message}</p>
       </div>
     );
   }
 
   if (!accounts || accounts.length === 0) {
     return (
-      <div className="p-4 rounded-lg bg-yellow-50">
-        <p className="text-yellow-700">No accounts found. Please sync your Meta accounts first.</p>
+      <div className="space-y-4">
+        <div>
+          <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--neon-green)' }}>
+            Select an Account
+          </h2>
+          <p style={{ color: 'var(--color-secondary)' }} className="text-sm mb-6">
+            Choose the Meta Ads account where you want to create your campaign.
+          </p>
+        </div>
+
+        <div className="p-6 rounded-lg border border-cyan-500/30" style={{ backgroundColor: 'rgba(0, 212, 255, 0.05)' }}>
+          <p style={{ color: 'var(--neon-cyan)' }} className="mb-4">
+            📊 No accounts found. Please sync your Meta Ads accounts first.
+          </p>
+          <Link
+            href="/campaigns"
+            className="inline-block px-4 py-2 rounded-lg font-medium transition hover:shadow-lg"
+            style={{
+              backgroundColor: 'var(--neon-green)',
+              color: '#000',
+            }}
+          >
+            Go to Sync Accounts
+          </Link>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--color-primary)' }}>
+        <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--neon-green)' }}>
           Select an Account
         </h2>
-        <p className="text-gray-600 text-sm mb-6">
+        <p style={{ color: 'var(--color-secondary)' }} className="text-sm">
           Choose the Meta Ads account where you want to create your campaign.
         </p>
       </div>
@@ -49,42 +73,50 @@ export function Step0AccountPicker({ selectedAccountId, onSelectAccount }: Step0
           <div
             key={account.id}
             onClick={() => onSelectAccount(account.id, account.meta_account_name)}
-            className={`p-4 rounded-lg border-2 cursor-pointer transition ${
-              selectedAccountId === account.id
-                ? 'border-blue-500 bg-blue-50'
-                : 'border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50'
-            }`}
+            className="p-4 rounded-lg border cursor-pointer transition hover:shadow-lg"
+            style={{
+              backgroundColor: selectedAccountId === account.id ? 'rgba(57, 255, 20, 0.1)' : 'var(--bg-card)',
+              borderColor: selectedAccountId === account.id ? 'var(--neon-green)' : 'rgba(57, 255, 20, 0.2)',
+              borderWidth: '2px',
+            }}
           >
             <div className="flex items-start justify-between mb-2">
               <div>
-                <h3 className="font-semibold text-gray-900">{account.meta_account_name}</h3>
-                <p className="text-xs text-gray-500">{account.meta_account_id}</p>
+                <h3 className="font-semibold" style={{ color: 'var(--color-primary)' }}>
+                  {account.meta_account_name}
+                </h3>
+                <p style={{ color: 'var(--color-secondary)' }} className="text-xs">
+                  {account.meta_account_id}
+                </p>
               </div>
               {selectedAccountId === account.id && (
-                <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center">
-                  <span className="text-white text-xs">✓</span>
+                <div className="w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--neon-green)' }}>
+                  <span style={{ color: '#000' }} className="text-xs font-bold">✓</span>
                 </div>
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-gray-200">
+            <div className="grid grid-cols-2 gap-2 mt-4 pt-4" style={{ borderTopColor: 'rgba(57, 255, 20, 0.2)', borderTopWidth: '1px' }}>
               <div>
-                <p className="text-xs text-gray-500">Currency</p>
-                <p className="text-sm font-medium text-gray-900">{account.currency}</p>
+                <p style={{ color: 'var(--color-secondary)' }} className="text-xs">Currency</p>
+                <p style={{ color: 'var(--color-primary)' }} className="text-sm font-medium">
+                  {account.currency}
+                </p>
               </div>
               <div>
-                <p className="text-xs text-gray-500">Timezone</p>
-                <p className="text-sm font-medium text-gray-900">{account.timezone}</p>
+                <p style={{ color: 'var(--color-secondary)' }} className="text-xs">Timezone</p>
+                <p style={{ color: 'var(--color-primary)' }} className="text-sm font-medium">
+                  {account.timezone}
+                </p>
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="rounded-lg p-4" style={{ backgroundColor: 'var(--color-info-bg)' }}>
-        <p className="text-sm" style={{ color: 'var(--color-info)' }}>
-          💡 <strong>Tip:</strong> You can create campaigns for multiple accounts. Just come back here
-          to switch accounts.
+      <div className="p-4 rounded-lg border border-cyan-500/30" style={{ backgroundColor: 'rgba(0, 212, 255, 0.05)' }}>
+        <p style={{ color: 'var(--neon-cyan)' }} className="text-sm">
+          💡 <strong>Tip:</strong> You can create campaigns for multiple accounts. Just come back here to switch accounts.
         </p>
       </div>
     </div>
