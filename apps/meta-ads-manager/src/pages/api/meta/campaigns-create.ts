@@ -137,7 +137,7 @@ async function handlePost(
             message: data.creativeBody,
             link: data.creativeUrl,
             caption: data.creativeHeadline,
-            ...(data.creativeImageUrl && { image_hash: data.creativeImageUrl }),
+            ...(data.creativeImageUrl && { image_url: data.creativeImageUrl }),
             ...(data.pixelId && { pixel_id: data.pixelId }),
           },
         },
