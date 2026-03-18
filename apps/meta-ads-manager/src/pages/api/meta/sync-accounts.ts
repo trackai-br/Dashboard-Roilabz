@@ -53,44 +53,48 @@ export default async function handler(
       },
     });
 
-    // Get authenticated user (from Authorization header or session)
+    // Get authenticated user from Authorization header (Bearer token)
     const authHeader = req.headers.authorization?.replace('Bearer ', '');
-    let userId: string | null = null;
 
-    if (authHeader) {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser(authHeader);
-      userId = user?.id || null;
-    }
-
-    if (!userId) {
-      // Try to get from cookies if available
-      const token = req.cookies['sb-token'];
-      if (!token) {
-        return res.status(401).json({
-          synced: 0,
-          accounts: [],
-          error: 'Unauthorized - no valid session',
-        });
-      }
-      // In production, validate token properly
-      userId = req.cookies['sb-user-id'] || '';
-    }
-
-    if (!userId) {
+    if (!authHeader) {
       return res.status(401).json({
         synced: 0,
         accounts: [],
-        error: 'Unauthorized',
+        error: 'Unauthorized - missing Authorization header',
       });
     }
 
+    // Verify token and get user
+    const { data, error: userError } = await supabase.auth.getUser(authHeader);
+
+    if (userError || !data.user) {
+      return res.status(401).json({
+        synced: 0,
+        accounts: [],
+        error: `Unauthorized - invalid token: ${userError?.message || 'unknown'}`,
+      });
+    }
+
+    const userId = data.user.id;
+
 
     // Fetch all ad accounts from Meta API
-    const metaAccounts = await metaAPI.getAdAccounts();
+    console.log('[Sync] Fetching accounts from Meta API...');
+    let metaAccounts;
+    try {
+      metaAccounts = await metaAPI.getAdAccounts();
+      console.log(`[Sync] Got ${metaAccounts?.length || 0} accounts from Meta API`);
+    } catch (metaError) {
+      console.error('[Sync] Meta API error:', metaError);
+      return res.status(500).json({
+        synced: 0,
+        accounts: [],
+        error: `Meta API error: ${metaError instanceof Error ? metaError.message : 'unknown'}`,
+      });
+    }
 
     if (!metaAccounts || metaAccounts.length === 0) {
+      console.warn('[Sync] No accounts returned from Meta API');
       return res.status(200).json({
         synced: 0,
         accounts: [],
@@ -106,6 +110,9 @@ export default async function handler(
       timezone: account.timezone || 'America/New_York',
     }));
 
+    console.log(`[Sync] Upserting ${accountsToSync.length} accounts to database...`);
+    console.log('[Sync] Sample account:', accountsToSync[0]);
+
     const { data: syncedAccounts, error: syncError } = await supabase
       .from('meta_accounts')
       .upsert(accountsToSync, {
@@ -115,8 +122,11 @@ export default async function handler(
       .select();
 
     if (syncError) {
+      console.error('[Sync] Database error:', syncError);
       throw new Error(`Database upsert error: ${syncError.message}`);
     }
+
+    console.log(`[Sync] Successfully upserted ${syncedAccounts?.length || 0} accounts`);
 
     // Create user_account_access entries for each account
     const accountAccessEntries = (syncedAccounts || []).map((account: any) => ({
