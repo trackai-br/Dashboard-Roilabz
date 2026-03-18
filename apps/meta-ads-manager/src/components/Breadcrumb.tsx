@@ -7,23 +7,45 @@ interface BreadcrumbItem {
 
 interface BreadcrumbProps {
   items: BreadcrumbItem[];
-  darkMode?: boolean;
 }
 
 export function Breadcrumb({ items }: BreadcrumbProps) {
   return (
-    <nav className="border-b px-4 py-3" style={{ backgroundColor: 'var(--bg-page)', borderBottomColor: 'var(--color-tertiary)' }}>
+    <nav
+      className="border-b px-4 py-3"
+      style={{
+        backgroundColor: 'var(--bg-page)',
+        borderBottomColor: 'var(--border-light)',
+      }}
+    >
       <ol className="flex items-center space-x-2">
         {items.map((item, index) => (
           <li key={index} className="flex items-center">
-            {index > 0 && <span className="mx-2" style={{ color: 'var(--color-tertiary)' }}>/</span>}
+            {index > 0 && (
+              <span className="mx-2" style={{ color: 'var(--color-tertiary)' }}>
+                /
+              </span>
+            )}
             {index === items.length - 1 ? (
-              <span className="font-medium" style={{ color: 'var(--color-primary)' }}>{item.label}</span>
+              <span
+                className="font-medium"
+                style={{
+                  color: 'var(--neon-green)',
+                  textShadow: '0 0 6px rgba(57, 255, 20, 0.2)',
+                  fontFamily: "'Space Grotesk', system-ui, sans-serif",
+                }}
+              >
+                {item.label}
+              </span>
             ) : (
               <Link
                 href={item.href}
-                className="transition-colors"
-                style={{ color: 'var(--color-brand)' }}
+                className="transition-colors hover:opacity-80"
+                style={{
+                  color: 'var(--neon-green)',
+                  textShadow: '0 0 6px rgba(57, 255, 20, 0.15)',
+                  fontFamily: "'Space Grotesk', system-ui, sans-serif",
+                }}
               >
                 {item.label}
               </Link>

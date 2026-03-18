@@ -17,22 +17,6 @@ interface Ad {
 export default function AdSetDetailPage() {
   const router = useRouter();
   const { campaignId, adSetId } = router.query;
-  const [darkMode, setDarkMode] = useState(false);
-
-  useEffect(() => {
-    const saved = localStorage.getItem('darkMode');
-    if (saved !== null) {
-      setDarkMode(JSON.parse(saved));
-    } else {
-      const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      setDarkMode(isDark);
-    }
-  }, []);
-
-  const handleDarkModeToggle = (enabled: boolean) => {
-    setDarkMode(enabled);
-    localStorage.setItem('darkMode', JSON.stringify(enabled));
-  };
 
   const {
     data: adsResponse,
@@ -51,7 +35,7 @@ export default function AdSetDetailPage() {
   const ads = adsResponse?.ads || [];
 
   return (
-    <DashboardLayout darkMode={darkMode} onDarkModeToggle={handleDarkModeToggle}>
+    <DashboardLayout>
       <Breadcrumb
         items={[
           { label: 'Accounts', href: '/dashboard' },
@@ -65,7 +49,6 @@ export default function AdSetDetailPage() {
             href: `/campaigns/${campaignId}/adsets/${adSetId}`,
           },
         ]}
-        darkMode={darkMode}
       />
 
       <div className="p-6">

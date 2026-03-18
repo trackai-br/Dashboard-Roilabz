@@ -7,22 +7,24 @@ import { CreateCampaignModal } from './CreateCampaignModal';
 interface HeaderProps {
   title?: string;
   onMenuClick?: () => void;
-  darkMode?: boolean;
-  onDarkModeToggle?: (enabled: boolean) => void;
 }
 
 export function Header({
   title = 'Dashboard',
   onMenuClick,
-  darkMode = true,
-  onDarkModeToggle
 }: HeaderProps) {
   const router = useRouter();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b backdrop-blur-md" style={{ backgroundColor: 'var(--bg-card)', borderBottomColor: 'var(--color-tertiary)' }}>
+      <header
+        className="sticky top-0 z-40 border-b backdrop-blur-md"
+        style={{
+          backgroundColor: 'rgba(26, 26, 46, 0.8)',
+          borderBottomColor: 'var(--border-light)',
+        }}
+      >
         <div className="px-6 py-4 flex items-center justify-between">
           {/* Left: Menu + Title */}
           <div className="flex items-center gap-4">
@@ -46,7 +48,15 @@ export function Header({
                 />
               </svg>
             </button>
-            <h1 className="text-2xl font-display font-bold" style={{ color: 'var(--color-brand)' }}>
+            <h1
+              className="text-2xl font-display font-bold"
+              style={{
+                color: 'var(--neon-green)',
+                textShadow: '0 0 12px rgba(57, 255, 20, 0.3)',
+                fontFamily: "'Space Grotesk', system-ui, sans-serif",
+                letterSpacing: '0.05em',
+              }}
+            >
               {title}
             </h1>
           </div>
@@ -56,39 +66,71 @@ export function Header({
             {/* Botão Criar Campanha */}
             <button
               onClick={() => setIsCreateModalOpen(true)}
-              className="px-4 py-2 text-white font-medium rounded-lg transition-all duration-200 shadow-sm"
-              style={{ backgroundColor: 'var(--color-brand)' }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-brand-hover)'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--color-brand)'}
+              className="px-4 py-2 font-medium rounded-lg transition-all duration-200"
+              style={{
+                backgroundColor: 'var(--neon-green)',
+                color: 'var(--bg-deepest)',
+                fontFamily: "'Space Grotesk', system-ui, sans-serif",
+                fontWeight: 600,
+                letterSpacing: '0.05em',
+                boxShadow: '0 0 12px rgba(57, 255, 20, 0.3)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.boxShadow = '0 0 20px rgba(57, 255, 20, 0.6)';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = '0 0 12px rgba(57, 255, 20, 0.3)';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
             >
-              + Criar Campanha
+              + CRIAR CAMPANHA
             </button>
 
             {/* Botão Bulk Create */}
             <button
               onClick={() => router.push('/campaigns/bulk-create')}
               className="hidden sm:inline-block px-4 py-2 border rounded-lg transition-all duration-200 font-medium"
-              style={{ borderColor: 'var(--color-coral)', color: 'var(--color-coral)' }}
+              style={{
+                borderColor: 'rgba(57, 255, 20, 0.3)',
+                color: 'var(--neon-green)',
+                fontFamily: "'Space Grotesk', system-ui, sans-serif",
+                fontWeight: 500,
+                letterSpacing: '0.05em',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = 'var(--neon-green)';
+                e.currentTarget.style.boxShadow = '0 0 12px rgba(57, 255, 20, 0.2)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'rgba(57, 255, 20, 0.3)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
             >
-              📦 Bulk
+              📦 BULK
             </button>
 
             {/* Botão Alertas */}
             <button
               onClick={() => router.push('/alerts')}
               className="hidden sm:inline-block px-4 py-2 border rounded-lg transition-all duration-200 font-medium"
-              style={{ borderColor: 'var(--color-secondary)', color: 'var(--color-primary)' }}
+              style={{
+                borderColor: 'rgba(57, 255, 20, 0.2)',
+                color: 'var(--neon-cyan)',
+                fontFamily: "'Space Grotesk', system-ui, sans-serif",
+                fontWeight: 500,
+                letterSpacing: '0.05em',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = 'var(--neon-cyan)';
+                e.currentTarget.style.boxShadow = '0 0 12px rgba(0, 240, 255, 0.2)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'rgba(57, 255, 20, 0.2)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
             >
-              🔔
-            </button>
-
-            {/* Dark Mode Toggle */}
-            <button
-              onClick={() => onDarkModeToggle?.(!darkMode)}
-              className="p-2 rounded-lg transition-colors"
-              style={{ color: 'var(--color-primary)' }}
-            >
-              {darkMode ? '☀️' : '🌙'}
+              🔔 ALERTAS
             </button>
           </div>
         </div>

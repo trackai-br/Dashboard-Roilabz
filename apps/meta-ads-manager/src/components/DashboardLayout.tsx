@@ -8,15 +8,11 @@ import { BottomNav } from './BottomNav';
 interface DashboardLayoutProps {
   children: React.ReactNode;
   title?: string;
-  darkMode?: boolean;
-  onDarkModeToggle?: (enabled: boolean) => void;
 }
 
 export function DashboardLayout({
   children,
   title,
-  darkMode = true,
-  onDarkModeToggle
 }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
@@ -29,13 +25,7 @@ export function DashboardLayout({
   }, []);
 
   return (
-    <div className={`flex h-screen overflow-hidden ${darkMode ? 'dark' : ''}`}>
-      <style>{`
-        :root {
-          color-scheme: ${darkMode ? 'dark' : 'light'};
-        }
-      `}</style>
-
+    <div className="flex h-screen overflow-hidden dark">
       {/* Sidebar - Desktop only */}
       {!isMobile && (
         <Sidebar open={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
@@ -47,8 +37,6 @@ export function DashboardLayout({
         <Header
           title={title}
           onMenuClick={() => setSidebarOpen(!sidebarOpen)}
-          darkMode={darkMode}
-          onDarkModeToggle={onDarkModeToggle}
         />
 
         {/* Content */}
