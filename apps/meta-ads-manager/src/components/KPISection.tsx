@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { TrendingUp, BarChart3, DollarSign, CheckCircle } from 'lucide-react';
 
 export interface KPIData {
   roas: number;
@@ -23,7 +24,7 @@ export function KPISection({ data }: KPISectionProps) {
       label: 'ROAS',
       value: data.roas.toFixed(2),
       unit: 'x',
-      icon: '📈',
+      icon: TrendingUp,
       description: 'Return on Ad Spend',
       color: 'from-brand to-coral',
       accentColor: 'var(--color-brand)',
@@ -33,7 +34,7 @@ export function KPISection({ data }: KPISectionProps) {
       label: 'Campanhas Ativas',
       value: data.activeCampaigns.toString(),
       unit: '',
-      icon: '🎯',
+      icon: BarChart3,
       description: 'Campanhas em veiculação',
       color: 'from-teal to-teal-light',
       accentColor: 'var(--color-teal)',
@@ -43,7 +44,7 @@ export function KPISection({ data }: KPISectionProps) {
       label: 'Gasto',
       value: `$${(data.monthlySpend / 1000).toFixed(1)}k`,
       unit: '/mês',
-      icon: '💰',
+      icon: DollarSign,
       description: `Hoje: $${data.dailySpend.toFixed(2)}`,
       color: 'from-sand to-coral',
       accentColor: 'var(--color-sand)',
@@ -53,7 +54,7 @@ export function KPISection({ data }: KPISectionProps) {
       label: 'Conversões',
       value: data.conversions.toString(),
       unit: 'total',
-      icon: '✨',
+      icon: CheckCircle,
       description: 'Ações realizadas',
       color: 'from-success to-success',
       accentColor: 'var(--color-success)',
@@ -131,13 +132,15 @@ export function KPISection({ data }: KPISectionProps) {
                   </p>
                 </div>
                 <div
-                  className="w-14 h-14 rounded-xl flex items-center justify-center text-xl flex-shrink-0 ml-3"
+                  className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 ml-3"
                   style={{
                     backgroundColor: `${metric.accentColor}14`,
                     color: metric.accentColor,
                   }}
+                  role="img"
+                  aria-label={metric.label}
                 >
-                  {metric.icon}
+                  <metric.icon size={24} strokeWidth={2} aria-hidden="true" />
                 </div>
               </div>
 
