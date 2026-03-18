@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { KPICard } from '@/components/KPICard';
 import { CampaignTable } from '@/components/CampaignTable';
@@ -6,6 +7,7 @@ import { useMetaAccounts, useMetaAccountsKPIs } from '@/hooks/useMetaAccounts';
 import { useMetaCampaigns } from '@/hooks/useMetaCampaigns';
 
 export default function Dashboard() {
+  const router = useRouter();
   const [darkMode, setDarkMode] = useState(false);
   const [selectedAccountId, setSelectedAccountId] = useState<string | undefined>();
   const [pageOffset, setPageOffset] = useState(0);
@@ -121,9 +123,17 @@ export default function Dashboard() {
 
       {/* Campaign Table */}
       <section>
-        <h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
-          All Campaigns
-        </h2>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            All Campaigns
+          </h2>
+          <button
+            onClick={() => router.push('/campaigns/create')}
+            className="rounded-lg bg-blue-600 px-6 py-2 font-medium text-white hover:bg-blue-700 transition-colors"
+          >
+            + Criar Campanha
+          </button>
+        </div>
         <CampaignTable
           campaigns={campaigns || []}
           loading={campaignsLoading}
