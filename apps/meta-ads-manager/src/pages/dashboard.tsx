@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { createClient } from '@supabase/supabase-js';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { KPISection } from '@/components/KPISection';
 import { CampaignsTableNew } from '@/components/CampaignsTableNew';
@@ -39,13 +40,36 @@ export default function Dashboard() {
     setSyncMessage(null);
 
     try {
+      // Get Supabase client to extract session token
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+      );
+
+      // Get current session with access token
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError || !session?.access_token) {
+        throw new Error('No valid session - please log in');
+      }
+
+      // Fetch with Authorization header containing JWT token
       const response = await fetch('/api/meta/sync-accounts', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
       });
 
       if (!response.ok) {
-        throw new Error(`Sync failed: ${response.statusText}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.error || `Sync failed: ${response.statusText}`
+        );
       }
 
       const data = await response.json();
