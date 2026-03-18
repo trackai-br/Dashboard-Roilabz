@@ -244,7 +244,7 @@ export function Step3Ad({
 
       <div className="rounded-lg bg-green-50 dark:bg-green-900/20 p-4">
         <p className="text-sm text-green-800 dark:text-green-300">
-          ✓ <strong>Ready to create:</strong> All required fields are set. Click "Create Campaign"
+          ✓ <strong>Ready to create:</strong> All required fields are set. Click &quot;Create Campaign&quot;
           to launch your campaign!
         </p>
       </div>

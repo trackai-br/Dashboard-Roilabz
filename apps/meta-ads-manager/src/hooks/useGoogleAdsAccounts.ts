@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { useAuth } from './useAuth';
 
@@ -31,7 +31,7 @@ export function useGoogleAdsAccounts(): UseGoogleAdsAccountsReturn {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchAccounts = async () => {
+  const fetchAccounts = useCallback(async () => {
     if (!user) {
       setAccounts([]);
       setIsLoading(false);
@@ -58,13 +58,13 @@ export function useGoogleAdsAccounts(): UseGoogleAdsAccountsReturn {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     if (!authLoading) {
       fetchAccounts();
     }
-  }, [user, authLoading]);
+  }, [user, authLoading, fetchAccounts]);
 
   return {
     accounts,
