@@ -124,7 +124,7 @@ export function NotificationDrawer({
               </div>
             ) : (
               <div className="space-y-2 p-4">
-                {notifications.map((notification) => (
+                {notifications.map((notification: Notification) => (
                   <div
                     key={notification.id}
                     className={`rounded-lg p-4 border transition-colors ${
@@ -194,7 +194,7 @@ export function NotificationDrawer({
 
               <div className="flex gap-2">
                 <button
-                  onClick={() => setSelectedIds(notifications.map((n) => n.id))}
+                  onClick={() => setSelectedIds(notifications.map((n: Notification) => n.id))}
                   className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm font-medium text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700"
                 >
                   Selecionar Tudo

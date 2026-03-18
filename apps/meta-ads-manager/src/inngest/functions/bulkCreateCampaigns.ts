@@ -161,11 +161,11 @@ export const bulkCreateCampaigns = inngest.createFunction(
           const adId = adResult.id;
 
           // Store in database
-          const { data: storedAccount, error: accountError } = await getSupabase()
+          const { data: storedAccount, error: accountError } = (await getSupabase()
             .from('meta_accounts')
             .select('id')
             .eq('meta_account_id', metaAccountId)
-            .single();
+            .single()) as any;
 
           if (!accountError && storedAccount) {
             const storedAccountId = storedAccount.id;

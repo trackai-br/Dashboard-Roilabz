@@ -334,7 +334,7 @@ export default function AlertsPage() {
                   </td>
                 </tr>
               ) : (
-                rules.map((rule) => (
+                rules.map((rule: AlertRule) => (
                   <tr key={rule.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                     <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
                       {rule.name}

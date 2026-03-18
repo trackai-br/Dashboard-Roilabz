@@ -117,7 +117,7 @@ export default function CampaignDetailPage() {
                   </td>
                 </tr>
               ) : (
-                adsets.map((adset) => (
+                adsets.map((adset: AdSet) => (
                   <tr
                     key={adset.adset_id}
                     className="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors"

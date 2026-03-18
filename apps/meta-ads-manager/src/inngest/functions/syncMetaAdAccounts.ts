@@ -52,11 +52,11 @@ export const syncMetaAdAccounts = inngest.createFunction(
           });
 
           // Get stored account ID for use in subsequent tables
-          const { data: storedAccount, error: accountError } = await getSupabase()
+          const { data: storedAccount, error: accountError } = (await getSupabase()
             .from("meta_accounts")
             .select("id")
             .eq("meta_account_id", account.id)
-            .single();
+            .single()) as any;
 
           if (accountError || !storedAccount) {
             console.error(`Could not fetch stored account for ${account.id}:`, accountError);

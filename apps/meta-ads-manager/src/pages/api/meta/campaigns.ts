@@ -150,9 +150,9 @@ async function handleGet(
           return {
             ...campaign,
             metrics: {
+              ...aggregated,
               date_start: finalDateStart,
               date_stop: finalDateStop,
-              ...aggregated,
             },
           };
         } catch (err) {

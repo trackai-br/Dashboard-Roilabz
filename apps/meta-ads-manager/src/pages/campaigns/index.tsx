@@ -230,7 +230,7 @@ export default function CampaignsPage() {
                   </td>
                 </tr>
               ) : (
-                campaigns.map((campaign) => (
+                campaigns.map((campaign: Campaign) => (
                   <tr
                     key={campaign.campaign_id}
                     className="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors"

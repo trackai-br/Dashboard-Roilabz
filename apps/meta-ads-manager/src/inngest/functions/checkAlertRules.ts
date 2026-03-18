@@ -58,7 +58,7 @@ export const checkAlertRules = inngest.createFunction(
       let triggeredCount = 0;
 
       // Processar cada regra
-      for (const rule of rules || []) {
+      for (const rule of (rules || []) as AlertRule[]) {
         await step.run(`check-rule-${rule.id}`, async () => {
           try {
             const triggered = await evaluateRule(rule);
@@ -136,16 +136,16 @@ async function evaluateRule(
       .split('T')[0];
     const today = new Date().toISOString().split('T')[0];
 
-    const { data: campaigns } = await supabaseClient
+    const { data: campaigns } = (await supabaseClient
       .from('meta_ads_campaigns')
       .select('campaign_id, campaign_name')
       .eq('meta_account_id', rule.account_id)
-      .limit(10);
+      .limit(10)) as any;
 
     if (!campaigns || campaigns.length === 0) return null;
 
     // Avaliar cada campanha contra a regra
-    for (const campaign of campaigns) {
+    for (const campaign of campaigns as any[]) {
       try {
         const insights = await metaAPI.getInsights(
           campaign.campaign_id,
