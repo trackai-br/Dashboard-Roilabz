@@ -103,8 +103,9 @@ export default async function handler(
     }
 
     // Upsert accounts into database
+    // metaAPI.getAdAccounts() returns { id, name, currency, timezone }
     const accountsToSync = metaAccounts.map((account: any) => ({
-      meta_account_id: account.account_id,
+      meta_account_id: account.id,  // Use 'id' field from Meta SDK response
       meta_account_name: account.name,
       currency: account.currency || 'USD',
       timezone: account.timezone || 'America/New_York',
