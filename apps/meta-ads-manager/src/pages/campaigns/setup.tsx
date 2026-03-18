@@ -36,7 +36,7 @@ interface WizardFormData {
   // Step 4: Ad
   adName: string;
   adStatus: 'ACTIVE' | 'PAUSED';
-  creativeFormat: string;
+  creativeFormat: 'single_image' | 'single_video' | 'carousel' | 'collection';
   creativeHeadline: string;
   creativeBody: string;
   creativeUrl: string;
