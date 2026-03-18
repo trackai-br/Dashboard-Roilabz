@@ -42,7 +42,7 @@ export function DashboardLayout({
       )}
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden bg-dark-950 dark:bg-dark-950">
+      <div className="flex-1 flex flex-col overflow-hidden" style={{ backgroundColor: 'var(--bg-page)' }}>
         {/* Header com action buttons */}
         <Header
           title={title}
@@ -52,7 +52,7 @@ export function DashboardLayout({
         />
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto bg-gradient-to-br from-dark-950 via-dark-900 to-dark-950">
+        <main className="flex-1 overflow-y-auto" style={{ backgroundColor: 'var(--bg-page)' }}>
           {children}
         </main>
       </div>

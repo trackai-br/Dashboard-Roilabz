@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { NotificationDrawer } from './NotificationDrawer';
 
-export function NotificationBell({ darkMode = false }: { darkMode?: boolean }) {
+export function NotificationBell() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const {
@@ -25,11 +25,10 @@ export function NotificationBell({ darkMode = false }: { darkMode?: boolean }) {
     <>
       <button
         onClick={() => setIsDrawerOpen(true)}
-        className={`relative rounded-lg p-2 transition-colors ${
-          darkMode
-            ? 'hover:bg-gray-700 text-gray-300 hover:text-white'
-            : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
-        }`}
+        className="relative rounded-lg p-2 transition-colors"
+        style={{ color: 'var(--color-secondary)' }}
+        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)'}
+        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
         title="Notificações"
       >
         <svg
@@ -48,7 +47,7 @@ export function NotificationBell({ darkMode = false }: { darkMode?: boolean }) {
 
         {/* Badge com contagem */}
         {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-bold text-white">
+          <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold text-white" style={{ backgroundColor: 'var(--color-danger)' }}>
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -57,7 +56,6 @@ export function NotificationBell({ darkMode = false }: { darkMode?: boolean }) {
       <NotificationDrawer
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
-        darkMode={darkMode}
       />
     </>
   );

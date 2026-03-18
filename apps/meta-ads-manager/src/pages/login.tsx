@@ -15,30 +15,31 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black">
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg-page)' }}>
       <div className="w-full max-w-md px-4">
         {/* Logo & Header */}
         <div className="text-center mb-16">
           <div className="flex justify-center mb-8">
-            <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center shadow-lg">
-              <span className="text-white font-bold text-2xl">M</span>
+            <div className="h-16 w-16 rounded-2xl flex items-center justify-center shadow-lg" style={{ backgroundColor: 'var(--color-brand)' }}>
+              <span className="text-white font-bold text-2xl font-display">M</span>
             </div>
           </div>
-          <h1 className="text-4xl font-bold text-white mb-3">
+          <h1 className="text-4xl font-bold mb-3 font-display" style={{ color: 'var(--color-brand)' }}>
             Meta Ads Manager
           </h1>
-          <p className="text-gray-400 text-sm">
+          <p className="text-sm" style={{ color: 'var(--color-secondary)' }}>
             Orquestração de campanhas Meta e Google Ads
           </p>
         </div>
 
         {/* Error message */}
         {error && (
-          <div className="mb-6 p-4 bg-red-900/20 border border-red-700 rounded-lg">
-            <p className="text-sm text-red-200 mb-2">{error}</p>
+          <div className="mb-6 p-4 rounded-lg" style={{ backgroundColor: 'var(--color-danger-bg)', borderColor: 'var(--color-danger)', borderWidth: '1px' }}>
+            <p className="text-sm mb-2" style={{ color: 'var(--color-danger)' }}>{error}</p>
             <button
               onClick={() => setError(null)}
-              className="text-xs font-medium text-red-400 hover:text-red-300"
+              className="text-xs font-medium"
+              style={{ color: 'var(--color-danger)' }}
             >
               Descartar
             </button>
@@ -46,7 +47,7 @@ export default function LoginPage() {
         )}
 
         {/* Login Container */}
-        <div className="border border-gray-800 rounded-2xl p-8 space-y-6 bg-gray-950/50 backdrop-blur-sm">
+        <div className="rounded-2xl p-8 space-y-6" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--color-tertiary)', borderWidth: '1px' }}>
           {/* Google Sign In Button */}
           <GoogleAuthButton
             onSuccess={handleLoginSuccess}
@@ -57,25 +58,25 @@ export default function LoginPage() {
           {/* Divider */}
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-800" />
+              <div className="w-full" style={{ borderTop: '1px solid var(--color-tertiary)' }} />
             </div>
             <div className="relative flex justify-center">
-              <span className="px-3 bg-gray-950 text-xs text-gray-500 uppercase tracking-wider">
+              <span className="px-3 text-xs uppercase tracking-wider" style={{ backgroundColor: 'var(--bg-card)', color: 'var(--color-secondary)' }}>
                 Continuar com
               </span>
             </div>
           </div>
 
           {/* Demo Credentials (Future) */}
-          <div className="pt-4 border-t border-gray-800">
-            <p className="text-xs text-gray-500 uppercase tracking-wider mb-3">
+          <div className="pt-4" style={{ borderTop: '1px solid var(--color-tertiary)' }}>
+            <p className="text-xs uppercase tracking-wider mb-3" style={{ color: 'var(--color-secondary)' }}>
               Credenciais Demo
             </p>
-            <div className="bg-gray-900/50 rounded-lg p-4">
-              <p className="text-sm text-blue-400 font-mono">
+            <div className="rounded-lg p-4" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
+              <p className="text-sm font-mono" style={{ color: 'var(--color-brand)' }}>
                 demo@metaads.com • senha123
               </p>
-              <p className="text-xs text-gray-500 mt-2">
+              <p className="text-xs mt-2" style={{ color: 'var(--color-secondary)' }}>
                 (Em desenvolvimento)
               </p>
             </div>
@@ -84,7 +85,7 @@ export default function LoginPage() {
 
         {/* Footer */}
         <div className="mt-12 text-center">
-          <p className="text-xs text-gray-700">
+          <p className="text-xs" style={{ color: 'var(--color-tertiary)' }}>
             © 2026 Meta Ads Manager. Todos os direitos reservados.
           </p>
         </div>

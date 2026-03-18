@@ -86,17 +86,17 @@ export function NotificationDrawer({
       />
 
       {/* Drawer */}
-      <div className="absolute right-0 top-0 bottom-0 w-96 bg-white dark:bg-gray-900 shadow-lg overflow-y-auto">
+      <div className="absolute right-0 top-0 bottom-0 w-96 shadow-lg overflow-y-auto" style={{ backgroundColor: 'var(--bg-card)' }}>
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+          <div className="border-b px-6 py-4" style={{ borderBottomColor: 'var(--color-tertiary)' }}>
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+              <h2 className="text-xl font-bold font-display" style={{ color: 'var(--color-brand)' }}>
                 Notificações
               </h2>
               <button
                 onClick={onClose}
-                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                style={{ color: 'var(--color-secondary)' }}
               >
                 ✕
               </button>
@@ -106,19 +106,19 @@ export function NotificationDrawer({
           {/* Content */}
           <div className="flex-1 overflow-y-auto">
             {error && (
-              <div className="m-4 rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-3">
-                <p className="text-sm text-red-800 dark:text-red-200">
+              <div className="m-4 rounded-lg border p-3" style={{ backgroundColor: 'var(--color-danger-bg)', borderColor: 'var(--color-danger)' }}>
+                <p className="text-sm" style={{ color: 'var(--color-danger)' }}>
                   Erro ao carregar notificações
                 </p>
               </div>
             )}
 
             {isLoading ? (
-              <div className="p-6 text-center text-gray-500 dark:text-gray-400">
+              <div className="p-6 text-center" style={{ color: 'var(--color-secondary)' }}>
                 Carregando...
               </div>
             ) : notifications.length === 0 ? (
-              <div className="p-6 text-center text-gray-500 dark:text-gray-400">
+              <div className="p-6 text-center" style={{ color: 'var(--color-secondary)' }}>
                 <p className="text-lg">📭</p>
                 <p>Sem notificações</p>
               </div>
@@ -127,15 +127,11 @@ export function NotificationDrawer({
                 {notifications.map((notification: Notification) => (
                   <div
                     key={notification.id}
-                    className={`rounded-lg p-4 border transition-colors ${
-                      notification.read
-                        ? darkMode
-                          ? 'border-gray-700 bg-gray-800'
-                          : 'border-gray-200 bg-gray-50'
-                        : darkMode
-                        ? 'border-blue-500 bg-blue-900/20'
-                        : 'border-blue-200 bg-blue-50'
-                    }`}
+                    className="rounded-lg p-4 border transition-colors"
+                    style={{
+                      backgroundColor: notification.read ? 'var(--bg-page)' : 'var(--color-info-bg)',
+                      borderColor: notification.read ? 'var(--color-tertiary)' : 'var(--color-info)'
+                    }}
                   >
                     <div className="flex items-start gap-3">
                       <input
@@ -153,14 +149,14 @@ export function NotificationDrawer({
                         className="mt-1"
                       />
                       <div className="flex-1">
-                        <p className="font-medium text-gray-900 dark:text-white text-sm">
+                        <p className="font-medium text-sm" style={{ color: 'var(--color-primary)' }}>
                           {notification.message.split('\n')[0]}
                         </p>
-                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                        <p className="text-xs mt-1" style={{ color: 'var(--color-secondary)' }}>
                           {new Date(notification.created_at).toLocaleString('pt-BR')}
                         </p>
                         {!notification.read && (
-                          <span className="mt-2 inline-block h-2 w-2 rounded-full bg-blue-600"></span>
+                          <span className="mt-2 inline-block h-2 w-2 rounded-full" style={{ backgroundColor: 'var(--color-brand)' }}></span>
                         )}
                       </div>
                     </div>
@@ -172,20 +168,22 @@ export function NotificationDrawer({
 
           {/* Footer */}
           {notifications.length > 0 && (
-            <div className="border-t border-gray-200 dark:border-gray-700 p-4 space-y-2">
+            <div className="border-t p-4 space-y-2" style={{ borderTopColor: 'var(--color-tertiary)' }}>
               {selectedIds.length > 0 && (
                 <div className="flex gap-2">
                   <button
                     onClick={() => markReadMutation.mutate(selectedIds)}
                     disabled={markReadMutation.isPending}
-                    className="flex-1 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                    className="flex-1 rounded-lg px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
+                    style={{ backgroundColor: 'var(--color-brand)' }}
                   >
                     Marcar como Lida
                   </button>
                   <button
                     onClick={() => deleteMutation.mutate(selectedIds)}
                     disabled={deleteMutation.isPending}
-                    className="flex-1 rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                    className="flex-1 rounded-lg px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
+                    style={{ backgroundColor: 'var(--color-danger)' }}
                   >
                     Deletar
                   </button>
@@ -195,13 +193,15 @@ export function NotificationDrawer({
               <div className="flex gap-2">
                 <button
                   onClick={() => setSelectedIds(notifications.map((n: Notification) => n.id))}
-                  className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm font-medium text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700"
+                  className="flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors"
+                  style={{ borderColor: 'var(--color-tertiary)', color: 'var(--color-primary)' }}
                 >
                   Selecionar Tudo
                 </button>
                 <button
                   onClick={() => setSelectedIds([])}
-                  className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm font-medium text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700"
+                  className="flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors"
+                  style={{ borderColor: 'var(--color-tertiary)', color: 'var(--color-primary)' }}
                 >
                   Limpar
                 </button>

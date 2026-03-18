@@ -16,7 +16,6 @@ interface AlertRule {
 }
 
 export default function AlertsPage() {
-  const [darkMode, setDarkMode] = useState(false);
   const [selectedAccountId, setSelectedAccountId] = useState<string>('');
   const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,19 +31,6 @@ export default function AlertsPage() {
     telegramEnabled: false,
     telegramChatId: '',
   });
-
-  // Load dark mode
-  useEffect(() => {
-    const saved = localStorage.getItem('darkMode');
-    if (saved !== null) {
-      setDarkMode(JSON.parse(saved));
-    }
-  }, []);
-
-  const handleDarkModeToggle = (enabled: boolean) => {
-    setDarkMode(enabled);
-    localStorage.setItem('darkMode', JSON.stringify(enabled));
-  };
 
   // Set default account
   useEffect(() => {
@@ -115,48 +101,44 @@ export default function AlertsPage() {
     },
   });
 
-  const inputClass = darkMode
-    ? 'dark:bg-gray-800 dark:border-gray-600 dark:text-white'
-    : 'bg-white border-gray-300 text-gray-900';
-
   return (
-    <DashboardLayout darkMode={darkMode} onDarkModeToggle={handleDarkModeToggle}>
+    <DashboardLayout>
       <Breadcrumb
         items={[
           { label: 'Dashboard', href: '/dashboard' },
           { label: 'Alertas', href: '/alerts' },
         ]}
-        darkMode={darkMode}
       />
 
       <div className="p-6">
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-3xl font-bold font-display" style={{ color: 'var(--color-primary)' }}>
               Sistema de Alertas
             </h1>
-            <p className="mt-2 text-gray-600 dark:text-gray-400">
+            <p className="mt-2" style={{ color: 'var(--color-secondary)' }}>
               Crie regras para ser notificado sobre mudanças nas suas campanhas
             </p>
           </div>
           <button
             onClick={() => setShowForm(!showForm)}
-            className="rounded-lg bg-blue-600 px-6 py-2 font-medium text-white hover:bg-blue-700 transition-colors"
+            className="rounded-lg px-6 py-2 font-medium text-white transition-colors"
+            style={{ backgroundColor: 'var(--color-brand)' }}
           >
             {showForm ? '✕ Cancelar' : '+ Nova Regra'}
           </button>
         </div>
 
         {/* Account Selector */}
-        <div className="mb-6 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <div className="mb-6 rounded-lg border p-4" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--color-tertiary)' }}>
+          <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
             Selecionar Conta
           </label>
           <select
             value={selectedAccountId}
             onChange={(e) => setSelectedAccountId(e.target.value)}
             disabled={accountsLoading}
-            className={`w-full rounded-lg border px-4 py-2 ${inputClass}`}
+            className="input w-full rounded-lg px-4 py-2"
           >
             <option value="">Todas as contas</option>
             {accounts?.map((account) => (
@@ -169,27 +151,27 @@ export default function AlertsPage() {
 
         {/* Messages */}
         {error && (
-          <div className="mb-6 rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-4">
-            <p className="text-sm font-medium text-red-800 dark:text-red-200">{error}</p>
+          <div className="mb-6 rounded-lg border p-4" style={{ backgroundColor: 'var(--color-danger-bg)', borderColor: 'var(--color-danger)' }}>
+            <p className="text-sm font-medium" style={{ color: 'var(--color-danger)' }}>{error}</p>
           </div>
         )}
 
         {success && (
-          <div className="mb-6 rounded-lg border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 p-4">
-            <p className="text-sm font-medium text-green-800 dark:text-green-200">{success}</p>
+          <div className="mb-6 rounded-lg border p-4" style={{ backgroundColor: 'var(--color-success-bg)', borderColor: 'var(--color-success)' }}>
+            <p className="text-sm font-medium" style={{ color: 'var(--color-success)' }}>{success}</p>
           </div>
         )}
 
         {/* Create Form */}
         {showForm && (
-          <div className="mb-8 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6">
-            <h2 className="mb-6 text-xl font-semibold text-gray-900 dark:text-white">
+          <div className="mb-8 rounded-lg border p-6" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--color-tertiary)' }}>
+            <h2 className="mb-6 text-xl font-semibold" style={{ color: 'var(--color-primary)' }}>
               Nova Regra de Alerta
             </h2>
 
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
                   Nome da Regra *
                 </label>
                 <input
@@ -197,18 +179,18 @@ export default function AlertsPage() {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="ex: ROAS Baixo"
-                  className={`w-full rounded-lg border px-4 py-2 ${inputClass}`}
+                  className="input w-full rounded-lg px-4 py-2"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
                   Tipo de Condição *
                 </label>
                 <select
                   value={formData.conditionType}
                   onChange={(e) => setFormData({ ...formData, conditionType: e.target.value })}
-                  className={`w-full rounded-lg border px-4 py-2 ${inputClass}`}
+                  className="input w-full rounded-lg px-4 py-2"
                 >
                   <option value="roas_below">ROAS Abaixo de</option>
                   <option value="daily_spend_above">Gasto Diário Acima de</option>
@@ -219,7 +201,7 @@ export default function AlertsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
                   Valor Limite *
                 </label>
                 <input
@@ -233,12 +215,12 @@ export default function AlertsPage() {
                   }
                   placeholder="ex: 2.0"
                   step="0.01"
-                  className={`w-full rounded-lg border px-4 py-2 ${inputClass}`}
+                  className="input w-full rounded-lg px-4 py-2"
                 />
               </div>
 
-              <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              <div className="pt-6" style={{ borderTop: '1px solid var(--color-tertiary)' }}>
+                <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-primary)' }}>
                   Notificações
                 </h3>
 
@@ -252,14 +234,14 @@ export default function AlertsPage() {
                       }
                       className="rounded"
                     />
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <span className="text-sm font-medium" style={{ color: 'var(--color-primary)' }}>
                       Enviar para Telegram
                     </span>
                   </label>
 
                   {formData.telegramEnabled && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
                         Chat ID do Telegram
                       </label>
                       <input
@@ -269,9 +251,9 @@ export default function AlertsPage() {
                           setFormData({ ...formData, telegramChatId: e.target.value })
                         }
                         placeholder="seu-chat-id"
-                        className={`w-full rounded-lg border px-4 py-2 ${inputClass}`}
+                        className="input w-full rounded-lg px-4 py-2"
                       />
-                      <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                      <p className="mt-2 text-xs" style={{ color: 'var(--color-secondary)' }}>
                         💡 Obtenha seu Chat ID conversando com @userinfobot no Telegram
                       </p>
                     </div>
@@ -282,14 +264,16 @@ export default function AlertsPage() {
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowForm(false)}
-                  className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 font-medium text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700"
+                  className="flex-1 rounded-lg border px-4 py-2 font-medium"
+                  style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--color-tertiary)', color: 'var(--color-primary)' }}
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={() => createAlertMutation.mutate()}
                   disabled={createAlertMutation.isPending}
-                  className="flex-1 rounded-lg bg-green-600 px-4 py-2 font-medium text-white hover:bg-green-700 disabled:opacity-50"
+                  className="flex-1 rounded-lg px-4 py-2 font-medium text-white disabled:opacity-50"
+                  style={{ backgroundColor: 'var(--color-brand)' }}
                 >
                   {createAlertMutation.isPending ? 'Criando...' : 'Criar Regra'}
                 </button>
@@ -299,70 +283,70 @@ export default function AlertsPage() {
         )}
 
         {/* Rules List */}
-        <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-          <table className="w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-100 dark:bg-gray-800">
+        <div className="rounded-lg border overflow-hidden" style={{ borderColor: 'var(--color-tertiary)' }}>
+          <table className="w-full divide-y" style={{ backgroundColor: 'var(--bg-card)' }}>
+            <thead style={{ backgroundColor: 'var(--bg-table-header)' }}>
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase" style={{ color: 'var(--color-secondary)' }}>
                   Nome
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase" style={{ color: 'var(--color-secondary)' }}>
                   Tipo
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase" style={{ color: 'var(--color-secondary)' }}>
                   Threshold
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase" style={{ color: 'var(--color-secondary)' }}>
                   Telegram
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase" style={{ color: 'var(--color-secondary)' }}>
                   Status
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
+            <tbody className="divide-y" style={{ borderColor: 'var(--color-tertiary)' }}>
               {rulesLoading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                  <td colSpan={5} className="px-6 py-4 text-center" style={{ color: 'var(--color-secondary)' }}>
                     Carregando regras...
                   </td>
                 </tr>
               ) : rules.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                  <td colSpan={5} className="px-6 py-4 text-center" style={{ color: 'var(--color-secondary)' }}>
                     Nenhuma regra criada
                   </td>
                 </tr>
               ) : (
                 rules.map((rule: AlertRule) => (
-                  <tr key={rule.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                    <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
+                  <tr key={rule.id}>
+                    <td className="px-6 py-4 font-medium" style={{ color: 'var(--color-primary)' }}>
                       {rule.name}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
+                    <td className="px-6 py-4 text-sm" style={{ color: 'var(--color-primary)' }}>
                       {rule.condition_type === 'roas_below' && 'ROAS Abaixo'}
                       {rule.condition_type === 'daily_spend_above' && 'Gasto Acima'}
                       {rule.condition_type === 'cpc_above' && 'CPC Acima'}
                       {rule.condition_type === 'ctr_below' && 'CTR Abaixo'}
                       {rule.condition_type === 'conversion_rate_below' && 'Taxa Conversão Abaixo'}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
+                    <td className="px-6 py-4 text-sm" style={{ color: 'var(--color-primary)' }}>
                       {rule.condition_value.threshold}
                     </td>
                     <td className="px-6 py-4 text-sm">
                       {rule.telegram_enabled ? (
-                        <span className="text-green-600 dark:text-green-400">✓ Ativo</span>
+                        <span style={{ color: 'var(--color-success)' }}>✓ Ativo</span>
                       ) : (
-                        <span className="text-gray-400">—</span>
+                        <span style={{ color: 'var(--color-tertiary)' }}>—</span>
                       )}
                     </td>
                     <td className="px-6 py-4 text-sm">
                       <span
-                        className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${
-                          rule.enabled
-                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                            : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-                        }`}
+                        className="inline-flex rounded-full px-3 py-1 text-xs font-medium"
+                        style={{
+                          backgroundColor: rule.enabled ? 'var(--color-success-bg)' : 'var(--bg-tertiary)',
+                          color: rule.enabled ? 'var(--color-success)' : 'var(--color-secondary)'
+                        }}
                       >
                         {rule.enabled ? 'Ativo' : 'Inativo'}
                       </span>
@@ -375,8 +359,8 @@ export default function AlertsPage() {
         </div>
 
         {/* Info Box */}
-        <div className="mt-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 p-4">
-          <p className="text-sm text-blue-800 dark:text-blue-300">
+        <div className="mt-8 rounded-lg p-4" style={{ backgroundColor: 'var(--color-info-bg)' }}>
+          <p className="text-sm" style={{ color: 'var(--color-info)' }}>
             💡 <strong>Dica:</strong> As regras de alerta são verificadas a cada 15 minutos.
             Você receberá notificações no dashboard e, se habilitado, no Telegram.
           </p>

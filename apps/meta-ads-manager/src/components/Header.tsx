@@ -22,17 +22,18 @@ export function Header({
 
   return (
     <>
-      <header className="border-b border-dark-800/50 bg-dark-900/80 backdrop-blur-md sticky top-0 z-40">
+      <header className="sticky top-0 z-40 border-b backdrop-blur-md" style={{ backgroundColor: 'var(--bg-card)', borderBottomColor: 'var(--color-tertiary)' }}>
         <div className="px-6 py-4 flex items-center justify-between">
           {/* Left: Menu + Title */}
           <div className="flex items-center gap-4">
             <button
               onClick={onMenuClick}
-              className="md:hidden p-2 hover:bg-dark-800 rounded-lg transition-colors"
+              className="md:hidden p-2 rounded-lg transition-colors"
+              style={{ color: 'var(--color-primary)' }}
               aria-label="Toggle menu"
             >
               <svg
-                className="w-6 h-6 text-gray-300"
+                className="w-6 h-6"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -45,7 +46,7 @@ export function Header({
                 />
               </svg>
             </button>
-            <h1 className="text-2xl font-display font-bold bg-gradient-to-r from-growth-500 to-energy-400 bg-clip-text text-transparent">
+            <h1 className="text-2xl font-display font-bold" style={{ color: 'var(--color-brand)' }}>
               {title}
             </h1>
           </div>
@@ -55,7 +56,10 @@ export function Header({
             {/* Botão Criar Campanha */}
             <button
               onClick={() => setIsCreateModalOpen(true)}
-              className="px-4 py-2 bg-gradient-to-r from-growth-500 to-growth-600 hover:from-growth-600 hover:to-growth-700 text-white font-medium rounded-lg transition-all duration-200 shadow-lg hover:shadow-glow-green"
+              className="px-4 py-2 text-white font-medium rounded-lg transition-all duration-200 shadow-sm"
+              style={{ backgroundColor: 'var(--color-brand)' }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-brand-hover)'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--color-brand)'}
             >
               + Criar Campanha
             </button>
@@ -63,7 +67,8 @@ export function Header({
             {/* Botão Bulk Create */}
             <button
               onClick={() => router.push('/campaigns/bulk-create')}
-              className="hidden sm:inline-block px-4 py-2 border border-energy-500/30 bg-energy-500/5 hover:bg-energy-500/10 text-energy-400 font-medium rounded-lg transition-all duration-200"
+              className="hidden sm:inline-block px-4 py-2 border rounded-lg transition-all duration-200 font-medium"
+              style={{ borderColor: 'var(--color-coral)', color: 'var(--color-coral)' }}
             >
               📦 Bulk
             </button>
@@ -71,7 +76,8 @@ export function Header({
             {/* Botão Alertas */}
             <button
               onClick={() => router.push('/alerts')}
-              className="hidden sm:inline-block px-4 py-2 border border-gray-600 bg-dark-800/50 hover:bg-dark-800 text-gray-300 rounded-lg transition-all duration-200"
+              className="hidden sm:inline-block px-4 py-2 border rounded-lg transition-all duration-200 font-medium"
+              style={{ borderColor: 'var(--color-secondary)', color: 'var(--color-primary)' }}
             >
               🔔
             </button>
@@ -79,7 +85,8 @@ export function Header({
             {/* Dark Mode Toggle */}
             <button
               onClick={() => onDarkModeToggle?.(!darkMode)}
-              className="p-2 hover:bg-dark-800 rounded-lg transition-colors"
+              className="p-2 rounded-lg transition-colors"
+              style={{ color: 'var(--color-primary)' }}
             >
               {darkMode ? '☀️' : '🌙'}
             </button>

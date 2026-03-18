@@ -12,7 +12,6 @@ interface Step2AdSetProps {
     adSetTargeting: Record<string, any>;
   };
   onChange: (field: string, value: any) => void;
-  darkMode?: boolean;
 }
 
 const BILLING_EVENTS = ['IMPRESSIONS', 'LINK_CLICKS', 'POST_ENGAGEMENT'];
@@ -22,10 +21,7 @@ const BID_STRATEGIES = [
   'COST_CAP',
 ];
 
-export function Step2AdSet({ data, onChange, darkMode = false }: Step2AdSetProps) {
-  const inputClass = darkMode
-    ? 'dark:bg-gray-800 dark:border-gray-600 dark:text-white'
-    : 'bg-white border-gray-300 text-gray-900';
+export function Step2AdSet({ data, onChange }: Step2AdSetProps) {
 
   const handleTargetingChange = (key: string, value: any) => {
     onChange('adSetTargeting', {
@@ -37,7 +33,7 @@ export function Step2AdSet({ data, onChange, darkMode = false }: Step2AdSetProps
   return (
     <div className="space-y-6">
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
           Ad Set Name *
         </label>
         <input
@@ -45,12 +41,12 @@ export function Step2AdSet({ data, onChange, darkMode = false }: Step2AdSetProps
           value={data.adSetName}
           onChange={(e) => onChange('adSetName', e.target.value)}
           placeholder="e.g., Summer Sale - Interests"
-          className={`w-full rounded-lg border px-4 py-2 ${inputClass}`}
+          className="input w-full"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
           Ad Set Status
         </label>
         <div className="flex gap-4">
@@ -63,7 +59,7 @@ export function Step2AdSet({ data, onChange, darkMode = false }: Step2AdSetProps
               onChange={(e) => onChange('adSetStatus', e.target.value)}
               className="rounded"
             />
-            <span className="text-sm text-gray-700 dark:text-gray-300">Active</span>
+            <span className="text-sm" style={{ color: 'var(--color-primary)' }}>Active</span>
           </label>
           <label className="flex items-center gap-2">
             <input
@@ -74,13 +70,13 @@ export function Step2AdSet({ data, onChange, darkMode = false }: Step2AdSetProps
               onChange={(e) => onChange('adSetStatus', e.target.value)}
               className="rounded"
             />
-            <span className="text-sm text-gray-700 dark:text-gray-300">Paused</span>
+            <span className="text-sm" style={{ color: 'var(--color-primary)' }}>Paused</span>
           </label>
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
           Daily Budget (USD)
         </label>
         <input
@@ -95,21 +91,21 @@ export function Step2AdSet({ data, onChange, darkMode = false }: Step2AdSetProps
           placeholder="e.g., 25.00"
           step="0.01"
           min="0"
-          className={`w-full rounded-lg border px-4 py-2 ${inputClass}`}
+          className="input w-full"
         />
-        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+        <p className="mt-1 text-xs" style={{ color: 'var(--color-secondary)' }}>
           Leave empty to use campaign daily budget
         </p>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
           Billing Event *
         </label>
         <select
           value={data.adSetBillingEvent}
           onChange={(e) => onChange('adSetBillingEvent', e.target.value)}
-          className={`w-full rounded-lg border px-4 py-2 ${inputClass}`}
+          className="input w-full"
         >
           <option value="">Select billing event</option>
           {BILLING_EVENTS.map((event) => (
@@ -121,13 +117,13 @@ export function Step2AdSet({ data, onChange, darkMode = false }: Step2AdSetProps
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
           Bid Strategy *
         </label>
         <select
           value={data.adSetBidStrategy}
           onChange={(e) => onChange('adSetBidStrategy', e.target.value)}
-          className={`w-full rounded-lg border px-4 py-2 ${inputClass}`}
+          className="input w-full"
         >
           <option value="">Select bid strategy</option>
           {BID_STRATEGIES.map((strategy) => (
@@ -140,7 +136,7 @@ export function Step2AdSet({ data, onChange, darkMode = false }: Step2AdSetProps
 
       {data.adSetBidStrategy === 'LOWEST_COST_WITH_BID_CAP' && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
             Bid Cap (USD) *
           </label>
           <input
@@ -155,14 +151,14 @@ export function Step2AdSet({ data, onChange, darkMode = false }: Step2AdSetProps
             placeholder="e.g., 2.50"
             step="0.01"
             min="0"
-            className={`w-full rounded-lg border px-4 py-2 ${inputClass}`}
+            className="input w-full"
           />
         </div>
       )}
 
       {data.adSetBidStrategy === 'COST_CAP' && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
             Cost Cap (USD) *
           </label>
           <input
@@ -177,34 +173,34 @@ export function Step2AdSet({ data, onChange, darkMode = false }: Step2AdSetProps
             placeholder="e.g., 5.00"
             step="0.01"
             min="0"
-            className={`w-full rounded-lg border px-4 py-2 ${inputClass}`}
+            className="input w-full"
           />
         </div>
       )}
 
-      <div className="rounded-lg bg-blue-50 dark:bg-blue-900/20 p-4">
-        <p className="text-sm text-blue-800 dark:text-blue-300">
+      <div className="rounded-lg p-4" style={{ backgroundColor: 'var(--color-info-bg)' }}>
+        <p className="text-sm" style={{ color: 'var(--color-info)' }}>
           💡 <strong>Placements:</strong> Advantage+ (automatic placements) will be used
           across Meta platforms.
         </p>
       </div>
 
       {/* Targeting Section */}
-      <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+      <div className="pt-6" style={{ borderTop: '1px solid var(--color-tertiary)' }}>
+        <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-primary)' }}>
           Targeting
         </h3>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
               Age Range
             </label>
             <div className="flex gap-2 items-center">
               <select
                 value={data.adSetTargeting?.age_min || '18'}
                 onChange={(e) => handleTargetingChange('age_min', Number(e.target.value))}
-                className={`rounded-lg border px-3 py-2 ${inputClass}`}
+                className="input rounded-lg px-3 py-2"
               >
                 {[18, 21, 25, 30, 35, 40, 45, 50, 55, 60, 65].map((age) => (
                   <option key={age} value={age}>
@@ -212,11 +208,11 @@ export function Step2AdSet({ data, onChange, darkMode = false }: Step2AdSetProps
                   </option>
                 ))}
               </select>
-              <span className="text-gray-700 dark:text-gray-300">to</span>
+              <span style={{ color: 'var(--color-primary)' }}>to</span>
               <select
                 value={data.adSetTargeting?.age_max || '65'}
                 onChange={(e) => handleTargetingChange('age_max', Number(e.target.value))}
-                className={`rounded-lg border px-3 py-2 ${inputClass}`}
+                className="input rounded-lg px-3 py-2"
               >
                 {[25, 30, 35, 40, 45, 50, 55, 60, 65].map((age) => (
                   <option key={age} value={age}>
@@ -228,7 +224,7 @@ export function Step2AdSet({ data, onChange, darkMode = false }: Step2AdSetProps
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
               Genders
             </label>
             <div className="flex gap-4">
@@ -258,7 +254,7 @@ export function Step2AdSet({ data, onChange, darkMode = false }: Step2AdSetProps
                     }}
                     className="rounded"
                   />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                  <span className="text-sm" style={{ color: 'var(--color-primary)' }}>
                     {gender.label}
                   </span>
                 </label>
@@ -267,7 +263,7 @@ export function Step2AdSet({ data, onChange, darkMode = false }: Step2AdSetProps
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
               Countries (comma-separated, e.g., BR,US)
             </label>
             <input
@@ -284,12 +280,12 @@ export function Step2AdSet({ data, onChange, darkMode = false }: Step2AdSetProps
                 )
               }
               placeholder="BR,US,MX"
-              className={`w-full rounded-lg border px-4 py-2 ${inputClass}`}
+              className="input w-full"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
               Device Types
             </label>
             <div className="space-y-2">
@@ -315,7 +311,7 @@ export function Step2AdSet({ data, onChange, darkMode = false }: Step2AdSetProps
                     }}
                     className="rounded"
                   />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                  <span className="text-sm" style={{ color: 'var(--color-primary)' }}>
                     {device.charAt(0).toUpperCase() + device.slice(1)}
                   </span>
                 </label>

@@ -21,23 +21,23 @@ export const KPICard: React.FC<KPICardProps> = ({
 }) => {
   return (
     <div
-      className={`rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm hover:shadow-md transition-shadow${className ? ` ${className}` : ''}`}
+      className={`card p-6 transition-shadow hover:shadow-card-hover${className ? ` ${className}` : ''}`}
     >
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+          <p className="text-sm font-medium" style={{ color: 'var(--color-secondary)' }}>
             {title}
           </p>
           <div className="mt-2 flex items-baseline gap-2">
             {loading ? (
-              <div className="h-8 w-24 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
+              <div className="h-8 w-24 animate-pulse rounded" style={{ backgroundColor: 'var(--bg-input)' }} />
             ) : (
               <>
-                <span className="text-2xl font-semibold text-gray-900 dark:text-white">
+                <span className="text-2xl font-semibold font-mono" style={{ color: 'var(--color-primary)' }}>
                   {value}
                 </span>
                 {unit && (
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                  <span className="text-sm" style={{ color: 'var(--color-secondary)' }}>
                     {unit}
                   </span>
                 )}
@@ -46,18 +46,18 @@ export const KPICard: React.FC<KPICardProps> = ({
           </div>
           {trend !== undefined && !loading && (
             <p
-              className={`mt-2 text-sm font-medium ${
-                trend >= 0
-                  ? 'text-green-600 dark:text-green-400'
-                  : 'text-red-600 dark:text-red-400'
-              }`}
+              className="mt-2 text-sm font-medium"
+              style={{ color: trend >= 0 ? 'var(--color-success)' : 'var(--color-danger)' }}
             >
               {trend >= 0 ? '+' : ''}{trend}% from last month
             </p>
           )}
         </div>
         {icon && !loading && (
-          <div className="ml-4 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
+          <div
+            className="ml-4 flex h-12 w-12 items-center justify-center rounded-full"
+            style={{ backgroundColor: 'var(--bg-input)' }}
+          >
             {icon}
           </div>
         )}

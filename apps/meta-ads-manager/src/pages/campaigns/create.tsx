@@ -47,7 +47,6 @@ interface FormData {
 
 export default function CreateCampaignPage() {
   const router = useRouter();
-  const [darkMode, setDarkMode] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -176,17 +175,6 @@ export default function CreateCampaignPage() {
     }
   };
 
-  React.useEffect(() => {
-    const saved = localStorage.getItem('darkMode');
-    if (saved !== null) {
-      setDarkMode(JSON.parse(saved));
-    }
-  }, []);
-
-  const handleDarkModeToggle = (enabled: boolean) => {
-    setDarkMode(enabled);
-    localStorage.setItem('darkMode', JSON.stringify(enabled));
-  };
 
   // Set default account
   React.useEffect(() => {
@@ -199,26 +187,25 @@ export default function CreateCampaignPage() {
   }, [accounts, formData.accountId]);
 
   return (
-    <DashboardLayout darkMode={darkMode} onDarkModeToggle={handleDarkModeToggle}>
+    <DashboardLayout>
       <Breadcrumb
         items={[
           { label: 'Campaigns', href: '/campaigns' },
           { label: 'Create New Campaign', href: '/campaigns/create' },
         ]}
-        darkMode={darkMode}
       />
 
       <div className="p-6">
-        <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">
+        <h1 className="mb-2 text-3xl font-bold font-display" style={{ color: 'var(--color-primary)' }}>
           Create Campaign
         </h1>
-        <p className="mb-8 text-gray-600 dark:text-gray-400">
+        <p className="mb-8" style={{ color: 'var(--color-secondary)' }}>
           Set up a new Meta Ads campaign in 3 simple steps
         </p>
 
         {/* Account Selector */}
-        <div className="mb-6 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4">
-          <label htmlFor="account-select" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <div className="mb-6 rounded-lg border p-4" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--color-tertiary)' }}>
+          <label htmlFor="account-select" className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
             Select Account *
           </label>
           <select
@@ -226,7 +213,7 @@ export default function CreateCampaignPage() {
             value={formData.accountId}
             onChange={(e) => handleFieldChange('accountId', e.target.value)}
             disabled={accountsLoading}
-            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-gray-900 dark:text-white"
+            className="input w-full rounded-lg px-4 py-2"
           >
             <option value="">Select an account</option>
             {accounts?.map((account) => (
@@ -239,15 +226,15 @@ export default function CreateCampaignPage() {
 
         {/* Error Message */}
         {error && (
-          <div className="mb-6 rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-4">
-            <p className="text-sm font-medium text-red-800 dark:text-red-200">{error}</p>
+          <div className="mb-6 rounded-lg border p-4" style={{ backgroundColor: 'var(--color-danger-bg)', borderColor: 'var(--color-danger)' }}>
+            <p className="text-sm font-medium" style={{ color: 'var(--color-danger)' }}>{error}</p>
           </div>
         )}
 
         {/* Success Message */}
         {success && (
-          <div className="mb-6 rounded-lg border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 p-4">
-            <p className="text-sm font-medium text-green-800 dark:text-green-200">
+          <div className="mb-6 rounded-lg border p-4" style={{ backgroundColor: 'var(--color-success-bg)', borderColor: 'var(--color-success)' }}>
+            <p className="text-sm font-medium" style={{ color: 'var(--color-success)' }}>
               ✓ Campaign created successfully! Redirecting...
             </p>
           </div>
@@ -258,26 +245,24 @@ export default function CreateCampaignPage() {
           {[1, 2, 3].map((step) => (
             <div key={step} className="flex items-center">
               <div
-                className={`flex h-10 w-10 items-center justify-center rounded-full font-semibold ${
-                  step === currentStep
-                    ? 'bg-blue-600 text-white'
-                    : step < currentStep
-                    ? 'bg-green-600 text-white'
-                    : 'bg-gray-300 text-gray-700 dark:bg-gray-600 dark:text-gray-300'
-                }`}
+                className="flex h-10 w-10 items-center justify-center rounded-full font-semibold text-white"
+                style={{
+                  backgroundColor: step === currentStep ? 'var(--color-brand)' : step < currentStep ? 'var(--color-success)' : 'var(--color-tertiary)'
+                }}
               >
                 {step < currentStep ? '✓' : step}
               </div>
-              <span className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+              <span className="ml-2 text-sm font-medium" style={{ color: 'var(--color-primary)' }}>
                 {step === 1 && 'Campaign'}
                 {step === 2 && 'Ad Set'}
                 {step === 3 && 'Creative'}
               </span>
               {step < 3 && (
                 <div
-                  className={`mx-4 h-1 w-12 ${
-                    step < currentStep ? 'bg-green-600' : 'bg-gray-300 dark:bg-gray-600'
-                  }`}
+                  className="mx-4 h-1 w-12"
+                  style={{
+                    backgroundColor: step < currentStep ? 'var(--color-success)' : 'var(--color-tertiary)'
+                  }}
                 />
               )}
             </div>
@@ -285,13 +270,13 @@ export default function CreateCampaignPage() {
         </div>
 
         {/* Form Content */}
-        <div className="mb-8 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6">
+        <div className="mb-8 rounded-lg border p-6" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--color-tertiary)' }}>
           {currentStep === 1 && (
-            <Step1Campaign data={formData} onChange={handleFieldChange} darkMode={darkMode} />
+            <Step1Campaign data={formData} onChange={handleFieldChange} />
           )}
 
           {currentStep === 2 && (
-            <Step2AdSet data={formData} onChange={handleFieldChange} darkMode={darkMode} />
+            <Step2AdSet data={formData} onChange={handleFieldChange} />
           )}
 
           {currentStep === 3 && (
@@ -299,7 +284,6 @@ export default function CreateCampaignPage() {
               accountId={formData.accountId}
               data={formData}
               onChange={handleFieldChange}
-              darkMode={darkMode}
             />
           )}
         </div>
@@ -309,7 +293,8 @@ export default function CreateCampaignPage() {
           <button
             onClick={handlePrev}
             disabled={currentStep === 1}
-            className="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-6 py-2 font-medium text-gray-700 dark:text-white disabled:opacity-50 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            className="rounded-lg border px-6 py-2 font-medium disabled:opacity-50 transition-colors"
+            style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--color-tertiary)', color: 'var(--color-primary)' }}
           >
             ← Previous
           </button>
@@ -318,7 +303,8 @@ export default function CreateCampaignPage() {
             {currentStep < 3 && (
               <button
                 onClick={handleNext}
-                className="rounded-lg bg-blue-600 px-6 py-2 font-medium text-white hover:bg-blue-700 transition-colors"
+                className="rounded-lg px-6 py-2 font-medium text-white transition-colors"
+                style={{ backgroundColor: 'var(--color-brand)' }}
               >
                 Next →
               </button>
@@ -328,7 +314,8 @@ export default function CreateCampaignPage() {
               <button
                 onClick={handleCreate}
                 disabled={createCampaignMutation.isPending}
-                className="rounded-lg bg-green-600 px-6 py-2 font-medium text-white hover:bg-green-700 disabled:opacity-50 transition-colors"
+                className="rounded-lg px-6 py-2 font-medium text-white disabled:opacity-50 transition-colors"
+                style={{ backgroundColor: 'var(--color-success)' }}
               >
                 {createCampaignMutation.isPending ? 'Creating...' : '✓ Create Campaign'}
               </button>

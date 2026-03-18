@@ -61,18 +61,19 @@ export function CreateCampaignModal({ isOpen, onClose }: CreateCampaignModalProp
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
           >
-            <div className="w-full max-w-2xl bg-dark-900 border border-dark-700/50 rounded-2xl shadow-2xl overflow-hidden">
+            <div className="card w-full max-w-2xl shadow-2xl overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--color-tertiary)' }}>
               {/* Header */}
-              <div className="bg-gradient-to-r from-dark-950 via-dark-900 to-dark-950 border-b border-dark-700/50 px-6 py-6">
+              <div className="px-6 py-6 border-b" style={{ backgroundColor: 'var(--bg-page)', borderBottomColor: 'var(--color-tertiary)' }}>
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-2xl font-bold bg-gradient-to-r from-growth-400 to-energy-400 bg-clip-text text-transparent">
+                  <h2 className="text-2xl font-display font-bold" style={{ color: 'var(--color-brand)' }}>
                     {step === 'campaign' && 'Criar Nova Campanha'}
                     {step === 'budget' && 'Configurar Orçamento'}
                     {step === 'confirmation' && 'Confirmar Criação'}
                   </h2>
                   <button
                     onClick={onClose}
-                    className="text-dark-400 hover:text-white transition-colors"
+                    style={{ color: 'var(--color-primary)' }}
+                    className="transition-colors"
                   >
                     ✕
                   </button>
@@ -86,8 +87,8 @@ export function CreateCampaignModal({ isOpen, onClose }: CreateCampaignModalProp
                         animate={{
                           backgroundColor:
                             num <= stepNumber
-                              ? 'rgb(16, 185, 129)'
-                              : 'rgb(55, 65, 81)',
+                              ? 'var(--color-brand)'
+                              : 'var(--color-tertiary)',
                         }}
                         className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold text-white"
                       >
@@ -98,8 +99,8 @@ export function CreateCampaignModal({ isOpen, onClose }: CreateCampaignModalProp
                           animate={{
                             backgroundColor:
                               num < stepNumber
-                                ? 'rgb(16, 185, 129)'
-                                : 'rgb(55, 65, 81)',
+                                ? 'var(--color-brand)'
+                                : 'var(--color-tertiary)',
                           }}
                           className="flex-grow h-1 rounded-full"
                         />
@@ -119,7 +120,7 @@ export function CreateCampaignModal({ isOpen, onClose }: CreateCampaignModalProp
                     className="space-y-6"
                   >
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-secondary)' }}>
                         Nome da Campanha
                       </label>
                       <input
@@ -129,12 +130,12 @@ export function CreateCampaignModal({ isOpen, onClose }: CreateCampaignModalProp
                           setFormData({ ...formData, campaignName: e.target.value })
                         }
                         placeholder="ex: Promoção de Primavera"
-                        className="w-full bg-dark-800 border border-dark-600/50 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-growth-500/50"
+                        className="input w-full"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-secondary)' }}>
                         Objetivo da Campanha
                       </label>
                       <select
@@ -142,7 +143,7 @@ export function CreateCampaignModal({ isOpen, onClose }: CreateCampaignModalProp
                         onChange={(e) =>
                           setFormData({ ...formData, objective: e.target.value })
                         }
-                        className="w-full bg-dark-800 border border-dark-600/50 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-growth-500/50"
+                        className="input w-full"
                       >
                         <option value="OUTCOME_SALES">Compras</option>
                         <option value="OUTCOME_LEADS">Leads</option>
@@ -151,7 +152,7 @@ export function CreateCampaignModal({ isOpen, onClose }: CreateCampaignModalProp
                       </select>
                     </div>
 
-                    <div className="border-t border-dark-700/30 pt-6">
+                    <div className="border-t pt-6" style={{ borderTopColor: 'var(--color-tertiary)' }}>
                       <label className="flex items-center gap-3 cursor-pointer">
                         <input
                           type="checkbox"
@@ -159,9 +160,10 @@ export function CreateCampaignModal({ isOpen, onClose }: CreateCampaignModalProp
                           onChange={(e) =>
                             setFormData({ ...formData, isBulk: e.target.checked })
                           }
-                          className="w-4 h-4 rounded bg-dark-800 border border-dark-600 cursor-pointer accent-growth-500"
+                          className="w-4 h-4 rounded cursor-pointer"
+                          style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--color-tertiary)', accentColor: 'var(--color-brand)' }}
                         />
-                        <span className="text-sm font-medium text-gray-300">
+                        <span className="text-sm font-medium" style={{ color: 'var(--color-secondary)' }}>
                           Criar em múltiplas contas (Bulk)
                         </span>
                       </label>
@@ -177,7 +179,7 @@ export function CreateCampaignModal({ isOpen, onClose }: CreateCampaignModalProp
                     className="space-y-6"
                   >
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-secondary)' }}>
                         Orçamento Diário (USD)
                       </label>
                       <input
@@ -187,16 +189,16 @@ export function CreateCampaignModal({ isOpen, onClose }: CreateCampaignModalProp
                           setFormData({ ...formData, dailyBudget: e.target.value })
                         }
                         placeholder="ex: 50.00"
-                        className="w-full bg-dark-800 border border-dark-600/50 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-growth-500/50"
+                        className="input w-full"
                       />
-                      <p className="mt-2 text-xs text-gray-400">
+                      <p className="mt-2 text-xs" style={{ color: 'var(--color-tertiary)' }}>
                         Orçamento mínimo recomendado: USD 5.00
                       </p>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                        <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-secondary)' }}>
                           Data de Início
                         </label>
                         <input
@@ -205,11 +207,11 @@ export function CreateCampaignModal({ isOpen, onClose }: CreateCampaignModalProp
                           onChange={(e) =>
                             setFormData({ ...formData, startDate: e.target.value })
                           }
-                          className="w-full bg-dark-800 border border-dark-600/50 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-growth-500/50"
+                          className="input w-full"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                        <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-secondary)' }}>
                           Data de Fim (Opcional)
                         </label>
                         <input
@@ -218,7 +220,7 @@ export function CreateCampaignModal({ isOpen, onClose }: CreateCampaignModalProp
                           onChange={(e) =>
                             setFormData({ ...formData, endDate: e.target.value })
                           }
-                          className="w-full bg-dark-800 border border-dark-600/50 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-growth-500/50"
+                          className="input w-full"
                         />
                       </div>
                     </div>
@@ -232,35 +234,35 @@ export function CreateCampaignModal({ isOpen, onClose }: CreateCampaignModalProp
                     exit={{ opacity: 0, x: -20 }}
                     className="space-y-6"
                   >
-                    <div className="bg-growth-500/10 border border-growth-500/30 rounded-lg p-6 space-y-4">
+                    <div className="rounded-lg p-6 space-y-4 border" style={{ backgroundColor: 'var(--color-brand-subtle)', borderColor: 'var(--color-brand)' }}>
                       <div className="flex justify-between items-start">
-                        <span className="text-sm text-gray-400">Nome da Campanha:</span>
-                        <span className="font-medium text-white">
+                        <span className="text-sm" style={{ color: 'var(--color-secondary)' }}>Nome da Campanha:</span>
+                        <span className="font-medium" style={{ color: 'var(--color-primary)' }}>
                           {formData.campaignName || '—'}
                         </span>
                       </div>
                       <div className="flex justify-between items-start">
-                        <span className="text-sm text-gray-400">Objetivo:</span>
-                        <span className="font-medium text-white">
+                        <span className="text-sm" style={{ color: 'var(--color-secondary)' }}>Objetivo:</span>
+                        <span className="font-medium" style={{ color: 'var(--color-primary)' }}>
                           {formData.objective}
                         </span>
                       </div>
                       <div className="flex justify-between items-start">
-                        <span className="text-sm text-gray-400">Orçamento Diário:</span>
-                        <span className="font-medium text-white">
+                        <span className="text-sm" style={{ color: 'var(--color-secondary)' }}>Orçamento Diário:</span>
+                        <span className="font-medium" style={{ color: 'var(--color-primary)' }}>
                           ${formData.dailyBudget || '0.00'}
                         </span>
                       </div>
                       <div className="flex justify-between items-start">
-                        <span className="text-sm text-gray-400">Modo:</span>
-                        <span className="font-medium text-white">
+                        <span className="text-sm" style={{ color: 'var(--color-secondary)' }}>Modo:</span>
+                        <span className="font-medium" style={{ color: 'var(--color-primary)' }}>
                           {formData.isBulk ? 'Múltiplas Contas' : 'Conta Única'}
                         </span>
                       </div>
                     </div>
 
-                    <div className="bg-energy-500/10 border border-energy-500/30 rounded-lg p-4">
-                      <p className="text-sm text-gray-300">
+                    <div className="rounded-lg p-4 border" style={{ backgroundColor: 'var(--color-info-bg)', borderColor: 'var(--color-info)' }}>
+                      <p className="text-sm" style={{ color: 'var(--color-info)' }}>
                         ℹ️ A campanha será criada e aparecerá no seu Meta Ads Manager em breve.
                         Você poderá editar criativos na próxima etapa.
                       </p>
@@ -270,10 +272,11 @@ export function CreateCampaignModal({ isOpen, onClose }: CreateCampaignModalProp
               </div>
 
               {/* Footer */}
-              <div className="bg-dark-950 border-t border-dark-700/50 px-6 py-4 flex items-center justify-between">
+              <div className="px-6 py-4 flex items-center justify-between border-t" style={{ backgroundColor: 'var(--bg-page)', borderTopColor: 'var(--color-tertiary)' }}>
                 <button
                   onClick={step === 'campaign' ? onClose : handlePrev}
-                  className="px-6 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors"
+                  className="px-6 py-2 text-sm font-medium transition-colors"
+                  style={{ color: 'var(--color-secondary)' }}
                 >
                   {step === 'campaign' ? 'Cancelar' : 'Voltar'}
                 </button>
@@ -286,7 +289,8 @@ export function CreateCampaignModal({ isOpen, onClose }: CreateCampaignModalProp
                         (step === 'campaign' && !formData.campaignName) ||
                         (step === 'budget' && !formData.dailyBudget)
                       }
-                      className="px-6 py-2 rounded-lg bg-gradient-to-r from-energy-500 to-energy-600 text-white font-medium hover:shadow-lg hover:shadow-energy-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-6 py-2 rounded-lg text-white font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      style={{ backgroundColor: 'var(--color-coral)' }}
                     >
                       Próximo
                     </button>
@@ -295,7 +299,8 @@ export function CreateCampaignModal({ isOpen, onClose }: CreateCampaignModalProp
                   {step === 'confirmation' && (
                     <button
                       onClick={handleSubmit}
-                      className="px-6 py-2 rounded-lg bg-gradient-to-r from-growth-500 to-growth-600 text-white font-medium hover:shadow-lg hover:shadow-growth-500/30 transition-all shadow-lg shadow-growth-500/20"
+                      className="px-6 py-2 rounded-lg text-white font-medium transition-all shadow-lg"
+                      style={{ backgroundColor: 'var(--color-brand)' }}
                     >
                       Criar Campanha
                     </button>

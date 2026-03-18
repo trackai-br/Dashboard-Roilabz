@@ -6,27 +6,8 @@ import { useMetaAccounts, useMetaAccountsKPIs } from '@/hooks/useMetaAccounts';
 import { useMetaCampaigns } from '@/hooks/useMetaCampaigns';
 
 export default function Dashboard() {
-  const [darkMode, setDarkMode] = useState(false);
   const [selectedAccountId, setSelectedAccountId] = useState<string | undefined>();
   const [pageOffset, setPageOffset] = useState(0);
-
-  // Load dark mode preference from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem('darkMode');
-    if (saved !== null) {
-      setDarkMode(JSON.parse(saved));
-    } else {
-      // Use system preference
-      const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      setDarkMode(isDark);
-    }
-  }, []);
-
-  // Save dark mode preference
-  const handleDarkModeToggle = (enabled: boolean) => {
-    setDarkMode(enabled);
-    localStorage.setItem('darkMode', JSON.stringify(enabled));
-  };
 
   // Queries
   const { data: accounts, isLoading: accountsLoading, error: accountsError } = useMetaAccounts();
@@ -51,13 +32,10 @@ export default function Dashboard() {
   const errorMessage = accountsError?.message || kpisError?.message || campaignsError?.message;
 
   return (
-    <DashboardLayout
-      darkMode={darkMode}
-      onDarkModeToggle={handleDarkModeToggle}
-    >
+    <DashboardLayout>
         {errorMessage && (
-          <div className="mb-6 rounded-lg border border-red-500/30 bg-red-500/10 p-4">
-            <p className="text-sm font-medium text-red-300">
+          <div className="mb-6 rounded-lg border p-4" style={{ backgroundColor: 'var(--color-danger-bg)', borderColor: 'var(--color-danger)' }}>
+            <p className="text-sm font-medium" style={{ color: 'var(--color-danger)' }}>
               ⚠️ {errorMessage}
             </p>
           </div>
@@ -65,7 +43,7 @@ export default function Dashboard() {
 
         {/* Account Selector */}
         <div className="mb-8 flex items-center gap-4">
-          <label htmlFor="account-select" className="font-medium text-gray-300">
+          <label htmlFor="account-select" className="font-medium" style={{ color: 'var(--color-primary)' }}>
             Conta:
           </label>
           <select
@@ -76,7 +54,7 @@ export default function Dashboard() {
               setPageOffset(0);
             }}
             disabled={accountsLoading}
-            className="rounded-lg border border-dark-600/50 bg-dark-800 px-4 py-2 text-white disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-growth-500/50"
+            className="input rounded-lg px-4 py-2 disabled:opacity-50"
           >
             <option value="">Todas as Contas</option>
             {accounts?.map((account) => (
@@ -100,7 +78,7 @@ export default function Dashboard() {
 
         {/* Campaign Table */}
         <section className="mt-8">
-          <h2 className="mb-4 text-lg font-semibold text-white">
+          <h2 className="mb-4 text-lg font-semibold" style={{ color: 'var(--color-primary)' }}>
             Campanhas
           </h2>
           <CampaignsTableNew
@@ -114,16 +92,18 @@ export default function Dashboard() {
             <button
               onClick={() => setPageOffset(Math.max(0, pageOffset - 50))}
               disabled={pageOffset === 0}
-              className="rounded-lg border border-dark-600/50 bg-dark-800 px-4 py-2 text-gray-300 disabled:opacity-50 hover:bg-dark-700 transition-colors"
+              className="rounded-lg border px-4 py-2 disabled:opacity-50 transition-colors"
+              style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--color-tertiary)', color: 'var(--color-secondary)' }}
             >
               ← Anterior
             </button>
-            <span className="text-sm text-gray-400">
+            <span className="text-sm" style={{ color: 'var(--color-secondary)' }}>
               Mostrando {pageOffset + 1} a {pageOffset + 50}
             </span>
             <button
               onClick={() => setPageOffset(pageOffset + 50)}
-              className="rounded-lg border border-dark-600/50 bg-dark-800 px-4 py-2 text-gray-300 hover:bg-dark-700 transition-colors"
+              className="rounded-lg border px-4 py-2 transition-colors"
+              style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--color-tertiary)', color: 'var(--color-secondary)' }}
             >
               Próximo →
             </button>

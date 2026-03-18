@@ -4,13 +4,11 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 interface BulkStatusToggleProps {
   selectedIds: string[];
   onClear: () => void;
-  darkMode?: boolean;
 }
 
 export function BulkStatusToggle({
   selectedIds,
   onClear,
-  darkMode = false,
 }: BulkStatusToggleProps) {
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
@@ -45,19 +43,16 @@ export function BulkStatusToggle({
 
   return (
     <div
-      className={`rounded-lg border p-4 ${
-        darkMode
-          ? 'border-gray-700 bg-gray-800'
-          : 'border-gray-200 bg-gray-50'
-      }`}
+      className="rounded-lg border p-4"
+      style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--color-tertiary)' }}
     >
       <div className="flex items-center justify-between">
         <div>
-          <p className="font-medium text-gray-900 dark:text-white">
+          <p className="font-medium" style={{ color: 'var(--color-primary)' }}>
             {selectedIds.length} campaign{selectedIds.length !== 1 ? 's' : ''} selected
           </p>
           {error && (
-            <p className="text-sm text-red-600 dark:text-red-400 mt-1">{error}</p>
+            <p className="text-sm mt-1" style={{ color: 'var(--color-danger)' }}>{error}</p>
           )}
         </div>
 
@@ -65,21 +60,24 @@ export function BulkStatusToggle({
           <button
             onClick={() => handleToggleStatus('ACTIVE')}
             disabled={loading}
-            className="rounded-lg bg-green-600 px-4 py-2 font-medium text-white hover:bg-green-700 disabled:opacity-50"
+            className="rounded-lg px-4 py-2 font-medium text-white disabled:opacity-50"
+            style={{ backgroundColor: 'var(--color-success)' }}
           >
             ✓ Activate
           </button>
           <button
             onClick={() => handleToggleStatus('PAUSED')}
             disabled={loading}
-            className="rounded-lg bg-yellow-600 px-4 py-2 font-medium text-white hover:bg-yellow-700 disabled:opacity-50"
+            className="rounded-lg px-4 py-2 font-medium text-white disabled:opacity-50"
+            style={{ backgroundColor: 'var(--color-warning)' }}
           >
             ⏸ Pause
           </button>
           <button
             onClick={onClear}
             disabled={loading}
-            className="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 font-medium text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
+            className="rounded-lg border px-4 py-2 font-medium disabled:opacity-50"
+            style={{ borderColor: 'var(--color-tertiary)', color: 'var(--color-primary)' }}
           >
             Clear
           </button>

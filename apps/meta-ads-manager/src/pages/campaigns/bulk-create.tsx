@@ -52,7 +52,6 @@ interface BulkFormData {
 
 export default function BulkCreateCampaignPage() {
   const router = useRouter();
-  const [darkMode, setDarkMode] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -202,47 +201,34 @@ export default function BulkCreateCampaignPage() {
     }
   };
 
-  React.useEffect(() => {
-    const saved = localStorage.getItem('darkMode');
-    if (saved !== null) {
-      setDarkMode(JSON.parse(saved));
-    }
-  }, []);
-
-  const handleDarkModeToggle = (enabled: boolean) => {
-    setDarkMode(enabled);
-    localStorage.setItem('darkMode', JSON.stringify(enabled));
-  };
-
   return (
-    <DashboardLayout darkMode={darkMode} onDarkModeToggle={handleDarkModeToggle}>
+    <DashboardLayout>
       <Breadcrumb
         items={[
           { label: 'Campaigns', href: '/campaigns' },
           { label: 'Bulk Create Campaigns', href: '/campaigns/bulk-create' },
         ]}
-        darkMode={darkMode}
       />
 
       <div className="p-6">
-        <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">
+        <h1 className="mb-2 text-3xl font-bold font-display" style={{ color: 'var(--color-primary)' }}>
           Bulk Create Campaigns
         </h1>
-        <p className="mb-8 text-gray-600 dark:text-gray-400">
+        <p className="mb-8" style={{ color: 'var(--color-secondary)' }}>
           Create the same campaign across multiple accounts with optional customizations
         </p>
 
         {/* Error Message */}
         {error && (
-          <div className="mb-6 rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-4">
-            <p className="text-sm font-medium text-red-800 dark:text-red-200">{error}</p>
+          <div className="mb-6 rounded-lg border p-4" style={{ backgroundColor: 'var(--color-danger-bg)', borderColor: 'var(--color-danger)' }}>
+            <p className="text-sm font-medium" style={{ color: 'var(--color-danger)' }}>{error}</p>
           </div>
         )}
 
         {/* Success Message */}
         {success && (
-          <div className="mb-6 rounded-lg border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 p-4">
-            <p className="text-sm font-medium text-green-800 dark:text-green-200">
+          <div className="mb-6 rounded-lg border p-4" style={{ backgroundColor: 'var(--color-success-bg)', borderColor: 'var(--color-success)' }}>
+            <p className="text-sm font-medium" style={{ color: 'var(--color-success)' }}>
               ✓ Bulk campaign creation started! Redirecting...
             </p>
           </div>
@@ -253,17 +239,14 @@ export default function BulkCreateCampaignPage() {
           {[1, 2, 3, 4].map((step) => (
             <div key={step} className="flex items-center">
               <div
-                className={`flex h-10 w-10 items-center justify-center rounded-full font-semibold ${
-                  step === currentStep
-                    ? 'bg-blue-600 text-white'
-                    : step < currentStep
-                    ? 'bg-green-600 text-white'
-                    : 'bg-gray-300 text-gray-700 dark:bg-gray-600 dark:text-gray-300'
-                }`}
+                className="flex h-10 w-10 items-center justify-center rounded-full font-semibold text-white"
+                style={{
+                  backgroundColor: step === currentStep ? 'var(--color-brand)' : step < currentStep ? 'var(--color-success)' : 'var(--color-tertiary)'
+                }}
               >
                 {step < currentStep ? '✓' : step}
               </div>
-              <span className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+              <span className="ml-2 text-sm font-medium" style={{ color: 'var(--color-primary)' }}>
                 {step === 1 && 'Campaign'}
                 {step === 2 && 'Ad Set'}
                 {step === 3 && 'Creative'}
@@ -271,9 +254,10 @@ export default function BulkCreateCampaignPage() {
               </span>
               {step < 4 && (
                 <div
-                  className={`mx-4 h-1 w-12 ${
-                    step < currentStep ? 'bg-green-600' : 'bg-gray-300 dark:bg-gray-600'
-                  }`}
+                  className="mx-4 h-1 w-12"
+                  style={{
+                    backgroundColor: step < currentStep ? 'var(--color-success)' : 'var(--color-tertiary)'
+                  }}
                 />
               )}
             </div>
@@ -281,13 +265,13 @@ export default function BulkCreateCampaignPage() {
         </div>
 
         {/* Form Content */}
-        <div className="mb-8 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6">
+        <div className="mb-8 rounded-lg border p-6" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--color-tertiary)' }}>
           {currentStep === 1 && (
-            <Step1Campaign data={formData} onChange={handleFieldChange} darkMode={darkMode} />
+            <Step1Campaign data={formData} onChange={handleFieldChange} />
           )}
 
           {currentStep === 2 && (
-            <Step2AdSet data={formData} onChange={handleFieldChange} darkMode={darkMode} />
+            <Step2AdSet data={formData} onChange={handleFieldChange} />
           )}
 
           {currentStep === 3 && (
@@ -295,7 +279,6 @@ export default function BulkCreateCampaignPage() {
               accountId=""
               data={formData}
               onChange={handleFieldChange}
-              darkMode={darkMode}
             />
           )}
 
@@ -318,16 +301,8 @@ export default function BulkCreateCampaignPage() {
                       className="rounded-lg border-2 p-4 cursor-pointer transition-all"
                       onClick={() => toggleAccountSelection(account.id)}
                       style={{
-                        borderColor: bulkData.selectedAccounts.includes(account.id)
-                          ? '#3B82F6'
-                          : '#E5E7EB',
-                        backgroundColor: bulkData.selectedAccounts.includes(account.id)
-                          ? darkMode
-                            ? '#1E3A8A'
-                            : '#EFF6FF'
-                          : darkMode
-                          ? '#1F2937'
-                          : '#F9FAFB',
+                        borderColor: bulkData.selectedAccounts.includes(account.id) ? 'var(--color-brand)' : 'var(--color-tertiary)',
+                        backgroundColor: bulkData.selectedAccounts.includes(account.id) ? 'var(--color-brand-light)' : 'var(--bg-card)',
                       }}
                     >
                       <div className="flex items-start gap-3">
@@ -338,10 +313,10 @@ export default function BulkCreateCampaignPage() {
                           className="mt-1"
                         />
                         <div className="flex-1">
-                          <h4 className="font-medium text-gray-900 dark:text-white">
+                          <h4 className="font-medium" style={{ color: 'var(--color-primary)' }}>
                             {account.account_name}
                           </h4>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                          <p className="text-sm" style={{ color: 'var(--color-secondary)' }}>
                             {account.account_id}
                           </p>
                         </div>
@@ -349,9 +324,9 @@ export default function BulkCreateCampaignPage() {
 
                       {/* Override Fields */}
                       {bulkData.selectedAccounts.includes(account.id) && (
-                        <div className="mt-4 space-y-3 border-t border-gray-300 dark:border-gray-600 pt-4">
+                        <div className="mt-4 space-y-3 pt-4" style={{ borderTop: '1px solid var(--color-tertiary)' }}>
                           <div>
-                            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            <label className="block text-xs font-medium mb-1" style={{ color: 'var(--color-primary)' }}>
                               Campaign Name (override)
                             </label>
                             <input
@@ -367,13 +342,13 @@ export default function BulkCreateCampaignPage() {
                                   e.target.value || undefined
                                 )
                               }
-                              className="w-full rounded border border-gray-300 dark:border-gray-600 dark:bg-gray-700 px-2 py-1 text-sm dark:text-white"
+                              className="input w-full rounded px-2 py-1 text-sm"
                               onClick={(e) => e.stopPropagation()}
                             />
                           </div>
 
                           <div>
-                            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            <label className="block text-xs font-medium mb-1" style={{ color: 'var(--color-primary)' }}>
                               Daily Budget (override)
                             </label>
                             <input
@@ -389,7 +364,7 @@ export default function BulkCreateCampaignPage() {
                                   e.target.value ? Number(e.target.value) : undefined
                                 )
                               }
-                              className="w-full rounded border border-gray-300 dark:border-gray-600 dark:bg-gray-700 px-2 py-1 text-sm dark:text-white"
+                              className="input w-full rounded px-2 py-1 text-sm"
                               onClick={(e) => e.stopPropagation()}
                             />
                           </div>
@@ -401,8 +376,8 @@ export default function BulkCreateCampaignPage() {
               </div>
 
               {bulkData.selectedAccounts.length > 0 && (
-                <div className="rounded-lg bg-blue-50 dark:bg-blue-900/20 p-4">
-                  <p className="text-sm text-blue-800 dark:text-blue-300">
+                <div className="rounded-lg p-4" style={{ backgroundColor: 'var(--color-info-bg)' }}>
+                  <p className="text-sm" style={{ color: 'var(--color-info)' }}>
                     📊 <strong>{bulkData.selectedAccounts.length}</strong> account
                     {bulkData.selectedAccounts.length !== 1 ? 's' : ''} selected for bulk
                     creation
@@ -418,7 +393,8 @@ export default function BulkCreateCampaignPage() {
           <button
             onClick={handlePrev}
             disabled={currentStep === 1}
-            className="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-6 py-2 font-medium text-gray-700 dark:text-white disabled:opacity-50 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            className="rounded-lg border px-6 py-2 font-medium disabled:opacity-50 transition-colors"
+            style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--color-tertiary)', color: 'var(--color-primary)' }}
           >
             ← Previous
           </button>
@@ -427,7 +403,8 @@ export default function BulkCreateCampaignPage() {
             {currentStep < 4 && (
               <button
                 onClick={handleNext}
-                className="rounded-lg bg-blue-600 px-6 py-2 font-medium text-white hover:bg-blue-700 transition-colors"
+                className="rounded-lg px-6 py-2 font-medium text-white transition-colors"
+                style={{ backgroundColor: 'var(--color-brand)' }}
               >
                 Next →
               </button>
@@ -437,7 +414,8 @@ export default function BulkCreateCampaignPage() {
               <button
                 onClick={handleCreate}
                 disabled={bulkCreateMutation.isPending || bulkData.selectedAccounts.length === 0}
-                className="rounded-lg bg-green-600 px-6 py-2 font-medium text-white hover:bg-green-700 disabled:opacity-50 transition-colors"
+                className="rounded-lg px-6 py-2 font-medium text-white disabled:opacity-50 transition-colors"
+                style={{ backgroundColor: 'var(--color-success)' }}
               >
                 {bulkCreateMutation.isPending ? 'Creating...' : '✓ Create in Bulk'}
               </button>

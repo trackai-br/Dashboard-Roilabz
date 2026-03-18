@@ -10,24 +10,20 @@ interface BreadcrumbProps {
   darkMode?: boolean;
 }
 
-export function Breadcrumb({ items, darkMode = false }: BreadcrumbProps) {
-  const bgClass = darkMode ? 'dark:bg-gray-900 bg-gray-50' : 'bg-white dark:bg-gray-900';
-  const textClass = darkMode
-    ? 'dark:text-gray-300 text-gray-700'
-    : 'text-gray-700 dark:text-gray-300';
-
+export function Breadcrumb({ items }: BreadcrumbProps) {
   return (
-    <nav className={`${bgClass} border-b border-gray-200 dark:border-gray-700 px-4 py-3`}>
+    <nav className="border-b px-4 py-3" style={{ backgroundColor: 'var(--bg-page)', borderBottomColor: 'var(--color-tertiary)' }}>
       <ol className="flex items-center space-x-2">
         {items.map((item, index) => (
           <li key={index} className="flex items-center">
-            {index > 0 && <span className={`mx-2 ${textClass}`}>/</span>}
+            {index > 0 && <span className="mx-2" style={{ color: 'var(--color-tertiary)' }}>/</span>}
             {index === items.length - 1 ? (
-              <span className={`font-medium ${textClass}`}>{item.label}</span>
+              <span className="font-medium" style={{ color: 'var(--color-primary)' }}>{item.label}</span>
             ) : (
               <Link
                 href={item.href}
-                className={`${textClass} hover:text-blue-600 dark:hover:text-blue-400 transition-colors`}
+                className="transition-colors"
+                style={{ color: 'var(--color-brand)' }}
               >
                 {item.label}
               </Link>

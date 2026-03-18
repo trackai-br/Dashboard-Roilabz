@@ -66,13 +66,13 @@ export function CampaignsTableNew({ campaigns, loading }: CampaignsTableNewProps
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'ACTIVE':
-        return 'text-growth-400 bg-growth-500/10';
+        return { color: 'var(--color-success)', backgroundColor: 'var(--color-success-bg)' };
       case 'PAUSED':
-        return 'text-yellow-400 bg-yellow-500/10';
+        return { color: 'var(--color-warning)', backgroundColor: 'var(--color-warning-bg)' };
       case 'ARCHIVED':
-        return 'text-red-400 bg-red-500/10';
+        return { color: 'var(--color-danger)', backgroundColor: 'var(--color-danger-bg)' };
       default:
-        return 'text-gray-400 bg-gray-500/10';
+        return { color: 'var(--color-secondary)', backgroundColor: 'var(--bg-input)' };
     }
   };
 
@@ -97,10 +97,10 @@ export function CampaignsTableNew({ campaigns, loading }: CampaignsTableNewProps
 
   if (loading) {
     return (
-      <div className="rounded-xl border border-dark-700/50 overflow-hidden bg-dark-900/50">
+      <div className="rounded-card border overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--color-tertiary)' }}>
         <div className="space-y-3 p-6">
           {[1, 2, 3, 4, 5].map(i => (
-            <div key={i} className="h-12 bg-dark-800 rounded-lg animate-pulse" />
+            <div key={i} className="h-12 rounded-lg animate-pulse" style={{ backgroundColor: 'var(--bg-input)' }} />
           ))}
         </div>
       </div>
@@ -108,10 +108,10 @@ export function CampaignsTableNew({ campaigns, loading }: CampaignsTableNewProps
   }
 
   return (
-    <div className="rounded-xl border border-dark-700/50 overflow-hidden bg-dark-900/50 backdrop-blur-sm overflow-x-auto">
+    <div className="rounded-card border overflow-hidden overflow-x-auto" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--color-tertiary)' }}>
       <table className="w-full">
         <thead>
-          <tr className="border-b border-dark-700/50 bg-dark-800/50">
+          <tr style={{ backgroundColor: 'var(--bg-table-header)', borderBottomColor: 'var(--color-tertiary)', borderBottomWidth: '1px' }}>
             {columns.map(col => (
               <th
                 key={col.key}
@@ -119,8 +119,8 @@ export function CampaignsTableNew({ campaigns, loading }: CampaignsTableNewProps
                   setSortBy(col.key);
                   setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
                 }}
-                className="px-6 py-4 text-left text-sm font-semibold text-gray-300 cursor-pointer hover:text-energy-400 transition-colors"
-                style={{ width: col.width, minWidth: col.width }}
+                className="px-6 py-4 text-left text-sm font-semibold cursor-pointer transition-colors uppercase"
+                style={{ width: col.width, minWidth: col.width, color: 'var(--color-secondary)' }}
               >
                 <div className="flex items-center gap-2">
                   {col.label}
@@ -130,34 +130,43 @@ export function CampaignsTableNew({ campaigns, loading }: CampaignsTableNewProps
                 </div>
               </th>
             ))}
-            <th className="px-6 py-4 text-center text-sm font-semibold text-gray-300 w-12">
+            <th className="px-6 py-4 text-center text-sm font-semibold w-12 uppercase" style={{ color: 'var(--color-secondary)' }}>
               Ação
             </th>
           </tr>
         </thead>
         <tbody>
-          {sortedCampaigns.map((campaign) => (
+          {sortedCampaigns.map((campaign, idx) => (
             <tr
               key={campaign.id}
-              className="border-b border-dark-700/30 hover:bg-dark-800/50 transition-colors group"
+              className="transition-colors group"
+              style={{
+                backgroundColor: idx % 2 === 0 ? 'transparent' : 'var(--bg-table-alt)',
+                borderBottomColor: 'var(--color-tertiary)',
+                borderBottomWidth: '1px'
+              }}
             >
               {columns.map(col => (
-                <td key={`${campaign.id}-${col.key}`} className="px-6 py-4 text-sm text-gray-300 whitespace-nowrap">
+                <td key={`${campaign.id}-${col.key}`} className="px-6 py-4 text-sm whitespace-nowrap" style={{ color: 'var(--color-primary)' }}>
                   {col.key === 'status' ? (
-                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(campaign.status)}`}>
+                    <span className="inline-block px-3 py-1 rounded-full text-xs font-medium" style={getStatusColor(campaign.status)}>
                       {campaign.status}
                     </span>
                   ) : col.key === 'spend' || col.key === 'cpc' ? (
-                    <span className="text-energy-400 font-medium">{formatValue(col.key, campaign[col.key as keyof Campaign])}</span>
+                    <span className="font-medium font-mono" style={{ color: 'var(--color-brand)' }}>
+                      {formatValue(col.key, campaign[col.key as keyof Campaign])}
+                    </span>
                   ) : col.key === 'roas' ? (
-                    <span className="text-growth-400 font-medium">{formatValue(col.key, campaign[col.key as keyof Campaign])}</span>
+                    <span className="font-medium font-mono" style={{ color: 'var(--color-success)' }}>
+                      {formatValue(col.key, campaign[col.key as keyof Campaign])}
+                    </span>
                   ) : (
                     formatValue(col.key, campaign[col.key as keyof Campaign])
                   )}
                 </td>
               ))}
               <td className="px-6 py-4 text-center">
-                <button className="p-2 hover:bg-dark-700 rounded-lg transition-colors text-gray-400 hover:text-energy-400">
+                <button className="p-2 rounded-lg transition-colors" style={{ color: 'var(--color-secondary)' }}>
                   ⋯
                 </button>
               </td>
@@ -167,8 +176,8 @@ export function CampaignsTableNew({ campaigns, loading }: CampaignsTableNewProps
       </table>
 
       {sortedCampaigns.length === 0 && (
-        <div className="px-6 py-12 text-center">
-          <p className="text-gray-400">Nenhuma campanha encontrada</p>
+        <div className="px-6 py-12 text-center" style={{ color: 'var(--color-secondary)' }}>
+          <p>Nenhuma campanha encontrada</p>
         </div>
       )}
     </div>

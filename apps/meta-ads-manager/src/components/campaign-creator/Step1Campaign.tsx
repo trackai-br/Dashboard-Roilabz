@@ -12,7 +12,6 @@ interface Step1CampaignProps {
     budgetType: 'daily' | 'lifetime';
   };
   onChange: (field: string, value: any) => void;
-  darkMode?: boolean;
 }
 
 const CAMPAIGN_OBJECTIVES = [
@@ -24,15 +23,12 @@ const CAMPAIGN_OBJECTIVES = [
   'OUTCOME_IMPRESSIONS',
 ];
 
-export function Step1Campaign({ data, onChange, darkMode = false }: Step1CampaignProps) {
-  const inputClass = darkMode
-    ? 'dark:bg-gray-800 dark:border-gray-600 dark:text-white'
-    : 'bg-white border-gray-300 text-gray-900';
+export function Step1Campaign({ data, onChange }: Step1CampaignProps) {
 
   return (
     <div className="space-y-6">
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
           Campaign Name *
         </label>
         <input
@@ -40,18 +36,18 @@ export function Step1Campaign({ data, onChange, darkMode = false }: Step1Campaig
           value={data.campaignName}
           onChange={(e) => onChange('campaignName', e.target.value)}
           placeholder="e.g., Summer Sale Campaign"
-          className={`w-full rounded-lg border px-4 py-2 ${inputClass}`}
+          className="input w-full"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
           Campaign Objective *
         </label>
         <select
           value={data.campaignObjective}
           onChange={(e) => onChange('campaignObjective', e.target.value)}
-          className={`w-full rounded-lg border px-4 py-2 ${inputClass}`}
+          className="input w-full"
         >
           <option value="">Select an objective</option>
           {CAMPAIGN_OBJECTIVES.map((obj) => (
@@ -63,7 +59,7 @@ export function Step1Campaign({ data, onChange, darkMode = false }: Step1Campaig
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
           Campaign Status
         </label>
         <div className="flex gap-4">
@@ -76,7 +72,7 @@ export function Step1Campaign({ data, onChange, darkMode = false }: Step1Campaig
               onChange={(e) => onChange('campaignStatus', e.target.value)}
               className="rounded"
             />
-            <span className="text-sm text-gray-700 dark:text-gray-300">Active</span>
+            <span className="text-sm" style={{ color: 'var(--color-primary)' }}>Active</span>
           </label>
           <label className="flex items-center gap-2">
             <input
@@ -87,13 +83,13 @@ export function Step1Campaign({ data, onChange, darkMode = false }: Step1Campaig
               onChange={(e) => onChange('campaignStatus', e.target.value)}
               className="rounded"
             />
-            <span className="text-sm text-gray-700 dark:text-gray-300">Paused</span>
+            <span className="text-sm" style={{ color: 'var(--color-primary)' }}>Paused</span>
           </label>
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
           Budget Type
         </label>
         <div className="flex gap-4">
@@ -106,7 +102,7 @@ export function Step1Campaign({ data, onChange, darkMode = false }: Step1Campaig
               onChange={(e) => onChange('budgetType', e.target.value)}
               className="rounded"
             />
-            <span className="text-sm text-gray-700 dark:text-gray-300">Daily Budget</span>
+            <span className="text-sm" style={{ color: 'var(--color-primary)' }}>Daily Budget</span>
           </label>
           <label className="flex items-center gap-2">
             <input
@@ -117,14 +113,14 @@ export function Step1Campaign({ data, onChange, darkMode = false }: Step1Campaig
               onChange={(e) => onChange('budgetType', e.target.value)}
               className="rounded"
             />
-            <span className="text-sm text-gray-700 dark:text-gray-300">Lifetime Budget</span>
+            <span className="text-sm" style={{ color: 'var(--color-primary)' }}>Lifetime Budget</span>
           </label>
         </div>
       </div>
 
       {data.budgetType === 'daily' && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
             Daily Budget (USD) *
           </label>
           <input
@@ -136,9 +132,9 @@ export function Step1Campaign({ data, onChange, darkMode = false }: Step1Campaig
             placeholder="e.g., 50.00"
             step="0.01"
             min="0"
-            className={`w-full rounded-lg border px-4 py-2 ${inputClass}`}
+            className="input w-full"
           />
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+          <p className="mt-1 text-xs" style={{ color: 'var(--color-secondary)' }}>
             Minimum: $5.00 per day
           </p>
         </div>
@@ -147,7 +143,7 @@ export function Step1Campaign({ data, onChange, darkMode = false }: Step1Campaig
       {data.budgetType === 'lifetime' && (
         <>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
               Total Budget (USD) *
             </label>
             <input
@@ -162,39 +158,39 @@ export function Step1Campaign({ data, onChange, darkMode = false }: Step1Campaig
               placeholder="e.g., 500.00"
               step="0.01"
               min="0"
-              className={`w-full rounded-lg border px-4 py-2 ${inputClass}`}
+              className="input w-full"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
                 Start Date
               </label>
               <input
                 type="date"
                 value={data.campaignStartTime?.split('T')[0] || ''}
                 onChange={(e) => onChange('campaignStartTime', e.target.value)}
-                className={`w-full rounded-lg border px-4 py-2 ${inputClass}`}
+                className="input w-full"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
                 End Date
               </label>
               <input
                 type="date"
                 value={data.campaignStopTime?.split('T')[0] || ''}
                 onChange={(e) => onChange('campaignStopTime', e.target.value)}
-                className={`w-full rounded-lg border px-4 py-2 ${inputClass}`}
+                className="input w-full"
               />
             </div>
           </div>
         </>
       )}
 
-      <div className="rounded-lg bg-blue-50 dark:bg-blue-900/20 p-4">
-        <p className="text-sm text-blue-800 dark:text-blue-300">
+      <div className="rounded-lg p-4" style={{ backgroundColor: 'var(--color-info-bg)' }}>
+        <p className="text-sm" style={{ color: 'var(--color-info)' }}>
           💡 <strong>Tip:</strong> Campaign Budget Optimization (CBO) is automatically applied.
           You can adjust daily or ad set budgets in the next step.
         </p>

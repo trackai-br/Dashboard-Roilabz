@@ -17,18 +17,13 @@ interface Step3AdProps {
     creativeFormat: 'single_image' | 'single_video' | 'carousel' | 'collection';
   };
   onChange: (field: string, value: any) => void;
-  darkMode?: boolean;
 }
 
 export function Step3Ad({
   accountId,
   data,
   onChange,
-  darkMode = false,
 }: Step3AdProps) {
-  const inputClass = darkMode
-    ? 'dark:bg-gray-800 dark:border-gray-600 dark:text-white'
-    : 'bg-white border-gray-300 text-gray-900';
 
   const { data: pages, isLoading: pagesLoading } = useMetaPages(accountId);
   const { data: pixels, isLoading: pixelsLoading } = useMetaPixels(accountId);
@@ -36,7 +31,7 @@ export function Step3Ad({
   return (
     <div className="space-y-6">
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
           Ad Name *
         </label>
         <input
@@ -44,12 +39,12 @@ export function Step3Ad({
           value={data.adName}
           onChange={(e) => onChange('adName', e.target.value)}
           placeholder="e.g., Summer Sale - Image Ad"
-          className={`w-full rounded-lg border px-4 py-2 ${inputClass}`}
+          className="input w-full"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
           Ad Status
         </label>
         <div className="flex gap-4">
@@ -62,7 +57,7 @@ export function Step3Ad({
               onChange={(e) => onChange('adStatus', e.target.value)}
               className="rounded"
             />
-            <span className="text-sm text-gray-700 dark:text-gray-300">Active</span>
+            <span className="text-sm" style={{ color: 'var(--color-primary)' }}>Active</span>
           </label>
           <label className="flex items-center gap-2">
             <input
@@ -73,19 +68,19 @@ export function Step3Ad({
               onChange={(e) => onChange('adStatus', e.target.value)}
               className="rounded"
             />
-            <span className="text-sm text-gray-700 dark:text-gray-300">Paused</span>
+            <span className="text-sm" style={{ color: 'var(--color-primary)' }}>Paused</span>
           </label>
         </div>
       </div>
 
       {/* Creative Format */}
-      <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+      <div className="pt-6" style={{ borderTop: '1px solid var(--color-tertiary)' }}>
+        <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-primary)' }}>
           Creative
         </h3>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
             Format *
           </label>
           <select
@@ -96,7 +91,7 @@ export function Step3Ad({
                 e.target.value as 'single_image' | 'single_video' | 'carousel' | 'collection'
               )
             }
-            className={`w-full rounded-lg border px-4 py-2 ${inputClass}`}
+            className="input w-full"
           >
             <option value="single_image">Single Image</option>
             <option value="single_video">Single Video</option>
@@ -107,7 +102,7 @@ export function Step3Ad({
 
         {(data.creativeFormat === 'single_image' || data.creativeFormat === 'carousel') && (
           <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
               Image URL
             </label>
             <input
@@ -115,14 +110,14 @@ export function Step3Ad({
               value={data.creativeImageUrl || ''}
               onChange={(e) => onChange('creativeImageUrl', e.target.value)}
               placeholder="https://example.com/image.jpg"
-              className={`w-full rounded-lg border px-4 py-2 ${inputClass}`}
+              className="input w-full"
             />
           </div>
         )}
 
         {(data.creativeFormat === 'single_video' || data.creativeFormat === 'carousel') && (
           <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
               Video URL
             </label>
             <input
@@ -130,21 +125,21 @@ export function Step3Ad({
               value={data.creativeVideoUrl || ''}
               onChange={(e) => onChange('creativeVideoUrl', e.target.value)}
               placeholder="https://example.com/video.mp4"
-              className={`w-full rounded-lg border px-4 py-2 ${inputClass}`}
+              className="input w-full"
             />
           </div>
         )}
       </div>
 
       {/* Copy */}
-      <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+      <div className="pt-6" style={{ borderTop: '1px solid var(--color-tertiary)' }}>
+        <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-primary)' }}>
           Ad Copy
         </h3>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
               Headline *
             </label>
             <input
@@ -153,15 +148,15 @@ export function Step3Ad({
               onChange={(e) => onChange('creativeHeadline', e.target.value)}
               placeholder="e.g., Don't Miss Out!"
               maxLength={125}
-              className={`w-full rounded-lg border px-4 py-2 ${inputClass}`}
+              className="input w-full"
             />
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            <p className="mt-1 text-xs" style={{ color: 'var(--color-secondary)' }}>
               {data.creativeHeadline.length}/125 characters
             </p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
               Body Text *
             </label>
             <textarea
@@ -170,15 +165,15 @@ export function Step3Ad({
               placeholder="e.g., Get 50% off on all summer items this week only!"
               maxLength={300}
               rows={4}
-              className={`w-full rounded-lg border px-4 py-2 ${inputClass}`}
+              className="input w-full"
             />
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            <p className="mt-1 text-xs" style={{ color: 'var(--color-secondary)' }}>
               {data.creativeBody.length}/300 characters
             </p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
               Destination URL *
             </label>
             <input
@@ -186,28 +181,28 @@ export function Step3Ad({
               value={data.creativeUrl}
               onChange={(e) => onChange('creativeUrl', e.target.value)}
               placeholder="https://example.com/summer-sale"
-              className={`w-full rounded-lg border px-4 py-2 ${inputClass}`}
+              className="input w-full"
             />
           </div>
         </div>
       </div>
 
       {/* Tracking & Destination */}
-      <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+      <div className="pt-6" style={{ borderTop: '1px solid var(--color-tertiary)' }}>
+        <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-primary)' }}>
           Tracking & Destination
         </h3>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
               Facebook Page *
             </label>
             <select
               value={data.pageId}
               onChange={(e) => onChange('pageId', e.target.value)}
               disabled={pagesLoading}
-              className={`w-full rounded-lg border px-4 py-2 ${inputClass}`}
+              className="input w-full"
             >
               <option value="">Select a page</option>
               {pages?.map((page) => (
@@ -219,14 +214,14 @@ export function Step3Ad({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
               Conversion Pixel (Optional)
             </label>
             <select
               value={data.pixelId || ''}
               onChange={(e) => onChange('pixelId', e.target.value || undefined)}
               disabled={pixelsLoading}
-              className={`w-full rounded-lg border px-4 py-2 ${inputClass}`}
+              className="input w-full"
             >
               <option value="">No pixel</option>
               {pixels?.map((pixel) => (
@@ -235,15 +230,15 @@ export function Step3Ad({
                 </option>
               ))}
             </select>
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            <p className="mt-1 text-xs" style={{ color: 'var(--color-secondary)' }}>
               Select a pixel to track conversions from this ad
             </p>
           </div>
         </div>
       </div>
 
-      <div className="rounded-lg bg-green-50 dark:bg-green-900/20 p-4">
-        <p className="text-sm text-green-800 dark:text-green-300">
+      <div className="rounded-lg p-4" style={{ backgroundColor: 'var(--color-success-bg)' }}>
+        <p className="text-sm" style={{ color: 'var(--color-success)' }}>
           ✓ <strong>Ready to create:</strong> All required fields are set. Click &quot;Create Campaign&quot;
           to launch your campaign!
         </p>

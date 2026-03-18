@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useRouter } from 'next/router';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { Breadcrumb } from '@/components/Breadcrumb';
@@ -18,22 +18,6 @@ interface AdSet {
 export default function CampaignDetailPage() {
   const router = useRouter();
   const { campaignId } = router.query;
-  const [darkMode, setDarkMode] = useState(false);
-
-  useEffect(() => {
-    const saved = localStorage.getItem('darkMode');
-    if (saved !== null) {
-      setDarkMode(JSON.parse(saved));
-    } else {
-      const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      setDarkMode(isDark);
-    }
-  }, []);
-
-  const handleDarkModeToggle = (enabled: boolean) => {
-    setDarkMode(enabled);
-    localStorage.setItem('darkMode', JSON.stringify(enabled));
-  };
 
   const {
     data: adsetsResponse,
@@ -52,57 +36,57 @@ export default function CampaignDetailPage() {
   const adsets = adsetsResponse?.adsets || [];
 
   return (
-    <DashboardLayout darkMode={darkMode} onDarkModeToggle={handleDarkModeToggle}>
+    <DashboardLayout>
       <Breadcrumb
         items={[
           { label: 'Accounts', href: '/dashboard' },
           { label: 'Campaigns', href: '/campaigns' },
           { label: `Campaign ${campaignId?.toString().slice(0, 8)}...`, href: `/campaigns/${campaignId}` },
         ]}
-        darkMode={darkMode}
       />
 
       <div className="p-6">
-        <h1 className="mb-6 text-2xl font-bold text-gray-900 dark:text-white">
+        <h1 className="mb-6 text-2xl font-bold" style={{ color: 'var(--color-primary)' }}>
           Ad Sets for Campaign {campaignId?.toString().slice(0, 8)}...
         </h1>
 
         {error && (
-          <div className="mb-6 rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-4">
-            <p className="text-sm font-medium text-red-800 dark:text-red-200">
+          <div className="mb-6 rounded-lg border p-4" style={{ backgroundColor: 'var(--color-danger-bg)', borderColor: 'var(--color-danger)' }}>
+            <p className="text-sm font-medium" style={{ color: 'var(--color-danger)' }}>
               Error loading ad sets: {error instanceof Error ? error.message : 'Unknown error'}
             </p>
           </div>
         )}
 
         {/* Ad Sets Table */}
-        <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-100 dark:bg-gray-800">
+        <div className="overflow-x-auto rounded-lg border" style={{ borderColor: 'var(--color-tertiary)' }}>
+          <table className="min-w-full divide-y" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--color-tertiary)' }}>
+            <thead style={{ backgroundColor: 'var(--bg-table-header)' }}>
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase" style={{ color: 'var(--color-secondary)' }}>
                   Ad Set Name
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase" style={{ color: 'var(--color-secondary)' }}>
                   Status
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">
+                <th className="px-6 py-3 text-right text-xs font-medium uppercase" style={{ color: 'var(--color-secondary)' }}>
                   Daily Budget
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">
+                <th className="px-6 py-3 text-right text-xs font-medium uppercase" style={{ color: 'var(--color-secondary)' }}>
                   Lifetime Budget
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase" style={{ color: 'var(--color-secondary)' }}>
                   Created
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
+            <tbody className="divide-y" style={{ borderColor: 'var(--color-tertiary)' }}>
               {isLoading ? (
                 <tr>
                   <td
                     colSpan={5}
-                    className="px-6 py-4 text-center text-gray-500 dark:text-gray-400"
+                    className="px-6 py-4 text-center"
+                    style={{ color: 'var(--color-secondary)' }}
                   >
                     Loading ad sets...
                   </td>
@@ -111,7 +95,8 @@ export default function CampaignDetailPage() {
                 <tr>
                   <td
                     colSpan={5}
-                    className="px-6 py-4 text-center text-gray-500 dark:text-gray-400"
+                    className="px-6 py-4 text-center"
+                    style={{ color: 'var(--color-secondary)' }}
                   >
                     No ad sets found for this campaign
                   </td>
@@ -120,34 +105,34 @@ export default function CampaignDetailPage() {
                 adsets.map((adset: AdSet) => (
                   <tr
                     key={adset.adset_id}
-                    className="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors"
+                    className="cursor-pointer transition-colors"
                     onClick={() =>
                       router.push(
                         `/campaigns/${campaignId}/adsets/${adset.adset_id}`
                       )
                     }
                   >
-                    <td className="px-6 py-4 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline">
+                    <td className="px-6 py-4 text-sm font-medium hover:underline" style={{ color: 'var(--color-brand)' }}>
                       {adset.name}
                     </td>
                     <td className="px-6 py-4 text-sm">
                       <span
-                        className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${
-                          adset.status === 'ACTIVE'
-                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                            : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-                        }`}
+                        className="inline-flex rounded-full px-3 py-1 text-xs font-medium"
+                        style={{
+                          backgroundColor: adset.status === 'ACTIVE' ? 'var(--color-success-bg)' : 'var(--bg-tertiary)',
+                          color: adset.status === 'ACTIVE' ? 'var(--color-success)' : 'var(--color-secondary)'
+                        }}
                       >
                         {adset.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-right text-sm text-gray-700 dark:text-gray-300">
+                    <td className="px-6 py-4 text-right text-sm" style={{ color: 'var(--color-primary)' }}>
                       {adset.daily_budget ? `$${(adset.daily_budget / 100).toFixed(2)}` : '—'}
                     </td>
-                    <td className="px-6 py-4 text-right text-sm text-gray-700 dark:text-gray-300">
+                    <td className="px-6 py-4 text-right text-sm" style={{ color: 'var(--color-primary)' }}>
                       {adset.lifetime_budget ? `$${(adset.lifetime_budget / 100).toFixed(2)}` : '—'}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
+                    <td className="px-6 py-4 text-sm" style={{ color: 'var(--color-primary)' }}>
                       {adset.created_at
                         ? new Date(adset.created_at).toLocaleDateString()
                         : '—'}
@@ -160,8 +145,8 @@ export default function CampaignDetailPage() {
         </div>
 
         {adsets.length > 0 && (
-          <div className="mt-6 rounded-lg bg-gray-50 dark:bg-gray-800 p-4">
-            <p className="text-sm text-gray-700 dark:text-gray-300">
+          <div className="mt-6 rounded-lg p-4" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--color-tertiary)', borderWidth: '1px' }}>
+            <p className="text-sm" style={{ color: 'var(--color-primary)' }}>
               Showing <strong>{adsets.length}</strong> ad set
               {adsets.length !== 1 ? 's' : ''} for this campaign
             </p>
