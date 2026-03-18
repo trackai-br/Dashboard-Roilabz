@@ -18,7 +18,7 @@ export function Step1Assets({ accountId, accountName }: Step1AssetsProps) {
           Assets for {accountName}
         </h2>
         <p className="text-gray-600 text-sm">
-          Review the pixels and business pages available for this account. You'll select these in the next steps.
+          Review the pixels and business pages available for this account. You&apos;ll select these in the next steps.
         </p>
       </div>
 
@@ -76,7 +76,7 @@ export function Step1Assets({ accountId, accountName }: Step1AssetsProps) {
       <div className="rounded-lg p-4" style={{ backgroundColor: 'var(--color-info-bg)' }}>
         <p className="text-sm" style={{ color: 'var(--color-info)' }}>
           ℹ️ <strong>Note:</strong> Pixels are used for tracking conversions, and business pages are
-          where your ads will be published. You'll need to select at least one of each for your ads.
+          where your ads will be published. You&apos;ll need to select at least one of each for your ads.
         </p>
       </div>
     </div>
