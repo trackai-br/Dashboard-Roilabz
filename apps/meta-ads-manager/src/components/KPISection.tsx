@@ -63,53 +63,97 @@ export function KPISection({ data }: KPISectionProps) {
   const visibleMetrics = metrics.filter(m => selectedMetrics.includes(m.id));
 
   return (
-    <section className="px-6 py-8">
+    <section className="px-8 py-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-display font-bold" style={{ color: 'var(--color-primary)' }}>
-          Key Performance
-        </h2>
-        <button className="text-sm underline" style={{ color: 'var(--color-brand)' }}>
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h2 className="text-3xl font-display font-bold" style={{ color: 'var(--color-primary)' }}>
+            Key Performance
+          </h2>
+          <p className="text-sm mt-1" style={{ color: 'var(--color-secondary)' }}>
+            Métricas de desempenho em tempo real
+          </p>
+        </div>
+        <button
+          className="text-sm font-medium px-4 py-2 rounded-lg transition-all"
+          style={{
+            color: 'var(--color-brand)',
+            backgroundColor: 'rgba(231, 111, 81, 0.06)',
+            border: '1px solid rgba(231, 111, 81, 0.15)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgba(231, 111, 81, 0.12)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgba(231, 111, 81, 0.06)';
+          }}
+        >
           ⚙️ Customizar
         </button>
       </div>
 
       {/* Grid de KPIs */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {visibleMetrics.map((metric) => (
           <div
             key={metric.id}
-            className="group p-6 rounded-card border transition-all duration-300 cursor-pointer overflow-hidden relative"
+            className="group p-6 rounded-lg border transition-all duration-200 cursor-pointer overflow-hidden relative"
             style={{
               backgroundColor: 'var(--bg-card)',
-              borderColor: 'var(--color-tertiary)',
-              boxShadow: 'var(--shadow-card)'
+              border: 'var(--border-light)',
+              boxShadow: 'var(--shadow-card)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.boxShadow = 'var(--shadow-card-hover)';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.boxShadow = 'var(--shadow-card)';
+              e.currentTarget.style.transform = 'translateY(0)';
             }}
           >
             {/* Content */}
             <div className="relative z-10">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <p className="text-sm font-medium mb-1 uppercase text-xs" style={{ color: 'var(--color-secondary)' }}>
+              <div className="flex items-start justify-between mb-6">
+                <div className="flex-1">
+                  <p
+                    className="text-xs font-bold mb-2 tracking-wide"
+                    style={{
+                      color: 'var(--color-secondary)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.8px',
+                    }}
+                  >
                     {metric.label}
                   </p>
-                  <p className="text-xs" style={{ color: 'var(--color-tertiary)' }}>
+                  <p className="text-xs leading-relaxed" style={{ color: 'var(--color-tertiary)' }}>
                     {metric.description}
                   </p>
                 </div>
                 <div
-                  className="w-12 h-12 rounded-full flex items-center justify-center text-2xl"
-                  style={{ backgroundColor: 'rgba(231, 111, 81, 0.1)', color: metric.accentColor }}
+                  className="w-14 h-14 rounded-xl flex items-center justify-center text-xl flex-shrink-0 ml-3"
+                  style={{
+                    backgroundColor: `${metric.accentColor}14`,
+                    color: metric.accentColor,
+                  }}
                 >
                   {metric.icon}
                 </div>
               </div>
 
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-mono font-bold" style={{ color: metric.accentColor }}>
+              {/* Value */}
+              <div className="flex items-baseline gap-2 pt-4" style={{ borderTop: 'var(--border-light)' }}>
+                <span
+                  className="text-4xl font-mono font-bold"
+                  style={{ color: metric.accentColor }}
+                >
                   {metric.value}
                 </span>
-                {metric.unit && <span className="text-sm" style={{ color: 'var(--color-secondary)' }}>{metric.unit}</span>}
+                {metric.unit && (
+                  <span className="text-sm font-medium" style={{ color: 'var(--color-secondary)' }}>
+                    {metric.unit}
+                  </span>
+                )}
               </div>
             </div>
           </div>
