@@ -7,72 +7,71 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        display: ['DM Serif Display', 'Georgia', 'serif'],
-        sans: ['Plus Jakarta Sans', '-apple-system', 'sans-serif'],
+        display: ['Space Grotesk', 'system-ui', 'sans-serif'],
+        sans: ['Inter', '-apple-system', 'sans-serif'],
         mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
       },
       colors: {
-        // Sunset Boulevard Palette
-        brand: {
-          DEFAULT: '#e76f51',
-          hover: '#d4603f',
-          light: '#fce8e2',
-          subtle: '#fdf4f1',
+        // NEON DASHBOARD Palette
+        'neon-green': {
+          DEFAULT: '#39ff14',
+          dim: '#2cc611',
+          bright: '#4fff24',
         },
-        coral: {
-          DEFAULT: '#f4a261',
-          hover: '#e09050',
-          light: '#fef3e2',
+        'neon-cyan': {
+          DEFAULT: '#00f0ff',
+          dim: '#00d4e8',
         },
-        sand: {
-          DEFAULT: '#e9c46a',
-          light: '#fdf8e8',
-          subtle: '#fefcf4',
+        'neon-magenta': {
+          DEFAULT: '#ff006e',
+          dim: '#e8005c',
         },
-        teal: {
-          DEFAULT: '#264653',
-          light: '#2a4f5f',
-          lighter: '#35606e',
+        'neon-amber': {
+          DEFAULT: '#ffb703',
+          dim: '#ff9800',
         },
-        // Page backgrounds
-        page: '#faf8f5',
-        'page-dark': '#0f0d0a',
-        card: '#ffffff',
-        'card-dark': '#1a1815',
-        input: '#f5f3f0',
-        'input-dark': '#2a2420',
-        // Semantic colors
-        success: '#2d9f6f',
-        'success-bg': '#e8f7f0',
-        warning: '#e9a23b',
-        'warning-bg': '#fef6e4',
-        danger: '#dc4446',
-        'danger-bg': '#fde8e8',
-        info: '#3b82f6',
-        'info-bg': '#eff6ff',
-        // Text layers
-        primary: '#1a1815',
-        'primary-dark': '#f5f3f0',
-        secondary: '#6b6360',
-        'secondary-dark': '#a89d98',
-        tertiary: '#8b8480',
-        'tertiary-dark': '#7a7570',
+        'neon-purple': {
+          DEFAULT: '#a100f2',
+          dim: '#8b00d4',
+        },
+        // Backgrounds
+        'deepest': '#0a0a0f',
+        'dark': '#1a1a2e',
+        'darker': '#16213e',
+        page: '#0a0a0f',
+        card: '#1a1a2e',
+        input: '#16213e',
+        'table-alt': '#141429',
+        // Text colors
+        primary: '#f0f0f0',
+        secondary: '#a8a8b8',
+        tertiary: '#707080',
+        // Semantic
+        success: '#00ff88',
+        warning: '#ffb703',
+        danger: '#ff3333',
+        info: '#00d4ff',
         // Sidebar
-        'sidebar-text': '#f5f3f0',
-        'sidebar-active': '#e9c46a',
+        'sidebar-text': '#e8e8f0',
+        'sidebar-active': '#39ff14',
         // Table
-        'table-header': '#f4e4d4',
-        'table-header-dark': '#2a2420',
-        'table-row-alt': '#faf8f5',
-        'table-row-alt-dark': '#1a1815',
+        'table-header': '#16213e',
       },
       boxShadow: {
-        card: '0 1px 2px rgba(38,70,83,0.04)',
-        'card-hover': '0 4px 12px rgba(38,70,83,0.06)',
-        elevated: '0 8px 24px rgba(38,70,83,0.08)',
+        card: '0 4px 12px rgba(57,255,20,0.08)',
+        'card-hover': '0 8px 24px rgba(57,255,20,0.15)',
+        elevated: '0 12px 32px rgba(57,255,20,0.2)',
+        neon: '0 0 20px rgba(57,255,20,0.4)',
+        'neon-cyan': '0 0 20px rgba(0,240,255,0.3)',
       },
       borderRadius: {
         card: '12px',
+      },
+      backdropBlur: {
+        xs: '2px',
+        sm: '4px',
+        md: '8px',
+        lg: '12px',
       },
     },
   },

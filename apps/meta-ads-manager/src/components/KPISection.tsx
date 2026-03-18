@@ -68,28 +68,41 @@ export function KPISection({ data }: KPISectionProps) {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h2 className="text-3xl font-display font-bold" style={{ color: 'var(--color-primary)' }}>
-            Key Performance
+          <h2
+            className="text-3xl font-display font-bold"
+            style={{
+              color: 'var(--neon-green)',
+              textShadow: '0 0 12px rgba(57, 255, 20, 0.3)',
+              fontFamily: "'Space Grotesk', system-ui, sans-serif",
+              letterSpacing: '0.05em',
+            }}
+          >
+            KEY PERFORMANCE
           </h2>
-          <p className="text-sm mt-1" style={{ color: 'var(--color-secondary)' }}>
+          <p className="text-sm mt-2" style={{ color: 'var(--color-secondary)' }}>
             Métricas de desempenho em tempo real
           </p>
         </div>
         <button
           className="text-sm font-medium px-4 py-2 rounded-lg transition-all"
           style={{
-            color: 'var(--color-brand)',
-            backgroundColor: 'rgba(231, 111, 81, 0.06)',
-            border: '1px solid rgba(231, 111, 81, 0.15)',
+            color: 'var(--neon-green)',
+            backgroundColor: 'rgba(57, 255, 20, 0.08)',
+            border: '1px solid rgba(57, 255, 20, 0.2)',
+            fontFamily: "'Space Grotesk', system-ui, sans-serif",
+            fontWeight: 500,
+            letterSpacing: '0.03em',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(231, 111, 81, 0.12)';
+            e.currentTarget.style.backgroundColor = 'rgba(57, 255, 20, 0.15)';
+            e.currentTarget.style.boxShadow = '0 0 12px rgba(57, 255, 20, 0.25)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(231, 111, 81, 0.06)';
+            e.currentTarget.style.backgroundColor = 'rgba(57, 255, 20, 0.08)';
+            e.currentTarget.style.boxShadow = 'none';
           }}
         >
-          ⚙️ Customizar
+          ⚙️ CUSTOMIZAR
         </button>
       </div>
 
@@ -98,19 +111,23 @@ export function KPISection({ data }: KPISectionProps) {
         {visibleMetrics.map((metric) => (
           <div
             key={metric.id}
-            className="group p-6 rounded-lg border transition-all duration-200 cursor-pointer overflow-hidden relative"
+            className="group p-6 rounded-lg border transition-all duration-200 cursor-pointer overflow-hidden relative backdrop-blur-md"
             style={{
-              backgroundColor: 'var(--bg-card)',
+              backgroundColor: 'rgba(26, 26, 46, 0.7)',
               border: 'var(--border-light)',
               boxShadow: 'var(--shadow-card)',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.boxShadow = 'var(--shadow-card-hover)';
-              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.transform = 'translateY(-4px)';
+              e.currentTarget.style.borderColor = 'rgba(57, 255, 20, 0.4)';
+              e.currentTarget.style.backgroundColor = 'rgba(26, 26, 46, 0.9)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.boxShadow = 'var(--shadow-card)';
               e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.borderColor = 'rgba(57, 255, 20, 0.1)';
+              e.currentTarget.style.backgroundColor = 'rgba(26, 26, 46, 0.7)';
             }}
           >
             {/* Content */}
@@ -120,9 +137,11 @@ export function KPISection({ data }: KPISectionProps) {
                   <p
                     className="text-xs font-bold mb-2 tracking-wide"
                     style={{
-                      color: 'var(--color-secondary)',
+                      color: 'var(--neon-green)',
                       textTransform: 'uppercase',
-                      letterSpacing: '0.8px',
+                      letterSpacing: '0.1em',
+                      fontFamily: "'Space Grotesk', system-ui, sans-serif",
+                      textShadow: '0 0 6px rgba(57, 255, 20, 0.25)',
                     }}
                   >
                     {metric.label}
@@ -134,8 +153,9 @@ export function KPISection({ data }: KPISectionProps) {
                 <div
                   className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 ml-3"
                   style={{
-                    backgroundColor: `${metric.accentColor}14`,
-                    color: metric.accentColor,
+                    backgroundColor: 'rgba(57, 255, 20, 0.1)',
+                    color: 'var(--neon-green)',
+                    boxShadow: '0 0 12px rgba(57, 255, 20, 0.3)',
                   }}
                   role="img"
                   aria-label={metric.label}
@@ -148,12 +168,17 @@ export function KPISection({ data }: KPISectionProps) {
               <div className="flex items-baseline gap-2 pt-4" style={{ borderTop: 'var(--border-light)' }}>
                 <span
                   className="text-4xl font-mono font-bold"
-                  style={{ color: metric.accentColor }}
+                  style={{
+                    color: 'var(--neon-green)',
+                    textShadow: '0 0 12px rgba(57, 255, 20, 0.4)',
+                    fontFamily: "'JetBrains Mono', monospace",
+                    letterSpacing: '0.05em',
+                  }}
                 >
                   {metric.value}
                 </span>
                 {metric.unit && (
-                  <span className="text-sm font-medium" style={{ color: 'var(--color-secondary)' }}>
+                  <span className="text-sm font-medium" style={{ color: 'var(--color-secondary)', fontSize: '0.85rem' }}>
                     {metric.unit}
                   </span>
                 )}
