@@ -192,20 +192,18 @@ export default async function handler(
     if (existingConnection) {
       // ===== ATUALIZAR conexão existente =====
       console.log('[OAuth] Updating existing connection...');
-      const { error: updateError } = await supabaseAdmin!
+      const { error: updateError } = await (supabaseAdmin! as any)
         .from('meta_connections')
-        .update(
-          {
-            meta_user_id: metaUserInfo.id,
-            meta_user_name: metaUserInfo.name,
-            meta_access_token: longLivedToken,
-            meta_token_expires_at: tokenExpiresAt,
-            meta_scopes: grantedScopes.join(','),
-            connection_status: 'active',
-            last_used_at: connectedAt,
-            updated_at: connectedAt,
-          } as const
-        )
+        .update({
+          meta_user_id: metaUserInfo.id,
+          meta_user_name: metaUserInfo.name,
+          meta_access_token: longLivedToken,
+          meta_token_expires_at: tokenExpiresAt,
+          meta_scopes: grantedScopes.join(','),
+          connection_status: 'active',
+          last_used_at: connectedAt,
+          updated_at: connectedAt,
+        })
         .eq('user_id', user.id);
 
       if (updateError) {
@@ -216,21 +214,19 @@ export default async function handler(
     } else {
       // ===== CRIAR nova conexão =====
       console.log('[OAuth] Creating new connection...');
-      const { error: insertError } = await supabaseAdmin!
+      const { error: insertError } = await (supabaseAdmin! as any)
         .from('meta_connections')
-        .insert(
-          {
-            user_id: user.id,
-            meta_user_id: metaUserInfo.id,
-            meta_user_name: metaUserInfo.name,
-            meta_access_token: longLivedToken,
-            meta_token_expires_at: tokenExpiresAt,
-            meta_scopes: grantedScopes.join(','),
-            connection_status: 'active',
-            created_at: connectedAt,
-            updated_at: connectedAt,
-          } as const
-        );
+        .insert({
+          user_id: user.id,
+          meta_user_id: metaUserInfo.id,
+          meta_user_name: metaUserInfo.name,
+          meta_access_token: longLivedToken,
+          meta_token_expires_at: tokenExpiresAt,
+          meta_scopes: grantedScopes.join(','),
+          connection_status: 'active',
+          created_at: connectedAt,
+          updated_at: connectedAt,
+        });
 
       if (insertError) {
         console.error('[OAuth] Error inserting meta_connections:', insertError);
