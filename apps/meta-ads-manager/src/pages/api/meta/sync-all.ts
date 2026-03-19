@@ -78,8 +78,9 @@ export default async function handler(
         .select('id, meta_account_id')
         .limit(100);
 
-      if (accounts) {
+      if (accounts && accounts.length > 0) {
         for (const account of accounts) {
+          // Sync pages
           try {
             const pages = await metaAPI.getPages(account.meta_account_id);
             if (pages && pages.length > 0) {
@@ -88,16 +89,26 @@ export default async function handler(
                 page_id: page.id,
                 page_name: page.name,
               }));
-              const { data: syncedPages } = await supabase
+              const { data: syncedPages, error: pagesError } = await supabase
                 .from('meta_pages')
                 .upsert(pagesToSync, { onConflict: 'meta_account_id,page_id' })
                 .select();
-              pagesCount += syncedPages?.length || 0;
+
+              if (pagesError) {
+                console.error(`Error syncing pages for account ${account.meta_account_id}:`, pagesError);
+                status = 'partial';
+                errorDetails = { ...errorDetails, pages: pagesError.message };
+              } else {
+                pagesCount += syncedPages?.length || 0;
+              }
             }
           } catch (error) {
+            console.error(`Exception syncing pages for account ${account.meta_account_id}:`, error);
             status = 'partial';
+            errorDetails = { ...errorDetails, pages_exception: error instanceof Error ? error.message : 'unknown' };
           }
 
+          // Sync pixels
           try {
             const pixels = await metaAPI.getPixels(account.meta_account_id);
             if (pixels && pixels.length > 0) {
@@ -107,20 +118,36 @@ export default async function handler(
                 pixel_name: pixel.name,
                 last_fired_time: pixel.last_fired_time,
               }));
-              const { data: syncedPixels } = await supabase
+              const { data: syncedPixels, error: pixelsError } = await supabase
                 .from('meta_pixels')
                 .upsert(pixelsToSync, { onConflict: 'meta_account_id,pixel_id' })
                 .select();
-              pixelsCount += syncedPixels?.length || 0;
+
+              if (pixelsError) {
+                console.error(`Error syncing pixels for account ${account.meta_account_id}:`, pixelsError);
+                status = 'partial';
+                errorDetails = { ...errorDetails, pixels: pixelsError.message };
+              } else {
+                pixelsCount += syncedPixels?.length || 0;
+              }
             }
           } catch (error) {
+            console.error(`Exception syncing pixels for account ${account.meta_account_id}:`, error);
             status = 'partial';
+            errorDetails = { ...errorDetails, pixels_exception: error instanceof Error ? error.message : 'unknown' };
           }
         }
       }
     } catch (error) {
+      console.error('Error in pages/pixels sync loop:', error);
       status = 'partial';
-      errorDetails = { ...errorDetails, pages_pixels: error instanceof Error ? error.message : 'unknown' };
+      errorDetails = { ...errorDetails, pages_pixels_loop: error instanceof Error ? error.message : 'unknown' };
+    }
+
+    // If nothing was synced and no explicit success, mark as failed
+    if (accountsCount === 0 && pagesCount === 0 && pixelsCount === 0 && status === 'success') {
+      status = 'failed';
+      errorDetails = { message: 'No data synced from Meta API' };
     }
 
     // 3. Log sync attempt
