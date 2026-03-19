@@ -1,6 +1,6 @@
 import React, { useReducer, useCallback } from 'react';
 import { useRouter } from 'next/router';
-import { useSession } from 'next-auth/react';
+import { supabase } from '@/lib/supabase';
 import DashboardLayout from '@/components/DashboardLayout';
 import WizardSidebar from '@/components/campaign-wizard/WizardSidebar';
 import Step0AccountPicker from '@/components/campaign-wizard/Step0AccountPicker';
@@ -72,7 +72,6 @@ const initialState: WizardFormData = {
 
 export default function CampaignSetupPage() {
   const router = useRouter();
-  const { data: session } = useSession();
   const [currentStep, setCurrentStep] = React.useState<Step>(0);
   const [formData, dispatch] = useReducer(wizardReducer, initialState);
 
@@ -108,17 +107,18 @@ export default function CampaignSetupPage() {
   };
 
   const handlePublish = async () => {
-    if (!session?.user?.email) {
-      alert('User not authenticated');
-      return;
-    }
-
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        alert('User not authenticated');
+        return;
+      }
+
       const res = await fetch('/api/meta/campaigns-create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.user.email}`,
+          Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify(formData),
       });

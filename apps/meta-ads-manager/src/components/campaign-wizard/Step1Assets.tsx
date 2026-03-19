@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
+import { supabase } from '@/lib/supabase';
 
 interface Pixel {
   id: string;
@@ -17,7 +17,6 @@ interface Step1Props {
 }
 
 export default function Step1Assets({ accountId }: Step1Props) {
-  const { data: session } = useSession();
   const [pixels, setPixels] = useState<Pixel[]>([]);
   const [pages, setPages] = useState<Page[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,18 +24,25 @@ export default function Step1Assets({ accountId }: Step1Props) {
 
   useEffect(() => {
     const fetchAssets = async () => {
-      if (!accountId || !session?.user?.email) return;
+      if (!accountId) return;
 
       try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.access_token) {
+          setError('Usuário não autenticado');
+          setLoading(false);
+          return;
+        }
+
         setLoading(true);
         setError(null);
 
         const [pixelsRes, pagesRes] = await Promise.all([
           fetch(`/api/meta/pixels?accountId=${accountId}`, {
-            headers: { Authorization: `Bearer ${session.user.email}` },
+            headers: { Authorization: `Bearer ${session.access_token}` },
           }),
           fetch(`/api/meta/pages?accountId=${accountId}`, {
-            headers: { Authorization: `Bearer ${session.user.email}` },
+            headers: { Authorization: `Bearer ${session.access_token}` },
           }),
         ]);
 
