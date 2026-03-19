@@ -173,11 +173,12 @@ export default async function handler(
     console.log(`[OAuth] Saving connection for user: ${user.id}`);
 
     // Tentar encontrar conexão existente
-    const { data: existingConnection, error: selectError } = await supabaseAdmin
-      ?.from('meta_connections')
+    const { data: existingConnection, error: selectError } = await supabaseAdmin!
+      .from('meta_connections')
       .select('id')
       .eq('user_id', user.id)
-      .single() || { data: null, error: null };
+      .single()
+      .catch(() => ({ data: null, error: null }));
 
     if (selectError && selectError.code !== 'PGRST116') {
       // PGRST116 = not found (normal)
@@ -189,8 +190,8 @@ export default async function handler(
     if (existingConnection) {
       // ===== ATUALIZAR conexão existente =====
       console.log('[OAuth] Updating existing connection...');
-      const { error: updateError } = await supabaseAdmin
-        ?.from('meta_connections')
+      const { error: updateError } = await supabaseAdmin!
+        .from('meta_connections')
         .update({
           meta_user_id: metaUserInfo.id,
           meta_user_name: metaUserInfo.name,
@@ -211,8 +212,8 @@ export default async function handler(
     } else {
       // ===== CRIAR nova conexão =====
       console.log('[OAuth] Creating new connection...');
-      const { error: insertError } = await supabaseAdmin
-        ?.from('meta_connections')
+      const { error: insertError } = await supabaseAdmin!
+        .from('meta_connections')
         .insert({
           user_id: user.id,
           meta_user_id: metaUserInfo.id,
