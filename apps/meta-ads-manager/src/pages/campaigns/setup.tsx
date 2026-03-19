@@ -1,408 +1,208 @@
-'use client';
-
-import React, { useState } from 'react';
-import { DashboardLayout } from '@/components/DashboardLayout';
-import { useMetaSync } from '@/hooks/useMetaSync';
-import { useMetaAccounts } from '@/hooks/useMetaAccounts';
-import { useMetaPages } from '@/hooks/useMetaPages';
-import { useMetaPixels } from '@/hooks/useMetaPixels';
+import React, { useReducer, useCallback } from 'react';
 import { useRouter } from 'next/router';
-import { RefreshCw } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import DashboardLayout from '@/components/DashboardLayout';
+import WizardSidebar from '@/components/campaign-wizard/WizardSidebar';
+import Step0AccountPicker from '@/components/campaign-wizard/Step0AccountPicker';
+import Step1Assets from '@/components/campaign-wizard/Step1Assets';
+import { Step1Campaign } from '@/components/campaign-creator/Step1Campaign';
+import { Step2AdSet } from '@/components/campaign-creator/Step2AdSet';
+import { Step3Ad } from '@/components/campaign-creator/Step3Ad';
+import Step5Review from '@/components/campaign-wizard/Step5Review';
 
-export default function CampaignsCentralPage() {
+type Step = 0 | 1 | 2 | 3 | 4 | 5;
+
+interface WizardFormData {
+  accountId: string;
+  accountName: string;
+  campaignName?: string;
+  campaignObjective?: string;
+  campaignStatus?: 'ACTIVE' | 'PAUSED';
+  budgetType?: 'daily' | 'lifetime';
+  campaignDailyBudget?: number;
+  campaignLifetimeBudget?: number;
+  campaignStartTime?: string;
+  campaignStopTime?: string;
+  adSetName?: string;
+  adSetStatus?: 'ACTIVE' | 'PAUSED';
+  adSetBillingEvent?: string;
+  adSetBidStrategy?: string;
+  adSetBidAmount?: number;
+  adSetTargeting?: Record<string, unknown>;
+  adName?: string;
+  adStatus?: 'ACTIVE' | 'PAUSED';
+  creativeFormat?: 'single_image' | 'single_video' | 'carousel' | 'collection';
+  creativeHeadline?: string;
+  creativeBody?: string;
+  creativeUrl?: string;
+  creativeImageUrl?: string;
+  pageId?: string;
+  pixelId?: string;
+}
+
+type WizardAction =
+  | { type: 'UPDATE_ACCOUNT'; payload: { accountId: string; accountName: string } }
+  | { type: 'UPDATE_CAMPAIGN'; payload: Partial<WizardFormData> }
+  | { type: 'UPDATE_ADSET'; payload: Partial<WizardFormData> }
+  | { type: 'UPDATE_AD'; payload: Partial<WizardFormData> };
+
+function wizardReducer(state: WizardFormData, action: WizardAction): WizardFormData {
+  switch (action.type) {
+    case 'UPDATE_ACCOUNT':
+      return { ...state, accountId: action.payload.accountId, accountName: action.payload.accountName };
+    case 'UPDATE_CAMPAIGN':
+      return { ...state, ...action.payload };
+    case 'UPDATE_ADSET':
+      return { ...state, ...action.payload };
+    case 'UPDATE_AD':
+      return { ...state, ...action.payload };
+    default:
+      return state;
+  }
+}
+
+const initialState: WizardFormData = {
+  accountId: '',
+  accountName: '',
+  budgetType: 'daily',
+  adSetStatus: 'ACTIVE',
+  adStatus: 'ACTIVE',
+  creativeFormat: 'single_image',
+};
+
+export default function CampaignSetupPage() {
   const router = useRouter();
-  const [selectedAccountId, setSelectedAccountId] = useState<string>('');
+  const { data: session } = useSession();
+  const [currentStep, setCurrentStep] = React.useState<Step>(0);
+  const [formData, dispatch] = useReducer(wizardReducer, initialState);
 
-  const { sync, isSyncing, syncStatus, lastSync } = useMetaSync();
-  const { data: accounts = [] } = useMetaAccounts();
-  const { data: pages = [] } = useMetaPages(selectedAccountId);
-  const { data: pixels = [] } = useMetaPixels(selectedAccountId);
-
-  // Set first account as default
-  React.useEffect(() => {
-    if (accounts.length > 0 && !selectedAccountId) {
-      setSelectedAccountId(accounts[0].id);
+  const canProceedToNextStep = useCallback(() => {
+    switch (currentStep) {
+      case 0:
+        return !!formData.accountId;
+      case 1:
+        return true;
+      case 2:
+        return !!(formData.campaignName && formData.campaignObjective && formData.budgetType);
+      case 3:
+        return !!(formData.adSetName && formData.adSetBillingEvent && formData.adSetBidStrategy);
+      case 4:
+        return !!(formData.adName && formData.creativeHeadline && formData.creativeBody && formData.creativeUrl && formData.pageId);
+      case 5:
+        return true;
+      default:
+        return false;
     }
-  }, [accounts, selectedAccountId]);
+  }, [currentStep, formData]);
 
-  const handleSync = () => {
-    sync();
-  };
-
-  const handleStartConfiguration = () => {
-    if (selectedAccountId) {
-      router.push(`/campaigns/setup/wizard?accountId=${selectedAccountId}`);
+  const handleNextStep = () => {
+    if (canProceedToNextStep() && currentStep < 5) {
+      setCurrentStep((currentStep + 1) as Step);
     }
   };
 
-  const formatLastSync = () => {
-    if (!lastSync) return 'Never';
-    const date = new Date(lastSync);
-    return date.toLocaleString('pt-BR');
+  const handlePreviousStep = () => {
+    if (currentStep > 0) {
+      setCurrentStep((currentStep - 1) as Step);
+    }
   };
 
-  const isLoading = isSyncing || syncStatus === 'syncing';
+  const handlePublish = async () => {
+    if (!session?.user?.email) {
+      alert('User not authenticated');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/meta/campaigns-create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.user.email}`,
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        alert(`Error: ${error.message}`);
+        return;
+      }
+
+      const campaign = await res.json();
+      router.push(`/campaigns/${campaign.id}`);
+    } catch (error) {
+      console.error('Campaign creation error:', error);
+      alert('Failed to create campaign');
+    }
+  };
+
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 0:
+        return <Step0AccountPicker formData={formData} dispatch={dispatch} />;
+      case 1:
+        return <Step1Assets accountId={formData.accountId} />;
+      case 2:
+        return (
+          <Step1Campaign
+            data={formData}
+            onChange={(field, value) => dispatch({ type: 'UPDATE_CAMPAIGN', payload: { [field]: value } })}
+          />
+        );
+      case 3:
+        return (
+          <Step2AdSet
+            data={formData}
+            onChange={(field, value) => dispatch({ type: 'UPDATE_ADSET', payload: { [field]: value } })}
+          />
+        );
+      case 4:
+        return (
+          <Step3Ad
+            accountId={formData.accountId}
+            data={formData}
+            onChange={(field, value) => dispatch({ type: 'UPDATE_AD', payload: { [field]: value } })}
+          />
+        );
+      case 5:
+        return <Step5Review formData={formData} />;
+      default:
+        return null;
+    }
+  };
 
   return (
     <DashboardLayout>
-      <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-deepest)' }}>
-        {/* Header Section */}
-        <div className="border-b" style={{ borderBottomColor: 'rgba(57, 255, 20, 0.2)' }}>
-          <div className="max-w-7xl mx-auto px-6 py-8">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h1
-                  className="text-4xl font-bold mb-2"
-                  style={{
-                    color: 'var(--neon-green)',
-                    textShadow: '0 0 12px rgba(57, 255, 20, 0.3)',
-                    fontFamily: "'Space Grotesk', system-ui, sans-serif",
-                    letterSpacing: '0.05em',
-                  }}
-                >
-                  Central de Campanhas
-                </h1>
-                <p style={{ color: 'var(--color-secondary)' }} className="text-sm">
-                  Gerencie suas contas, páginas e pixels de rastreamento
-                </p>
-              </div>
-
-              {/* Sync Button */}
-              <button
-                onClick={handleSync}
-                disabled={isLoading}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all disabled:opacity-50"
-                style={{
-                  backgroundColor: isLoading ? 'rgba(57, 255, 20, 0.3)' : 'rgba(57, 255, 20, 0.1)',
-                  color: 'var(--neon-green)',
-                  border: '1px solid rgba(57, 255, 20, 0.3)',
-                }}
-                onMouseEnter={(e) => {
-                  if (!isLoading) {
-                    e.currentTarget.style.backgroundColor = 'rgba(57, 255, 20, 0.2)';
-                    e.currentTarget.style.boxShadow = '0 0 12px rgba(57, 255, 20, 0.2)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(57, 255, 20, 0.1)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-              >
-                <RefreshCw
-                  size={18}
-                  className={isLoading ? 'animate-spin' : ''}
-                />
-                {isLoading ? 'Sincronizando...' : 'Sincronizar'}
-              </button>
-            </div>
-
-            {/* Last Sync Info */}
-            <div
-              className="p-3 rounded-lg text-sm"
-              style={{
-                backgroundColor: 'rgba(0, 240, 255, 0.05)',
-                border: '1px solid rgba(0, 240, 255, 0.2)',
-                color: 'var(--neon-cyan)',
-              }}
-            >
-              Última sincronização: <strong>{formatLastSync()}</strong>
-            </div>
-          </div>
-        </div>
-
-        {/* Main Content */}
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          {accounts.length === 0 ? (
-            // Empty State
-            <div
-              className="rounded-lg p-12 text-center"
-              style={{
-                backgroundColor: 'rgba(255, 183, 3, 0.05)',
-                border: '1px solid rgba(255, 183, 3, 0.2)',
-              }}
-            >
-              <p
-                className="text-lg mb-4"
-                style={{ color: 'var(--neon-amber)' }}
-              >
-                📊 Nenhuma conta sincronizada
-              </p>
-              <p style={{ color: 'var(--color-secondary)' }} className="mb-6">
-                Clique no botão &quot;Sincronizar&quot; acima para importar suas contas de anúncio do Meta.
-              </p>
-              <button
-                onClick={handleSync}
-                disabled={isLoading}
-                className="px-6 py-2 rounded-lg font-medium transition-all"
-                style={{
-                  backgroundColor: 'var(--neon-green)',
-                  color: 'var(--bg-deepest)',
-                  fontWeight: 600,
-                }}
-              >
-                Sincronizar Agora
-              </button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Left Column: Ad Accounts */}
-              <div>
-                <h2
-                  className="text-xl font-bold mb-4"
-                  style={{
-                    color: 'var(--neon-green)',
-                    letterSpacing: '0.03em',
-                  }}
-                >
-                  👤 Contas de Anúncio
-                </h2>
-
-                <div className="space-y-3">
-                  {accounts.map((account) => (
-                    <div
-                      key={account.id}
-                      onClick={() => setSelectedAccountId(account.id)}
-                      className="p-4 rounded-lg cursor-pointer transition-all"
-                      style={{
-                        backgroundColor:
-                          selectedAccountId === account.id
-                            ? 'rgba(57, 255, 20, 0.15)'
-                            : 'var(--bg-card)',
-                        border:
-                          selectedAccountId === account.id
-                            ? '2px solid var(--neon-green)'
-                            : '1px solid rgba(57, 255, 20, 0.2)',
-                        boxShadow:
-                          selectedAccountId === account.id
-                            ? '0 0 12px rgba(57, 255, 20, 0.2)'
-                            : 'none',
-                      }}
-                      onMouseEnter={(e) => {
-                        if (selectedAccountId !== account.id) {
-                          e.currentTarget.style.borderColor =
-                            'rgba(57, 255, 20, 0.4)';
-                          e.currentTarget.style.backgroundColor =
-                            'rgba(57, 255, 20, 0.08)';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (selectedAccountId !== account.id) {
-                          e.currentTarget.style.borderColor =
-                            'rgba(57, 255, 20, 0.2)';
-                          e.currentTarget.style.backgroundColor = 'var(--bg-card)';
-                        }
-                      }}
-                    >
-                      <h3
-                        className="font-semibold mb-1"
-                        style={{ color: 'var(--color-primary)' }}
-                      >
-                        {account.meta_account_name}
-                      </h3>
-                      <p
-                        className="text-xs font-mono"
-                        style={{ color: 'var(--color-secondary)' }}
-                      >
-                        ID: {account.meta_account_id}
-                      </p>
-                      <div className="flex gap-4 mt-3 pt-3" style={{ borderTopColor: 'rgba(57, 255, 20, 0.1)', borderTopWidth: '1px' }}>
-                        <div>
-                          <p
-                            className="text-xs"
-                            style={{ color: 'var(--color-secondary)' }}
-                          >
-                            Moeda
-                          </p>
-                          <p
-                            className="text-sm font-medium"
-                            style={{ color: 'var(--color-primary)' }}
-                          >
-                            {account.currency || 'USD'}
-                          </p>
-                        </div>
-                        <div>
-                          <p
-                            className="text-xs"
-                            style={{ color: 'var(--color-secondary)' }}
-                          >
-                            Fuso Horário
-                          </p>
-                          <p
-                            className="text-sm font-medium"
-                            style={{ color: 'var(--color-primary)' }}
-                          >
-                            {account.timezone || 'UTC'}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Right Column: Pages & Pixels */}
-              <div className="space-y-8">
-                {/* Business Pages */}
-                <div>
-                  <h2
-                    className="text-xl font-bold mb-4"
-                    style={{
-                      color: 'var(--neon-cyan)',
-                      letterSpacing: '0.03em',
-                    }}
-                  >
-                    📄 Páginas Empresariais
-                  </h2>
-
-                  {pages.length === 0 ? (
-                    <div
-                      className="p-4 rounded-lg text-center"
-                      style={{
-                        backgroundColor: 'rgba(0, 240, 255, 0.05)',
-                        border: '1px solid rgba(0, 240, 255, 0.2)',
-                      }}
-                    >
-                      <p
-                        className="text-sm"
-                        style={{ color: 'var(--color-secondary)' }}
-                      >
-                        Nenhuma página encontrada para esta conta.
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      {pages.map((page) => (
-                        <div
-                          key={page.id}
-                          className="p-3 rounded-lg"
-                          style={{
-                            backgroundColor: 'var(--bg-card)',
-                            border: '1px solid rgba(0, 240, 255, 0.2)',
-                          }}
-                        >
-                          <p
-                            className="font-medium text-sm"
-                            style={{ color: 'var(--color-primary)' }}
-                          >
-                            {page.name}
-                          </p>
-                          <p
-                            className="text-xs font-mono mt-1"
-                            style={{ color: 'var(--color-secondary)' }}
-                          >
-                            ID: {page.id}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Tracking Pixels */}
-                <div>
-                  <h2
-                    className="text-xl font-bold mb-4"
-                    style={{
-                      color: 'var(--neon-green)',
-                      letterSpacing: '0.03em',
-                    }}
-                  >
-                    📍 Pixels de Rastreamento
-                  </h2>
-
-                  {pixels.length === 0 ? (
-                    <div
-                      className="p-4 rounded-lg text-center"
-                      style={{
-                        backgroundColor: 'rgba(57, 255, 20, 0.05)',
-                        border: '1px solid rgba(57, 255, 20, 0.2)',
-                      }}
-                    >
-                      <p
-                        className="text-sm"
-                        style={{ color: 'var(--color-secondary)' }}
-                      >
-                        Nenhum pixel encontrado para esta conta.
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      {pixels.map((pixel) => (
-                        <div
-                          key={pixel.id}
-                          className="p-3 rounded-lg"
-                          style={{
-                            backgroundColor: 'var(--bg-card)',
-                            border: '1px solid rgba(57, 255, 20, 0.2)',
-                          }}
-                        >
-                          <p
-                            className="font-medium text-sm"
-                            style={{ color: 'var(--color-primary)' }}
-                          >
-                            {pixel.name}
-                          </p>
-                          <p
-                            className="text-xs font-mono mt-1"
-                            style={{ color: 'var(--color-secondary)' }}
-                          >
-                            ID: {pixel.id}
-                          </p>
-                          {pixel.last_fired_time && (
-                            <p
-                              className="text-xs mt-2"
-                              style={{ color: 'var(--neon-green)' }}
-                            >
-                              ✓ Último rastreamento:{' '}
-                              {new Date(
-                                pixel.last_fired_time * 1000
-                              ).toLocaleDateString('pt-BR')}
-                            </p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Action Buttons */}
-          <div className="mt-12 flex gap-4 justify-center">
+      <div className="flex h-full gap-6 bg-gray-50 p-6">
+        <WizardSidebar currentStep={currentStep} />
+        <div className="flex-1 bg-white rounded-lg shadow-sm p-8 flex flex-col">
+          <div className="flex-1 overflow-auto">{renderStepContent()}</div>
+          <div className="mt-8 flex items-center justify-between border-t pt-6">
             <button
-              onClick={handleStartConfiguration}
-              disabled={!selectedAccountId || accounts.length === 0}
-              className="px-8 py-4 rounded-lg font-bold text-lg transition-all duration-200"
-              style={{
-                backgroundColor:
-                  selectedAccountId && accounts.length > 0
-                    ? 'var(--neon-green)'
-                    : '#666',
-                color: selectedAccountId && accounts.length > 0 ? 'var(--bg-deepest)' : '#999',
-                fontFamily: "'Space Grotesk', system-ui, sans-serif",
-                fontWeight: 700,
-                letterSpacing: '0.05em',
-                boxShadow:
-                  selectedAccountId && accounts.length > 0
-                    ? '0 0 20px rgba(57, 255, 20, 0.4)'
-                    : 'none',
-              }}
-              onMouseEnter={(e) => {
-                if (selectedAccountId && accounts.length > 0) {
-                  e.currentTarget.style.boxShadow =
-                    '0 0 30px rgba(57, 255, 20, 0.6)';
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow =
-                  '0 0 20px rgba(57, 255, 20, 0.4)';
-                e.currentTarget.style.transform = 'translateY(0)';
-              }}
+              onClick={handlePreviousStep}
+              disabled={currentStep === 0}
+              className="px-6 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              🚀 INICIAR CONFIGURAÇÃO
+              Anterior
             </button>
+            <div className="text-sm text-gray-600">Passo {currentStep + 1} de 6</div>
+            {currentStep === 5 ? (
+              <button
+                onClick={handlePublish}
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                Publicar Campanha
+              </button>
+            ) : (
+              <button
+                onClick={handleNextStep}
+                disabled={!canProceedToNextStep()}
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Próximo
+              </button>
+            )}
           </div>
         </div>
       </div>
