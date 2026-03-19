@@ -20,15 +20,16 @@ export const useMetaSync = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return null;
 
-      const { data } = await supabase
-        .from('sync_log')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
+      const response = await fetch('/api/logs/sync', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
 
-      return data as SyncStatus | null;
+      if (!response.ok) return null;
+      const json = await response.json();
+      const logs = (json.logs || []) as SyncStatus[];
+      return logs.length > 0 ? logs[0] : null;
     },
     refetchInterval: 60 * 60 * 1000, // 1 hour
     staleTime: 5 * 60 * 1000, // 5 minutes
