@@ -61,7 +61,7 @@ export default function Step1Assets({ accountId }: Step1Props) {
     };
 
     fetchAssets();
-  }, [accountId, session]);
+  }, [accountId]);
 
   if (loading) {
     return <div className="flex items-center justify-center py-12">⏳ Carregando assets...</div>;
