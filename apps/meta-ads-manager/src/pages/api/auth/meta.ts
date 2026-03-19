@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { randomBytes } from 'crypto';
-import { getUserFromRequest } from '@/lib/auth';
+import { supabase } from '@/lib/supabase';
 
 /**
  * GET /api/auth/meta
@@ -8,9 +8,10 @@ import { getUserFromRequest } from '@/lib/auth';
  *
  * Pré-requisitos:
  * - Usuário deve estar autenticado via Supabase Auth
+ * - Token pode ser passado via query param (?token=...) ou Authorization header
  *
  * Fluxo:
- * 1. Verifica se usuário está autenticado
+ * 1. Verifica se usuário está autenticado (via token ou header)
  * 2. Gera state aleatório (proteção CSRF)
  * 3. Salva em cookie httpOnly (10 minutos)
  * 4. Redireciona para dialog de login do Facebook
@@ -25,11 +26,30 @@ export default async function handler(
 
   try {
     // 1. Verificar se usuário está autenticado
-    const user = await getUserFromRequest(req);
-    if (!user) {
-      console.warn('[OAuth] Unauthorized OAuth init attempt - user not authenticated');
+    let token = null;
+
+    // Tentar obter token do query param (vem do frontend)
+    if (req.query.token && typeof req.query.token === 'string') {
+      token = req.query.token;
+    }
+    // Ou do Authorization header (vem de API calls)
+    else if (req.headers.authorization?.startsWith('Bearer ')) {
+      token = req.headers.authorization.slice(7);
+    }
+
+    if (!token) {
+      console.warn('[OAuth] Unauthorized OAuth init attempt - no token provided');
       return res.redirect(302, `${process.env.NEXT_PUBLIC_APP_URL}/login?error=unauthorized`);
     }
+
+    // Validar token e obter usuário
+    const { data, error } = await supabase.auth.getUser(token);
+    if (error || !data.user) {
+      console.warn('[OAuth] Invalid token');
+      return res.redirect(302, `${process.env.NEXT_PUBLIC_APP_URL}/login?error=unauthorized`);
+    }
+
+    const user = data.user;
 
     console.log(`[OAuth] Initiating Meta OAuth flow for user: ${user.id}`);
 

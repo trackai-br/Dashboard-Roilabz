@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { supabase } from '@/lib/supabase';
 
 interface MetaAuthButtonProps {
   onSuccess?: () => void;
@@ -15,12 +16,27 @@ const MetaAuthButton: React.FC<MetaAuthButtonProps> = ({
 }) => {
   const [isAuthLoading, setIsAuthLoading] = useState(false);
 
-  const handleMetaLogin = () => {
-    setIsAuthLoading(true);
-    // Redirecionar para a rota de OAuth que inicia o fluxo
-    // Note: window.location.href navegação causa page reload, então setIsAuthLoading
-    // será resetado automaticamente. Não precisa try/catch aqui pois redirect não lança erro.
-    window.location.href = '/api/auth/meta';
+  const handleMetaLogin = async () => {
+    try {
+      setIsAuthLoading(true);
+
+      // Obter token da sessão atual do Supabase
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+      if (sessionError || !session?.access_token) {
+        console.error('No active session found');
+        onError?.(new Error('User not authenticated'));
+        setIsAuthLoading(false);
+        return;
+      }
+
+      // Redirecionar para OAuth com token no query param
+      window.location.href = `/api/auth/meta?token=${encodeURIComponent(session.access_token)}`;
+    } catch (error) {
+      console.error('Error in handleMetaLogin:', error);
+      onError?.(error instanceof Error ? error : new Error('Login failed'));
+      setIsAuthLoading(false);
+    }
   };
 
   const isDisabled = isLoading || isAuthLoading;
