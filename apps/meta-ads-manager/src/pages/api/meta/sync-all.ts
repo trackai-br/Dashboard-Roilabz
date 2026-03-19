@@ -71,11 +71,31 @@ export default async function handler(
       errorDetails = { accounts: error instanceof Error ? error.message : 'unknown' };
     }
 
-    // 2. Sync Pages and Pixels for each account
+    // 2. Sync Pages and Pixels for each account (only user's accounts)
     try {
+      // Get only accounts the user has access to
+      const { data: userAccounts } = await supabase
+        .from('user_account_access')
+        .select('account_id')
+        .eq('user_id', user.id);
+
+      if (!userAccounts || userAccounts.length === 0) {
+        // User has no accounts, just skip pages/pixels sync
+        return res.status(200).json({
+          success: true,
+          status: 'success',
+          synced_accounts: accountsCount,
+          synced_pages: pagesCount,
+          synced_pixels: pixelsCount,
+        });
+      }
+
+      const accountIds = userAccounts.map(ua => ua.account_id);
+
       const { data: accounts } = await supabase
         .from('meta_accounts')
         .select('id, meta_account_id')
+        .in('id', accountIds)
         .limit(100);
 
       if (accounts && accounts.length > 0) {

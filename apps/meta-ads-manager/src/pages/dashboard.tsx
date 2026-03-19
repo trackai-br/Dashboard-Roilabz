@@ -57,7 +57,7 @@ export default function Dashboard() {
       }
 
       // Fetch with Authorization header containing JWT token
-      const response = await fetch('/api/meta/sync-accounts', {
+      const response = await fetch('/api/meta/sync-all', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -75,11 +75,12 @@ export default function Dashboard() {
       const data = await response.json();
       setSyncMessage({
         type: 'success',
-        text: `✅ ${data.synced} conta(s) sincronizada(s) do Meta`,
+        text: `✅ ${data.synced_accounts} conta(s), ${data.synced_pages} página(s), ${data.synced_pixels} pixel(s) sincronizado(s)`,
       });
 
-      // Refetch accounts
+      // Refetch all sync-related data
       queryClient.invalidateQueries({ queryKey: ['meta-accounts'] });
+      queryClient.invalidateQueries({ queryKey: ['sync-logs'] });
 
       // Auto-hide message after 3 seconds
       setTimeout(() => setSyncMessage(null), 3000);
