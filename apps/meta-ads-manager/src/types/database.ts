@@ -65,6 +65,32 @@ export type Database = {
         Relationships: [];
       };
 
+      // === OAuth State Management ===
+      oauth_states: {
+        Row: {
+          id: string;
+          state: string;
+          provider: 'meta' | 'google';
+          expires_at: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          state: string;
+          provider: 'meta' | 'google';
+          expires_at: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          state?: string;
+          provider?: 'meta' | 'google';
+          expires_at?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+
       // === OAuth Connection Tables ===
       meta_connections: {
         Row: {
