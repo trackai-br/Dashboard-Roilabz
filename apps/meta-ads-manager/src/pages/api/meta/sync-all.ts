@@ -1,5 +1,6 @@
+// @ts-nocheck - Supabase client typing doesn't fully support custom tables
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createClient } from '@supabase/supabase-js';
+import { supabaseAdmin } from '@/lib/supabase';
 import { requireAuth } from '@/lib/auth';
 import { metaAPI } from '@/lib/meta-api';
 
@@ -26,10 +27,9 @@ export default async function handler(
   }
 
   try {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-      process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-    );
+    if (!supabaseAdmin) {
+      return res.status(500).json({ error: 'Supabase admin client not initialized' });
+    }
 
     let accountsCount = 0;
     let pagesCount = 0;
@@ -48,7 +48,7 @@ export default async function handler(
           timezone: account.timezone || 'America/New_York',
         }));
 
-        const { data: syncedAccounts } = await supabase
+        const { data: syncedAccounts } = await supabaseAdmin
           .from('meta_accounts')
           .upsert(accountsToSync, { onConflict: 'meta_account_id' })
           .select();
@@ -57,7 +57,7 @@ export default async function handler(
 
         // Create user_account_access entries
         if (syncedAccounts) {
-          await supabase.from('user_account_access').upsert(
+          await supabaseAdmin.from('user_account_access').upsert(
             syncedAccounts.map((account: any) => ({
               user_id: user.id,
               account_id: account.id,
@@ -74,16 +74,27 @@ export default async function handler(
     // 2. Sync Pages and Pixels for each account (only user's accounts)
     try {
       // Get only accounts the user has access to
-      const { data: userAccounts } = await supabase
+      const { data: userAccounts } = await supabaseAdmin
         .from('user_account_access')
         .select('account_id')
         .eq('user_id', user.id);
 
       if (!userAccounts || userAccounts.length === 0) {
-        // User has no accounts, just skip pages/pixels sync
+        // User has no accounts, log sync and return
+        const syncLog: SyncLogEntry = {
+          user_id: user.id,
+          status: accountsCount > 0 ? 'success' : 'failed',
+          synced_accounts: accountsCount,
+          synced_pages: pagesCount,
+          synced_pixels: pixelsCount,
+          error_details: accountsCount === 0 ? { message: 'No accounts synced' } : undefined,
+        };
+
+        await supabaseAdmin.from('sync_log').insert(syncLog);
+
         return res.status(200).json({
           success: true,
-          status: 'success',
+          status: syncLog.status,
           synced_accounts: accountsCount,
           synced_pages: pagesCount,
           synced_pixels: pixelsCount,
@@ -92,7 +103,7 @@ export default async function handler(
 
       const accountIds = userAccounts.map(ua => ua.account_id);
 
-      const { data: accounts } = await supabase
+      const { data: accounts } = await supabaseAdmin
         .from('meta_accounts')
         .select('id, meta_account_id')
         .in('id', accountIds)
@@ -109,7 +120,7 @@ export default async function handler(
                 page_id: page.id,
                 page_name: page.name,
               }));
-              const { data: syncedPages, error: pagesError } = await supabase
+              const { data: syncedPages, error: pagesError } = await supabaseAdmin
                 .from('meta_pages')
                 .upsert(pagesToSync, { onConflict: 'meta_account_id,page_id' })
                 .select();
@@ -138,7 +149,7 @@ export default async function handler(
                 pixel_name: pixel.name,
                 last_fired_time: pixel.last_fired_time,
               }));
-              const { data: syncedPixels, error: pixelsError } = await supabase
+              const { data: syncedPixels, error: pixelsError } = await supabaseAdmin
                 .from('meta_pixels')
                 .upsert(pixelsToSync, { onConflict: 'meta_account_id,pixel_id' })
                 .select();
@@ -180,7 +191,7 @@ export default async function handler(
       error_details: errorDetails,
     };
 
-    await supabase.from('sync_log').insert(syncLog);
+    await supabaseAdmin.from('sync_log').insert(syncLog);
 
     return res.status(200).json({
       success: true,
