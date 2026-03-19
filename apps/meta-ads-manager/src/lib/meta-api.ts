@@ -305,6 +305,7 @@ class MetaAPIClient {
    */
   async getPages(accountId: string): Promise<MetaPage[]> {
     try {
+      console.log(`[Meta API] Fetching pages for account: ${accountId}`);
       const account = new Business.AdAccount(accountId);
       const response = await account.getPages(
         [],
@@ -314,13 +315,16 @@ class MetaAPIClient {
         }
       );
 
+      console.log(`[Meta API] Pages fetched: ${response.length}`);
       return response.map((page: any) => ({
         id: page.id,
         name: page.name,
         access_token: page.access_token,
       }));
     } catch (error) {
-      throw new Error(`Failed to fetch pages: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      console.error(`[Meta API] Failed to fetch pages for account ${accountId}:`, errorMsg);
+      throw new Error(`Failed to fetch pages: ${errorMsg}`);
     }
   }
 
@@ -329,6 +333,7 @@ class MetaAPIClient {
    */
   async getPixels(accountId: string): Promise<MetaPixel[]> {
     try {
+      console.log(`[Meta API] Fetching pixels for account: ${accountId}`);
       const account = new Business.AdAccount(accountId);
       const response = await account.getConversionPixels(
         [],
@@ -338,13 +343,16 @@ class MetaAPIClient {
         }
       );
 
+      console.log(`[Meta API] Pixels fetched: ${response.length}`);
       return response.map((pixel: any) => ({
         id: pixel.id,
         name: pixel.name,
         last_fired_time: pixel.last_fired_time,
       }));
     } catch (error) {
-      throw new Error(`Failed to fetch pixels: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      console.error(`[Meta API] Failed to fetch pixels for account ${accountId}:`, errorMsg);
+      throw new Error(`Failed to fetch pixels: ${errorMsg}`);
     }
   }
 
