@@ -159,19 +159,17 @@ export default function Dashboard() {
             ))}
           </select>
 
-          {accounts && accounts.length === 0 && (
-            <button
-              onClick={handleSyncAccounts}
-              disabled={syncLoading}
-              className="rounded-lg px-4 py-2 font-medium transition-colors disabled:opacity-50"
-              style={{
-                backgroundColor: 'var(--color-brand)',
-                color: '#ffffff',
-              }}
-            >
-              {syncLoading ? 'Sincronizando...' : 'Sincronizar Contas'}
-            </button>
-          )}
+          <button
+            onClick={handleSyncAccounts}
+            disabled={syncLoading}
+            className="rounded-lg px-4 py-2 font-medium transition-colors disabled:opacity-50"
+            style={{
+              backgroundColor: 'var(--color-brand)',
+              color: '#ffffff',
+            }}
+          >
+            {syncLoading ? 'Sincronizando...' : '🔄 Sincronizar Tudo'}
+          </button>
         </div>
 
         {/* KPI Section */}
