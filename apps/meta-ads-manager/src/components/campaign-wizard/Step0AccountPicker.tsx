@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
+import { supabase } from '@/lib/supabase';
 
 interface Account {
   id: string;
@@ -14,18 +14,21 @@ interface Step0Props {
 }
 
 export default function Step0AccountPicker({ formData, dispatch }: Step0Props) {
-  const { data: session } = useSession();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchAccounts = async () => {
-      if (!session?.user?.email) return;
-
       try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.access_token) {
+          setError('Usuário não autenticado');
+          return;
+        }
+
         const res = await fetch('/api/meta/accounts', {
-          headers: { Authorization: `Bearer ${session.user.email}` },
+          headers: { Authorization: `Bearer ${session.access_token}` },
         });
 
         if (!res.ok) throw new Error('Failed to fetch accounts');
@@ -39,7 +42,7 @@ export default function Step0AccountPicker({ formData, dispatch }: Step0Props) {
     };
 
     fetchAccounts();
-  }, [session]);
+  }, []);
 
   const handleSelectAccount = (account: Account) => {
     dispatch({
