@@ -11,6 +11,7 @@ import {
   Settings,
   LogOut,
   ChevronRight,
+  FileText,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -26,6 +27,7 @@ export function Sidebar({ open }: SidebarProps) {
     { icon: Rocket, label: 'Subir Campanhas', href: '/campaigns/setup' },
     { icon: Target, label: 'Campanhas', href: '/campaigns' },
     { icon: Bell, label: 'Alertas', href: '/alerts' },
+    { icon: FileText, label: 'Logs', href: '/logs' },
     { icon: Settings, label: 'Configurações', href: '/settings' },
   ];
 
