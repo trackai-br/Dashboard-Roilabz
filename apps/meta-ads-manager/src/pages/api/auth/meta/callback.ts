@@ -192,7 +192,7 @@ export default async function handler(
     if (existingConnection) {
       // ===== ATUALIZAR conexão existente =====
       console.log('[OAuth] Updating existing connection...');
-      const { error: updateError } = await (supabaseAdmin! as any)
+      const { error: updateError } = await supabaseAdmin!
         .from('meta_connections')
         .update({
           meta_user_id: metaUserInfo.id,
@@ -214,7 +214,7 @@ export default async function handler(
     } else {
       // ===== CRIAR nova conexão =====
       console.log('[OAuth] Creating new connection...');
-      const { error: insertError } = await (supabaseAdmin! as any)
+      const { error: insertError } = await supabaseAdmin!
         .from('meta_connections')
         .insert({
           user_id: user.id,

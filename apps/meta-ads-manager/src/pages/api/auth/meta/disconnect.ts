@@ -38,7 +38,7 @@ export default async function handler(
     }
 
     // Limpar campos meta_* da tabela users
-    const { error: updateError } = await (supabaseAdmin! as any)
+    const { error: updateError } = await supabaseAdmin!
       .from('users')
       .update({
         meta_access_token: null,
