@@ -7,9 +7,9 @@ export interface GoogleAdsAccount {
   user_id: string;
   google_customer_id: string;
   account_name: string;
-  currency_code?: string;
-  time_zone?: string;
-  last_synced?: string;
+  currency_code: string | null;
+  time_zone: string | null;
+  last_synced: string | null;
   created_at: string;
 }
 
