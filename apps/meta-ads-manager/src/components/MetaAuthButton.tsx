@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { supabase } from '@/lib/supabase';
 
 interface MetaAuthButtonProps {
   onSuccess?: () => void;
@@ -16,27 +15,11 @@ const MetaAuthButton: React.FC<MetaAuthButtonProps> = ({
 }) => {
   const [isAuthLoading, setIsAuthLoading] = useState(false);
 
-  const handleMetaLogin = async () => {
-    try {
-      setIsAuthLoading(true);
-
-      // Obter token da sessão atual do Supabase
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-
-      if (sessionError || !session?.access_token) {
-        console.error('No active session found');
-        onError?.(new Error('User not authenticated'));
-        setIsAuthLoading(false);
-        return;
-      }
-
-      // Redirecionar para OAuth com token no query param
-      window.location.href = `/api/auth/meta?token=${encodeURIComponent(session.access_token)}`;
-    } catch (error) {
-      console.error('Error in handleMetaLogin:', error);
-      onError?.(error instanceof Error ? error : new Error('Login failed'));
-      setIsAuthLoading(false);
-    }
+  const handleMetaLogin = () => {
+    setIsAuthLoading(true);
+    // Redirecionar para a rota de OAuth que inicia o fluxo com Facebook
+    // O servidor vai gerar o state CSRF e redirecionar para Facebook
+    window.location.href = '/api/auth/meta';
   };
 
   const isDisabled = isLoading || isAuthLoading;

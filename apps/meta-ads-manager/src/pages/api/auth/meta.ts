@@ -25,42 +25,11 @@ export default async function handler(
   }
 
   try {
-    // 1. Verificar se usuário está autenticado
-    let token = null;
+    // Note: We don't validate the user here. Let Facebook validate during login.
+    // If user is not authenticated in Facebook, they'll be redirected to login.
+    // The callback handler (/api/auth/meta/callback) validates the token.
 
-    // Tentar obter token do query param (vem do frontend)
-    if (req.query.token && typeof req.query.token === 'string') {
-      token = req.query.token;
-      console.log('[OAuth] Token received from query param');
-    }
-    // Ou do Authorization header (vem de API calls)
-    else if (req.headers.authorization?.startsWith('Bearer ')) {
-      token = req.headers.authorization.slice(7);
-      console.log('[OAuth] Token received from Authorization header');
-    }
-
-    if (!token) {
-      console.error('[OAuth] ❌ No token provided in query param or Authorization header');
-      console.error('[OAuth] Query:', req.query);
-      console.error('[OAuth] Headers:', req.headers);
-      return res.redirect(302, `${process.env.NEXT_PUBLIC_APP_URL}/login?error=unauthorized`);
-    }
-
-    console.log('[OAuth] Token length:', token.length);
-
-    // Validar token e obter usuário
-    console.log('[OAuth] Validating token with supabase.auth.getUser()...');
-    const { data, error } = await supabase.auth.getUser(token);
-
-    console.log('[OAuth] getUser response - error:', error, 'user:', data.user?.id);
-
-    if (error || !data.user) {
-      console.error('[OAuth] ❌ Invalid token - error:', error?.message);
-      return res.redirect(302, `${process.env.NEXT_PUBLIC_APP_URL}/login?error=unauthorized`);
-    }
-
-    const user = data.user;
-    console.log('[OAuth] ✅ User authenticated:', user.id);
+    console.log('[OAuth] Initiating Meta OAuth flow...');
 
     console.log(`[OAuth] Initiating Meta OAuth flow for user: ${user.id}`);
 
