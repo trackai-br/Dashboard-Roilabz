@@ -231,26 +231,29 @@ class MetaAPIClient {
 
       const fieldsList = (fields || defaultFields).join(',');
 
-      // Use FacebookAdsApi to make direct REST API call
-      const api = Business.FacebookAdsApi.instance();
-      const url = `/${campaignId}/adsets`;
-
-      const params: any = {
+      // Make direct REST API call via fetch
+      const queryParams = new URLSearchParams({
         fields: fieldsList,
-        limit,
+        limit: limit.toString(),
         access_token: this.accessToken,
-      };
+      });
 
       if (after) {
-        params.after = after;
+        queryParams.append('after', after);
       }
 
-      const response = await api.call('GET', url, {}, params);
+      const url = `https://graph.facebook.com/${this.apiVersion}/${campaignId}/adsets?${queryParams.toString()}`;
 
-      console.log(`[Meta API] Ad sets fetched: ${response?.data?.length || 0}`);
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log(`[Meta API] Ad sets fetched: ${data?.data?.length || 0}`);
 
       return {
-        adsets: (response?.data || []).map((adset: any) => ({
+        adsets: (data?.data || []).map((adset: any) => ({
           id: adset.id,
           campaign_id: adset.campaign_id,
           name: adset.name,
@@ -263,7 +266,7 @@ class MetaAPIClient {
           bid_amount: adset.bid_amount,
           created_time: adset.created_time,
         })),
-        paging: response?.paging,
+        paging: data?.paging,
       };
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Unknown error';
@@ -319,18 +322,22 @@ class MetaAPIClient {
     try {
       console.log(`[Meta API] Fetching pages for account: ${accountId}`);
 
-      // Use FacebookAdsApi to make direct REST API call
-      const api = Business.FacebookAdsApi.instance();
-      const url = `/${accountId}/promote_pages`;
-
-      const response = await api.call('GET', url, {}, {
+      const queryParams = new URLSearchParams({
         fields: 'id,name,access_token',
-        limit: 100,
+        limit: '100',
         access_token: this.accessToken,
       });
 
-      console.log(`[Meta API] Pages fetched: ${response?.data?.length || 0}`);
-      return (response?.data || []).map((page: any) => ({
+      const url = `https://graph.facebook.com/${this.apiVersion}/${accountId}/promote_pages?${queryParams.toString()}`;
+
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log(`[Meta API] Pages fetched: ${data?.data?.length || 0}`);
+      return (data?.data || []).map((page: any) => ({
         id: page.id,
         name: page.name,
         access_token: page.access_token,
@@ -349,18 +356,22 @@ class MetaAPIClient {
     try {
       console.log(`[Meta API] Fetching pixels for account: ${accountId}`);
 
-      // Use FacebookAdsApi to make direct REST API call
-      const api = Business.FacebookAdsApi.instance();
-      const url = `/${accountId}/ads_pixels`;
-
-      const response = await api.call('GET', url, {}, {
+      const queryParams = new URLSearchParams({
         fields: 'id,name,last_fired_time',
-        limit: 100,
+        limit: '100',
         access_token: this.accessToken,
       });
 
-      console.log(`[Meta API] Pixels fetched: ${response?.data?.length || 0}`);
-      return (response?.data || []).map((pixel: any) => ({
+      const url = `https://graph.facebook.com/${this.apiVersion}/${accountId}/ads_pixels?${queryParams.toString()}`;
+
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log(`[Meta API] Pixels fetched: ${data?.data?.length || 0}`);
+      return (data?.data || []).map((pixel: any) => ({
         id: pixel.id,
         name: pixel.name,
         last_fired_time: pixel.last_fired_time,
