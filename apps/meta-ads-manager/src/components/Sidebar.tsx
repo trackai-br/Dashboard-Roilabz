@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import {
   LayoutDashboard,
+  Rocket,
   Target,
   Bell,
   Settings,
@@ -22,6 +23,7 @@ export function Sidebar({ open }: SidebarProps) {
 
   const navItems = [
     { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
+    { icon: Rocket, label: 'Subir Campanhas', href: '/campaigns/setup' },
     { icon: Target, label: 'Campanhas', href: '/campaigns' },
     { icon: Bell, label: 'Alertas', href: '/alerts' },
     { icon: Settings, label: 'Configurações', href: '/settings' },
