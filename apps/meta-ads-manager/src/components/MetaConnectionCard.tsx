@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
 import { useMetaConnection } from '@/hooks/useMetaConnection';
 
 /**
@@ -10,40 +9,42 @@ import { useMetaConnection } from '@/hooks/useMetaConnection';
  * Inclui toasts de sucesso/erro
  */
 export const MetaConnectionCard: React.FC = () => {
-  const router = useRouter();
   const { connection, isLoadingConnection, disconnectMutation } = useMetaConnection();
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Verificar query params para mostrar mensagens
   useEffect(() => {
-    if (router.query.connected === 'true') {
+    const params = new URLSearchParams(window.location.search);
+
+    if (params.get('connected') === 'true') {
       setMessage({
         type: 'success',
         text: '✅ Facebook conectado com sucesso!',
       });
       setTimeout(() => setMessage(null), 5000);
-      // Limpar query param
-      router.replace('/settings', undefined, { shallow: true });
+      // Limpar query param (substituir URL sem recarregar página)
+      window.history.replaceState({}, '', '/settings');
     }
 
-    if (router.query.error) {
+    const error = params.get('error');
+    if (error) {
       const errorMap: Record<string, string> = {
         csrf: '❌ Erro de segurança (CSRF). Tente novamente.',
         unauthorized: '❌ Você precisa estar autenticado.',
-        facebook: `❌ Erro do Facebook: ${router.query.message || 'Tente novamente.'}`,
+        facebook: `❌ Erro do Facebook: ${params.get('message') || 'Tente novamente.'}`,
         database: '❌ Erro ao salvar. Tente novamente.',
-        server: `❌ Erro do servidor: ${router.query.message || 'Tente novamente.'}`,
+        server: `❌ Erro do servidor: ${params.get('message') || 'Tente novamente.'}`,
       };
 
-      const errorMsg = errorMap[router.query.error as string] || '❌ Erro desconhecido.';
+      const errorMsg = errorMap[error] || '❌ Erro desconhecido.';
       setMessage({
         type: 'error',
         text: errorMsg,
       });
       setTimeout(() => setMessage(null), 5000);
-      router.replace('/settings', undefined, { shallow: true });
+      window.history.replaceState({}, '', '/settings');
     }
-  }, [router.query, router]);
+  }, []);
 
   const handleDisconnect = async () => {
     if (confirm('Tem certeza que deseja desconectar sua conta do Facebook?')) {

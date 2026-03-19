@@ -15,20 +15,12 @@ const MetaAuthButton: React.FC<MetaAuthButtonProps> = ({
 }) => {
   const [isAuthLoading, setIsAuthLoading] = useState(false);
 
-  const handleMetaLogin = async () => {
-    try {
-      setIsAuthLoading(true);
-
-      // Redirecionar para a rota de OAuth que inicia o fluxo
-      window.location.href = '/api/auth/meta';
-
-      onSuccess?.();
-    } catch (error) {
-      const err = error instanceof Error ? error : new Error('Login failed');
-      onError?.(err);
-    } finally {
-      setIsAuthLoading(false);
-    }
+  const handleMetaLogin = () => {
+    setIsAuthLoading(true);
+    // Redirecionar para a rota de OAuth que inicia o fluxo
+    // Note: window.location.href navegação causa page reload, então setIsAuthLoading
+    // será resetado automaticamente. Não precisa try/catch aqui pois redirect não lança erro.
+    window.location.href = '/api/auth/meta';
   };
 
   const isDisabled = isLoading || isAuthLoading;
