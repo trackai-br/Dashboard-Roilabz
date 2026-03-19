@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import DashboardLayout from '@/components/DashboardLayout';
+import { DashboardLayout } from '@/components/DashboardLayout';
 import MetaAuthButton from '@/components/MetaAuthButton';
 import GoogleAuthButton from '@/components/GoogleAuthButton';
 

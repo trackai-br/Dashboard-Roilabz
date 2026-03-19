@@ -1,7 +1,7 @@
 import React, { useReducer, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { supabase } from '@/lib/supabase';
-import DashboardLayout from '@/components/DashboardLayout';
+import { DashboardLayout } from '@/components/DashboardLayout';
 import WizardSidebar from '@/components/campaign-wizard/WizardSidebar';
 import Step0AccountPicker from '@/components/campaign-wizard/Step0AccountPicker';
 import Step1Assets from '@/components/campaign-wizard/Step1Assets';
@@ -146,14 +146,14 @@ export default function CampaignSetupPage() {
       case 2:
         return (
           <Step1Campaign
-            data={formData}
+            data={formData as any}
             onChange={(field, value) => dispatch({ type: 'UPDATE_CAMPAIGN', payload: { [field]: value } })}
           />
         );
       case 3:
         return (
           <Step2AdSet
-            data={formData}
+            data={formData as any}
             onChange={(field, value) => dispatch({ type: 'UPDATE_ADSET', payload: { [field]: value } })}
           />
         );
@@ -161,7 +161,7 @@ export default function CampaignSetupPage() {
         return (
           <Step3Ad
             accountId={formData.accountId}
-            data={formData}
+            data={formData as any}
             onChange={(field, value) => dispatch({ type: 'UPDATE_AD', payload: { [field]: value } })}
           />
         );

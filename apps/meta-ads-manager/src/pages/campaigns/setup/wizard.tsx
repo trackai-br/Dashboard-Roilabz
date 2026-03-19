@@ -3,13 +3,13 @@
 import React, { useReducer, useState } from 'react';
 import { useRouter } from 'next/router';
 import { DashboardLayout } from '../../../components/DashboardLayout';
-import { WizardSidebar } from '../../../components/campaign-wizard/WizardSidebar';
-import { Step0AccountPicker } from '../../../components/campaign-wizard/Step0AccountPicker';
-import { Step1Assets } from '../../../components/campaign-wizard/Step1Assets';
+import WizardSidebar from '../../../components/campaign-wizard/WizardSidebar';
+import Step0AccountPicker from '../../../components/campaign-wizard/Step0AccountPicker';
+import Step1Assets from '../../../components/campaign-wizard/Step1Assets';
 import { Step1Campaign } from '../../../components/campaign-creator/Step1Campaign';
 import { Step2AdSet } from '../../../components/campaign-creator/Step2AdSet';
 import { Step3Ad } from '../../../components/campaign-creator/Step3Ad';
-import { Step5Review } from '../../../components/campaign-wizard/Step5Review';
+import Step5Review from '../../../components/campaign-wizard/Step5Review';
 
 interface WizardFormData {
   // Step 0: Account
@@ -175,12 +175,12 @@ export default function CampaignWizardPage() {
       case 0:
         return (
           <Step0AccountPicker
-            selectedAccountId={formData.accountId}
-            onSelectAccount={handleAccountSelect}
+            formData={{ accountId: formData.accountId, accountName: formData.accountName }}
+            dispatch={(action: any) => dispatch(action)}
           />
         );
       case 1:
-        return <Step1Assets accountId={formData.accountId} accountName={formData.accountName} />;
+        return <Step1Assets accountId={formData.accountId} />;
       case 2:
         return (
           <Step1Campaign
@@ -232,7 +232,7 @@ export default function CampaignWizardPage() {
           />
         );
       case 5:
-        return <Step5Review data={formData} />;
+        return <Step5Review formData={formData} />;
       default:
         return null;
     }
@@ -241,7 +241,7 @@ export default function CampaignWizardPage() {
   return (
     <DashboardLayout>
       <div className="flex h-full">
-        <WizardSidebar currentStep={currentStep} />
+        <WizardSidebar currentStep={currentStep as any} />
 
         <div className="flex-1 overflow-auto">
           <div className="max-w-4xl mx-auto p-8">
