@@ -173,12 +173,12 @@ export default async function handler(
     console.log(`[OAuth] Saving connection for user: ${user.id}`);
 
     // Tentar encontrar conexão existente
-    const { data: existingConnection, error: selectError } = await supabaseAdmin!
+    let existingConnection = null;
+    const { data: foundConnection, error: selectError } = await supabaseAdmin!
       .from('meta_connections')
       .select('id')
       .eq('user_id', user.id)
-      .single()
-      .catch(() => ({ data: null, error: null }));
+      .single();
 
     if (selectError && selectError.code !== 'PGRST116') {
       // PGRST116 = not found (normal)
@@ -186,6 +186,8 @@ export default async function handler(
       const errorUrl = `${process.env.NEXT_PUBLIC_APP_URL}/connections?error=database&message=${encodeURIComponent('Failed to check connection')}`;
       return res.redirect(302, errorUrl);
     }
+
+    existingConnection = foundConnection;
 
     if (existingConnection) {
       // ===== ATUALIZAR conexão existente =====
