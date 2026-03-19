@@ -24,8 +24,8 @@ export default async function handler(
     console.log(`[Meta Disconnect] Disconnecting user: ${user.id}`);
 
     // Deletar conexão Meta da tabela meta_connections
-    const { error: deleteError } = await supabaseAdmin
-      ?.from('meta_connections')
+    const { error: deleteError } = await supabaseAdmin!
+      .from('meta_connections')
       .delete()
       .eq('user_id', user.id);
 
@@ -38,8 +38,8 @@ export default async function handler(
     }
 
     // Limpar campos meta_* da tabela users
-    const { error: updateError } = await supabaseAdmin
-      ?.from('users')
+    const { error: updateError } = await supabaseAdmin!
+      .from('users')
       .update({
         meta_access_token: null,
         meta_token_expires_at: null,

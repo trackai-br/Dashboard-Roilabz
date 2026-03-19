@@ -23,8 +23,8 @@ export default async function handler(
     }
 
     // Buscar conexão Meta
-    const { data: connection, error } = await supabaseAdmin
-      ?.from('meta_connections')
+    const { data: connection, error } = await supabaseAdmin!
+      .from('meta_connections')
       .select('*')
       .eq('user_id', user.id)
       .single();
