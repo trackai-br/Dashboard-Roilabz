@@ -28,18 +28,45 @@ export default async function handler(
   try {
     // ========== 1. Validar state (proteção CSRF) ==========
     const { code, state } = req.query;
-    const storedState = req.cookies.oauth_state;
 
     if (!code || !state) {
+      console.warn('[OAuth] Missing code or state in callback');
       const errorUrl = `${process.env.NEXT_PUBLIC_APP_URL}/connections?error=csrf&message=missing_params`;
       return res.redirect(302, errorUrl);
     }
 
-    if (!storedState || storedState !== state) {
-      console.warn('State mismatch - CSRF attack prevented');
+    // Recuperar state do Supabase
+    const stateStr = state as string;
+    console.log('[OAuth] Validating state from Supabase...');
+
+    const { data: storedStateRecord, error: fetchError } = await supabaseAdmin!
+      .from('oauth_states')
+      .select('*')
+      .eq('state', stateStr)
+      .eq('provider', 'meta')
+      .single();
+
+    if (fetchError || !storedStateRecord) {
+      console.warn('[OAuth] State not found in Supabase - CSRF attack prevented');
       const errorUrl = `${process.env.NEXT_PUBLIC_APP_URL}/connections?error=csrf&message=state_mismatch`;
       return res.redirect(302, errorUrl);
     }
+
+    // Verificar se state não expirou
+    const expiresAt = new Date(storedStateRecord.expires_at);
+    if (new Date() > expiresAt) {
+      console.warn('[OAuth] State expired - CSRF attack prevented');
+      const errorUrl = `${process.env.NEXT_PUBLIC_APP_URL}/connections?error=csrf&message=state_expired`;
+      return res.redirect(302, errorUrl);
+    }
+
+    // Deletar state usado para evitar replay attack
+    await supabaseAdmin!
+      .from('oauth_states')
+      .delete()
+      .eq('id', storedStateRecord.id);
+
+    console.log('[OAuth] State validated successfully');
 
     // ========== 2. Verificar se usuário está autenticado ==========
     const user = await getUserFromRequest(req);
@@ -235,13 +262,7 @@ export default async function handler(
       }
     }
 
-    // ========== 8. Limpar cookie de state ==========
-    res.setHeader(
-      'Set-Cookie',
-      'oauth_state=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0'
-    );
-
-    // ========== 9. Redirecionar com sucesso ==========
+    // ========== 8. Redirecionar com sucesso ==========
     console.log('[OAuth] Success - redirecting to connections page');
     const successUrl = `${process.env.NEXT_PUBLIC_APP_URL}/connections?connected=true&provider=meta`;
     return res.redirect(302, successUrl);
