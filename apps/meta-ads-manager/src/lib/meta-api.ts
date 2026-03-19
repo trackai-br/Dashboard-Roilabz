@@ -213,7 +213,8 @@ class MetaAPIClient {
     after?: string
   ): Promise<{ adsets: MetaAdSet[]; paging?: any }> {
     try {
-      const campaign = new Business.Campaign(campaignId);
+      console.log(`[Meta API] Fetching ad sets for campaign: ${campaignId}`);
+
       const defaultFields = [
         'id',
         'campaign_id',
@@ -228,19 +229,28 @@ class MetaAPIClient {
         'created_time',
       ];
 
+      const fieldsList = (fields || defaultFields).join(',');
+
+      // Use FacebookAdsApi to make direct REST API call
+      const api = Business.FacebookAdsApi.instance();
+      const url = `/${campaignId}/adsets`;
+
       const params: any = {
+        fields: fieldsList,
         limit,
-        fields: fields || defaultFields,
+        access_token: this.accessToken,
       };
 
       if (after) {
         params.after = after;
       }
 
-      const response = await campaign.getAdsets([], params);
+      const response = await api.call('GET', url, {}, params);
+
+      console.log(`[Meta API] Ad sets fetched: ${response?.data?.length || 0}`);
 
       return {
-        adsets: response.map((adset: any) => ({
+        adsets: (response?.data || []).map((adset: any) => ({
           id: adset.id,
           campaign_id: adset.campaign_id,
           name: adset.name,
@@ -253,10 +263,12 @@ class MetaAPIClient {
           bid_amount: adset.bid_amount,
           created_time: adset.created_time,
         })),
-        paging: response.paging,
+        paging: response?.paging,
       };
     } catch (error) {
-      throw new Error(`Failed to fetch ad sets: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      console.error(`[Meta API] Failed to fetch ad sets for campaign ${campaignId}:`, errorMsg);
+      throw new Error(`Failed to fetch ad sets: ${errorMsg}`);
     }
   }
 
@@ -306,17 +318,19 @@ class MetaAPIClient {
   async getPages(accountId: string): Promise<MetaPage[]> {
     try {
       console.log(`[Meta API] Fetching pages for account: ${accountId}`);
-      const account = new Business.AdAccount(accountId);
-      const response = await account.getPages(
-        [],
-        {
-          fields: ['id', 'name', 'access_token'],
-          limit: 100,
-        }
-      );
 
-      console.log(`[Meta API] Pages fetched: ${response.length}`);
-      return response.map((page: any) => ({
+      // Use FacebookAdsApi to make direct REST API call
+      const api = Business.FacebookAdsApi.instance();
+      const url = `/${accountId}/promote_pages`;
+
+      const response = await api.call('GET', url, {}, {
+        fields: 'id,name,access_token',
+        limit: 100,
+        access_token: this.accessToken,
+      });
+
+      console.log(`[Meta API] Pages fetched: ${response?.data?.length || 0}`);
+      return (response?.data || []).map((page: any) => ({
         id: page.id,
         name: page.name,
         access_token: page.access_token,
@@ -334,17 +348,19 @@ class MetaAPIClient {
   async getPixels(accountId: string): Promise<MetaPixel[]> {
     try {
       console.log(`[Meta API] Fetching pixels for account: ${accountId}`);
-      const account = new Business.AdAccount(accountId);
-      const response = await account.getConversionPixels(
-        [],
-        {
-          fields: ['id', 'name', 'last_fired_time'],
-          limit: 100,
-        }
-      );
 
-      console.log(`[Meta API] Pixels fetched: ${response.length}`);
-      return response.map((pixel: any) => ({
+      // Use FacebookAdsApi to make direct REST API call
+      const api = Business.FacebookAdsApi.instance();
+      const url = `/${accountId}/ads_pixels`;
+
+      const response = await api.call('GET', url, {}, {
+        fields: 'id,name,last_fired_time',
+        limit: 100,
+        access_token: this.accessToken,
+      });
+
+      console.log(`[Meta API] Pixels fetched: ${response?.data?.length || 0}`);
+      return (response?.data || []).map((pixel: any) => ({
         id: pixel.id,
         name: pixel.name,
         last_fired_time: pixel.last_fired_time,
