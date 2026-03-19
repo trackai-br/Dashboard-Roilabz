@@ -1,5 +1,13 @@
 import { supabase, supabaseAdmin } from "./supabase";
 
+// Helper to ensure supabaseAdmin is available
+function getAdminClient() {
+  if (!supabaseAdmin) {
+    throw new Error('Supabase admin client not initialized - missing SUPABASE_SERVICE_ROLE_KEY');
+  }
+  return supabaseAdmin;
+}
+
 /**
  * Get all accounts accessible by the authenticated user
  */
@@ -83,7 +91,7 @@ export async function logAccess(params: {
 }) {
   const { userId, accountId, action, resourceType, resourceId, status = "success", details } = params;
 
-  const { error } = await supabaseAdmin
+  const { error } = await getAdminClient()
     .from("access_logs")
     .insert({
       user_id: userId,
@@ -109,7 +117,7 @@ export async function grantAccountAccess(
   accountId: string,
   accessLevel: "viewer" | "editor" | "admin"
 ) {
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await getAdminClient()
     .from("user_account_access")
     .upsert({
       user_id: userId,
@@ -130,7 +138,7 @@ export async function grantAccountAccess(
  * Revoke account access from a user
  */
 export async function revokeAccountAccess(userId: string, accountId: string) {
-  const { error } = await supabaseAdmin
+  const { error } = await getAdminClient()
     .from("user_account_access")
     .delete()
     .eq("user_id", userId)
@@ -165,7 +173,7 @@ export async function getAccessLogs(accountId: string, limit = 100) {
  * Create or update user
  */
 export async function upsertUser(userId: string, email: string, role: "user" | "admin" = "user") {
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await getAdminClient()
     .from("users")
     .upsert({
       id: userId,
