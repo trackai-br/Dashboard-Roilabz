@@ -1,5 +1,5 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
 
 export interface Campaign {
   id: string;
@@ -35,12 +35,6 @@ export const useMetaCampaigns = (
   return useQuery<Campaign[], Error>({
     queryKey: ['meta-campaigns', accountId, limit, offset],
     queryFn: async () => {
-      // Get Supabase client to extract session token
-      const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-      );
-
       // Get current session with access token
       const {
         data: { session },

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { KPISection } from '@/components/KPISection';
 import { CampaignsTableNew } from '@/components/CampaignsTableNew';
@@ -40,12 +40,6 @@ export default function Dashboard() {
     setSyncMessage(null);
 
     try {
-      // Get Supabase client to extract session token
-      const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-      );
-
       // Get current session with access token
       const {
         data: { session },

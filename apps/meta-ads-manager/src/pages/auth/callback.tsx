@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
 
 export default function AuthCallback() {
   const router = useRouter();
@@ -8,11 +8,6 @@ export default function AuthCallback() {
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        const supabase = createClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-        );
-
         // Check if we have a valid session
         const {
           data: { session },

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
 
 export interface SyncLog {
   id: string;
@@ -16,11 +16,6 @@ export const useSyncLogs = () => {
   return useQuery({
     queryKey: ['sync-logs'],
     queryFn: async () => {
-      const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-      );
-
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return [];
 
