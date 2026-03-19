@@ -13,7 +13,6 @@ export function Header({
   onMenuClick,
 }: HeaderProps) {
   const router = useRouter();
-
   return (
     <>
       <header
