@@ -6,15 +6,13 @@ import { supabase } from '@/lib/supabase';
  * GET /api/auth/meta
  * Inicia o fluxo OAuth com o Facebook
  *
- * Pré-requisitos:
- * - Usuário deve estar autenticado via Supabase Auth
- * - Token pode ser passado via query param (?token=...) ou Authorization header
- *
  * Fluxo:
- * 1. Verifica se usuário está autenticado (via token ou header)
- * 2. Gera state aleatório (proteção CSRF)
- * 3. Salva em cookie httpOnly (10 minutos)
- * 4. Redireciona para dialog de login do Facebook
+ * 1. Gera state aleatório (proteção CSRF)
+ * 2. Salva em cookie httpOnly (10 minutos)
+ * 3. Redireciona para dialog de login do Facebook
+ *
+ * O usuário será validado pelo Facebook durante o login.
+ * O callback handler valida o OAuth token retornado.
  */
 export default async function handler(
   req: NextApiRequest,
@@ -30,8 +28,6 @@ export default async function handler(
     // The callback handler (/api/auth/meta/callback) validates the token.
 
     console.log('[OAuth] Initiating Meta OAuth flow...');
-
-    console.log(`[OAuth] Initiating Meta OAuth flow for user: ${user.id}`);
 
     // 2. Gerar state aleatório (proteção CSRF)
     const state = randomBytes(32).toString('hex');
