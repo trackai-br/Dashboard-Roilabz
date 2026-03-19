@@ -45,3 +45,14 @@ export interface ApiResponse<T> {
     code?: string;
   };
 }
+
+export interface SyncLog {
+  id: string;
+  user_id: string;
+  status: 'success' | 'partial' | 'failed';
+  synced_accounts: number;
+  synced_pages: number;
+  synced_pixels: number;
+  error_details: Record<string, unknown> | null;
+  created_at: string;
+}

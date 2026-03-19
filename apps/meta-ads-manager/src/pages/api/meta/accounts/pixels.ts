@@ -35,19 +35,31 @@ async function handleGet(
 
     // Get user's accounts
     const userAccounts = await getUserAccounts(userId);
-    const metaAccountId = userAccounts.find((acc) => acc.id === accountId)
-      ?.meta_account_id;
+    const account = userAccounts.find((acc) => acc.id === accountId);
 
-    if (!metaAccountId) {
+    if (!account) {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    // Fetch pixels from Meta API
-    const pixels = await metaAPI.getPixels(metaAccountId);
+    // Fetch pixels from Supabase (already synced)
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+      process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+    );
+
+    const { data: pixels, error } = await supabase
+      .from('meta_pixels')
+      .select('pixel_id as id, pixel_name as name, last_fired_time')
+      .eq('meta_account_id', accountId);
+
+    if (error) {
+      return res.status(500).json({ error: 'Failed to fetch pixels from database' });
+    }
 
     return res.status(200).json({
-      pixels,
-      count: pixels.length,
+      pixels: pixels || [],
+      count: pixels?.length || 0,
     });
   } catch (error) {
     console.error('Error fetching pixels:', error);

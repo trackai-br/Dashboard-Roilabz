@@ -35,19 +35,31 @@ async function handleGet(
 
     // Get user's accounts
     const userAccounts = await getUserAccounts(userId);
-    const metaAccountId = userAccounts.find((acc) => acc.id === accountId)
-      ?.meta_account_id;
+    const account = userAccounts.find((acc) => acc.id === accountId);
 
-    if (!metaAccountId) {
+    if (!account) {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    // Fetch pages from Meta API
-    const pages = await metaAPI.getPages(metaAccountId);
+    // Fetch pages from Supabase (already synced)
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+      process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+    );
+
+    const { data: pages, error } = await supabase
+      .from('meta_pages')
+      .select('page_id as id, page_name as name')
+      .eq('meta_account_id', accountId);
+
+    if (error) {
+      return res.status(500).json({ error: 'Failed to fetch pages from database' });
+    }
 
     return res.status(200).json({
-      pages,
-      count: pages.length,
+      pages: pages || [],
+      count: pages?.length || 0,
     });
   } catch (error) {
     console.error('Error fetching pages:', error);

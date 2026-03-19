@@ -2,11 +2,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@supabase/supabase-js';
 
 export interface SyncStatus {
+  id?: string;
   synced_accounts: number;
   synced_pages: number;
   synced_pixels: number;
   status: 'success' | 'partial' | 'failed';
-  timestamp: string;
+  timestamp?: string;
+  created_at?: string;
 }
 
 export const useMetaSync = () => {
@@ -71,11 +73,21 @@ export const useMetaSync = () => {
     },
   });
 
+  const getSyncStatus = (): 'idle' | 'syncing' | 'success' | 'error' => {
+    if (syncMutation.isPending) return 'syncing';
+    if (syncMutation.isSuccess) return 'success';
+    if (syncMutation.error) return 'error';
+    return 'idle';
+  };
+
   return {
     syncLog,
+    lastSync: syncLog?.created_at ?? syncLog?.timestamp ?? null,
+    syncStatus: getSyncStatus(),
     isLoading: logLoading,
     sync: syncMutation.mutate,
     isSyncing: syncMutation.isPending,
+    syncAll: syncMutation.mutate,
     error: syncMutation.error,
   };
 };
