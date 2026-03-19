@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createClient } from '@supabase/supabase-js';
+import { supabaseAdmin } from '@/lib/supabase';
 import { requireAuth } from '@/lib/auth';
 
 export default async function handler(
@@ -16,12 +16,11 @@ export default async function handler(
   }
 
   try {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-      process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-    );
+    if (!supabaseAdmin) {
+      return res.status(500).json({ error: 'Supabase admin client not initialized' });
+    }
 
-    const { data: logs, error } = await supabase
+    const { data: logs, error } = await supabaseAdmin
       .from('sync_log')
       .select('*')
       .eq('user_id', user.id)
