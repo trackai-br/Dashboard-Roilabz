@@ -8,26 +8,55 @@ import { supabase } from "./supabase";
 function getTokenFromCookie(req: NextApiRequest): string | null {
   const cookieHeader = req.headers.cookie || "";
 
-  // Look for sb-<project-id>-auth-token cookie
+  if (!cookieHeader) {
+    console.log("[Auth] No cookies found in request");
+    return null;
+  }
+
+  // Log all cookies for debugging
+  console.log("[Auth] Available cookies:", cookieHeader.substring(0, 100) + "...");
+
   const cookies = cookieHeader.split(";").map(c => c.trim());
 
+  // Look for any auth-related cookie
   for (const cookie of cookies) {
-    if (cookie.includes("auth-token")) {
+    const [name, value] = cookie.split("=");
+
+    if (name.includes("auth") || name.includes("session")) {
+      console.log(`[Auth] Found ${name} cookie, attempting to extract token...`);
+
+      if (!value) continue;
+
       try {
-        const [, value] = cookie.split("=");
-        if (value) {
-          // Cookie value is JSON-encoded
-          const decoded = JSON.parse(decodeURIComponent(value));
-          return decoded.access_token || decoded;
+        const decoded = decodeURIComponent(value);
+
+        // Try parsing as JSON
+        try {
+          const jsonData = JSON.parse(decoded);
+          if (jsonData.access_token) {
+            console.log("[Auth] ✅ Extracted access_token from JSON cookie");
+            return jsonData.access_token;
+          }
+          if (typeof jsonData === 'string') {
+            console.log("[Auth] ✅ Using JSON string as token");
+            return jsonData;
+          }
+        } catch (e) {
+          // Not JSON, try as plain token
+        }
+
+        // If it looks like a JWT token (has dots), use it directly
+        if (decoded.includes(".") && decoded.split(".").length === 3) {
+          console.log("[Auth] ✅ Using decoded cookie as JWT token");
+          return decoded;
         }
       } catch (e) {
-        // Try as plain token
-        const [, value] = cookie.split("=");
-        if (value) return decodeURIComponent(value);
+        console.error(`[Auth] Error processing ${name} cookie:`, e);
       }
     }
   }
 
+  console.log("[Auth] ❌ No valid auth token found in cookies");
   return null;
 }
 
