@@ -1,4 +1,5 @@
 import React, { useState, useEffect, Component, ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { WizardProvider, useWizard } from '@/contexts/WizardContext';
 import ConfigPopup from '@/components/campaign-wizard/ConfigPopup';
@@ -16,22 +17,26 @@ class PopupErrorBoundary extends Component<
   static getDerivedStateFromError(error: Error) {
     return { hasError: true, error: error.message };
   }
+  componentDidCatch(error: Error) {
+    console.error('[Wizard] Popup crashed:', error);
+  }
   render() {
     if (this.state.hasError) {
-      return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}>
-          <div className="rounded-xl p-8 max-w-md" style={{ backgroundColor: '#1a1a2e', border: '1px solid var(--border-light)' }}>
-            <p className="text-lg font-bold mb-2" style={{ color: 'var(--color-danger)' }}>Erro ao abrir wizard</p>
-            <p className="text-sm mb-4" style={{ color: 'var(--color-secondary)' }}>{this.state.error}</p>
+      return createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.8)' }}>
+          <div className="rounded-xl p-8 max-w-md" style={{ backgroundColor: '#1a1a2e', border: '1px solid rgba(255,51,51,0.5)' }}>
+            <p className="text-lg font-bold mb-2" style={{ color: '#ff3333' }}>Erro ao abrir wizard</p>
+            <p className="text-sm mb-4" style={{ color: '#aaa' }}>{this.state.error}</p>
             <button
               onClick={this.props.onError}
-              className="px-4 py-2 rounded-lg text-sm"
-              style={{ backgroundColor: 'var(--neon-green)', color: 'var(--bg-deepest)' }}
+              className="px-4 py-2 rounded-lg text-sm font-medium"
+              style={{ backgroundColor: '#39ff14', color: '#0a0a0f' }}
             >
               Fechar
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       );
     }
     return this.props.children;
@@ -44,7 +49,14 @@ export default function CampaignSetupPage() {
   const [draftState, setDraftState] = useState<any>(null);
   const [draftId, setDraftId] = useState<string | null>(null);
   const [loadingDraft, setLoadingDraft] = useState(true);
+  const [mounted, setMounted] = useState(false);
 
+  // Ensure portal target exists (client-side only)
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Check for existing draft
   useEffect(() => {
     const checkDraft = async () => {
       try {
@@ -73,15 +85,18 @@ export default function CampaignSetupPage() {
   }, [showPopup]);
 
   const openNewWizard = () => {
+    console.log('[Wizard] Opening new wizard');
     setDraftState(null);
     setShowPopup(true);
   };
 
   const openDraftWizard = () => {
+    console.log('[Wizard] Opening draft wizard');
     setShowPopup(true);
   };
 
   const closePopup = () => {
+    console.log('[Wizard] Closing popup');
     setShowPopup(false);
   };
 
@@ -139,7 +154,8 @@ export default function CampaignSetupPage() {
         </div>
       </div>
 
-      {showPopup && (
+      {/* Portal: render popup directly on document.body to avoid z-index/overflow issues */}
+      {showPopup && mounted && createPortal(
         <PopupErrorBoundary onError={closePopup}>
           <WizardProvider>
             <PopupWithDraft
@@ -148,7 +164,8 @@ export default function CampaignSetupPage() {
               onClose={closePopup}
             />
           </WizardProvider>
-        </PopupErrorBoundary>
+        </PopupErrorBoundary>,
+        document.body
       )}
     </DashboardLayout>
   );
@@ -158,6 +175,7 @@ function PopupWithDraft({ draftState, draftId, onClose }: { draftState: any; dra
   const { dispatch } = useWizard();
 
   useEffect(() => {
+    console.log('[Wizard] PopupWithDraft mounted, draftState:', !!draftState);
     if (draftState && draftId) {
       dispatch({ type: 'LOAD_DRAFT', payload: { state: draftState, draftId } });
     }
