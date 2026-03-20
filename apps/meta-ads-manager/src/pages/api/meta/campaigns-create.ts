@@ -111,7 +111,7 @@ async function handlePost(
       const campaignId = campaignResult.id;
 
       // Step 2: Create Ad Set
-      const adSetResult = await metaAPI.createAdSet(campaignId, {
+      const adSetResult = await metaAPI.createAdSet(metaAccountId, campaignId, {
         name: data.adSetName,
         status: data.adSetStatus,
         targeting: data.adSetTargeting,
@@ -144,7 +144,7 @@ async function handlePost(
       };
 
       // Step 4: Create Ad
-      const adResult = await metaAPI.createAd(adSetId, {
+      const adResult = await metaAPI.createAd(metaAccountId, adSetId, {
         name: data.adName,
         status: data.adStatus,
         adset_spec: creativeSpec,

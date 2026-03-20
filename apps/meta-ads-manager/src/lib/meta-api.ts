@@ -1,4 +1,4 @@
-import * as Business from 'facebook-nodejs-business-sdk';
+import { supabaseAdmin } from './supabase';
 
 // Types for Meta API responses
 export interface MetaAccount {
@@ -50,6 +50,9 @@ export interface MetaAd {
 export interface MetaPage {
   id: string;
   name: string;
+  category?: string;
+  picture?: { data?: { url?: string } };
+  instagram_business_account?: { id: string };
   access_token?: string;
 }
 
@@ -100,52 +103,125 @@ export interface MetaInsight {
   }>;
 }
 
+/**
+ * Busca o token Meta OAuth do banco de dados.
+ * - Se userId fornecido, busca o token desse usuário
+ * - Se não, busca o primeiro token ativo (para background jobs como Inngest)
+ * - Fallback para process.env.META_ACCESS_TOKEN durante transição
+ */
+async function getMetaToken(userId?: string): Promise<string> {
+  try {
+    if (supabaseAdmin) {
+      let query = supabaseAdmin
+        .from('meta_connections')
+        .select('meta_access_token, meta_token_expires_at')
+        .eq('connection_status', 'active');
+
+      if (userId) {
+        query = query.eq('user_id', userId);
+      }
+
+      const { data, error } = await query.order('updated_at', { ascending: false }).limit(1).single();
+
+      if (!error && data) {
+        // Verificar expiração
+        if (data.meta_token_expires_at && new Date(data.meta_token_expires_at) < new Date()) {
+          throw new Error('Token expirado. Reconecte sua conta do Facebook.');
+        }
+        return data.meta_access_token;
+      }
+    }
+  } catch (error) {
+    // Se o erro é de token expirado, propagar
+    if (error instanceof Error && error.message.includes('expirado')) {
+      throw error;
+    }
+    console.warn('[MetaAPI] Could not fetch token from DB, trying env fallback:', error);
+  }
+
+  // Fallback para env var durante transição
+  if (process.env.META_ACCESS_TOKEN) {
+    return process.env.META_ACCESS_TOKEN;
+  }
+
+  throw new Error('Nenhuma conta do Facebook conectada.');
+}
+
+/**
+ * Helper para fazer chamadas à Graph API do Facebook
+ */
+async function graphFetch<T = any>(
+  path: string,
+  params: Record<string, string>,
+  token: string,
+  apiVersion: string
+): Promise<T> {
+  const queryParams = new URLSearchParams({ ...params, access_token: token });
+  const url = `https://graph.facebook.com/${apiVersion}/${path}?${queryParams.toString()}`;
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const msg = errorData?.error?.message || `HTTP ${response.status}: ${response.statusText}`;
+    if (response.status === 401) throw new Error('Invalid Meta access token');
+    if (response.status === 429) throw new Error('Meta API rate limit exceeded');
+    throw new Error(msg);
+  }
+
+  return response.json();
+}
+
+/**
+ * Helper para POST na Graph API
+ */
+async function graphPost<T = any>(
+  path: string,
+  body: Record<string, any>,
+  token: string,
+  apiVersion: string
+): Promise<T> {
+  const url = `https://graph.facebook.com/${apiVersion}/${path}`;
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...body, access_token: token }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const msg = errorData?.error?.message || `HTTP ${response.status}: ${response.statusText}`;
+    throw new Error(msg);
+  }
+
+  return response.json();
+}
+
 class MetaAPIClient {
-  private accessToken: string;
   private apiVersion: string;
-  private systemUserId: string;
 
   constructor() {
-    this.accessToken = process.env.META_ACCESS_TOKEN || '';
     this.apiVersion = process.env.META_API_VERSION || 'v23.0';
-    this.systemUserId = process.env.META_SYSTEM_USER_ID || '';
-
-    if (!this.accessToken) {
-      throw new Error('META_ACCESS_TOKEN is not set in environment variables');
-    }
-
-    // Initialize Business SDK
-    Business.FacebookAdsApi.init(this.accessToken);
   }
 
   /**
-   * Get all ad accounts for the Business Manager
+   * Get all ad accounts for the authenticated user
    */
-  async getAdAccounts(): Promise<MetaAccount[]> {
-    try {
-      // Use the authenticated user to access ad accounts
-      // The token must belong to a user who has access to the ad accounts
-      const user = new (Business as any).User('me');
-      const fields = ['id', 'name', 'currency', 'timezone'];
+  async getAdAccounts(userId?: string): Promise<MetaAccount[]> {
+    const token = await getMetaToken(userId);
+    const data = await graphFetch<{ data: any[] }>(
+      'me/adaccounts',
+      { fields: 'id,name,currency,timezone', limit: '100' },
+      token,
+      this.apiVersion
+    );
 
-      const response = await user.getAdAccounts(fields);
-
-      return response.map((account: any) => ({
-        id: account.id,
-        name: account.name || '',
-        currency: account.currency || 'USD',
-        timezone: account.timezone || 'America/Los_Angeles',
-      }));
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      if (message.includes('401')) {
-        throw new Error('Invalid Meta access token');
-      }
-      if (message.includes('429')) {
-        throw new Error('Meta API rate limit exceeded');
-      }
-      throw new Error(`Failed to fetch ad accounts: ${message}`);
-    }
+    return (data.data || []).map((account: any) => ({
+      id: account.id,
+      name: account.name || '',
+      currency: account.currency || 'USD',
+      timezone: account.timezone || 'America/Los_Angeles',
+    }));
   }
 
   /**
@@ -155,52 +231,43 @@ class MetaAPIClient {
     accountId: string,
     fields?: string[],
     limit: number = 100,
-    after?: string
+    after?: string,
+    userId?: string
   ): Promise<{ campaigns: MetaCampaign[]; paging?: { cursors: { after: string; before: string } } }> {
-    try {
-      const account = new Business.AdAccount(accountId);
-      const defaultFields = [
-        'id',
-        'name',
-        'objective',
-        'status',
-        'daily_budget',
-        'lifetime_budget',
-        'start_time',
-        'stop_time',
-        'effective_status',
-        'created_time',
-      ];
+    const token = await getMetaToken(userId);
+    const defaultFields = [
+      'id', 'name', 'objective', 'status', 'daily_budget',
+      'lifetime_budget', 'start_time', 'stop_time', 'effective_status', 'created_time',
+    ];
 
-      const params: any = {
-        limit,
-        fields: fields || defaultFields,
-      };
+    const params: Record<string, string> = {
+      fields: (fields || defaultFields).join(','),
+      limit: limit.toString(),
+    };
+    if (after) params.after = after;
 
-      if (after) {
-        params.after = after;
-      }
+    const data = await graphFetch<{ data: any[]; paging?: any }>(
+      `${accountId}/campaigns`,
+      params,
+      token,
+      this.apiVersion
+    );
 
-      const response = await account.getCampaigns([], params);
-
-      return {
-        campaigns: response.map((campaign: any) => ({
-          id: campaign.id,
-          name: campaign.name,
-          objective: campaign.objective,
-          status: campaign.status,
-          daily_budget: campaign.daily_budget,
-          lifetime_budget: campaign.lifetime_budget,
-          start_time: campaign.start_time,
-          stop_time: campaign.stop_time,
-          effective_status: campaign.effective_status,
-          created_time: campaign.created_time,
-        })),
-        paging: response.paging,
-      };
-    } catch (error) {
-      throw new Error(`Failed to fetch campaigns: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    return {
+      campaigns: (data.data || []).map((campaign: any) => ({
+        id: campaign.id,
+        name: campaign.name,
+        objective: campaign.objective,
+        status: campaign.status,
+        daily_budget: campaign.daily_budget,
+        lifetime_budget: campaign.lifetime_budget,
+        start_time: campaign.start_time,
+        stop_time: campaign.stop_time,
+        effective_status: campaign.effective_status,
+        created_time: campaign.created_time,
+      })),
+      paging: data.paging,
+    };
   }
 
   /**
@@ -210,69 +277,46 @@ class MetaAPIClient {
     campaignId: string,
     fields?: string[],
     limit: number = 100,
-    after?: string
+    after?: string,
+    userId?: string
   ): Promise<{ adsets: MetaAdSet[]; paging?: any }> {
-    try {
-      console.log(`[Meta API] Fetching ad sets for campaign: ${campaignId}`);
+    const token = await getMetaToken(userId);
+    const defaultFields = [
+      'id', 'campaign_id', 'name', 'status', 'daily_budget', 'lifetime_budget',
+      'targeting', 'billing_event', 'bid_strategy', 'bid_amount', 'created_time',
+    ];
 
-      const defaultFields = [
-        'id',
-        'campaign_id',
-        'name',
-        'status',
-        'daily_budget',
-        'lifetime_budget',
-        'targeting',
-        'billing_event',
-        'bid_strategy',
-        'bid_amount',
-        'created_time',
-      ];
+    const params: Record<string, string> = {
+      fields: (fields || defaultFields).join(','),
+      limit: limit.toString(),
+    };
+    if (after) params.after = after;
 
-      const fieldsList = (fields || defaultFields).join(',');
+    console.log(`[Meta API] Fetching ad sets for campaign: ${campaignId}`);
+    const data = await graphFetch<{ data: any[]; paging?: any }>(
+      `${campaignId}/adsets`,
+      params,
+      token,
+      this.apiVersion
+    );
+    console.log(`[Meta API] Ad sets fetched: ${data.data?.length || 0}`);
 
-      // Make direct REST API call via fetch
-      const queryParams = new URLSearchParams({
-        fields: fieldsList,
-        limit: limit.toString(),
-        access_token: this.accessToken,
-      });
-
-      if (after) {
-        queryParams.append('after', after);
-      }
-
-      const url = `https://graph.facebook.com/${this.apiVersion}/${campaignId}/adsets?${queryParams.toString()}`;
-
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      console.log(`[Meta API] Ad sets fetched: ${data?.data?.length || 0}`);
-
-      return {
-        adsets: (data?.data || []).map((adset: any) => ({
-          id: adset.id,
-          campaign_id: adset.campaign_id,
-          name: adset.name,
-          status: adset.status,
-          daily_budget: adset.daily_budget,
-          lifetime_budget: adset.lifetime_budget,
-          targeting: adset.targeting,
-          billing_event: adset.billing_event,
-          bid_strategy: adset.bid_strategy,
-          bid_amount: adset.bid_amount,
-          created_time: adset.created_time,
-        })),
-        paging: data?.paging,
-      };
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-      console.error(`[Meta API] Failed to fetch ad sets for campaign ${campaignId}:`, errorMsg);
-      throw new Error(`Failed to fetch ad sets: ${errorMsg}`);
-    }
+    return {
+      adsets: (data.data || []).map((adset: any) => ({
+        id: adset.id,
+        campaign_id: adset.campaign_id,
+        name: adset.name,
+        status: adset.status,
+        daily_budget: adset.daily_budget,
+        lifetime_budget: adset.lifetime_budget,
+        targeting: adset.targeting,
+        billing_event: adset.billing_event,
+        bid_strategy: adset.bid_strategy,
+        bid_amount: adset.bid_amount,
+        created_time: adset.created_time,
+      })),
+      paging: data.paging,
+    };
   }
 
   /**
@@ -282,130 +326,104 @@ class MetaAPIClient {
     adsetId: string,
     fields?: string[],
     limit: number = 100,
-    after?: string
+    after?: string,
+    userId?: string
   ): Promise<{ ads: MetaAd[]; paging?: any }> {
-    try {
-      const adset = new Business.AdSet(adsetId);
-      const defaultFields = ['id', 'adset_id', 'name', 'status', 'creative', 'created_time'];
+    const token = await getMetaToken(userId);
+    const defaultFields = ['id', 'adset_id', 'name', 'status', 'creative', 'created_time'];
 
-      const params: any = {
-        limit,
-        fields: fields || defaultFields,
-      };
+    const params: Record<string, string> = {
+      fields: (fields || defaultFields).join(','),
+      limit: limit.toString(),
+    };
+    if (after) params.after = after;
 
-      if (after) {
-        params.after = after;
-      }
+    const data = await graphFetch<{ data: any[]; paging?: any }>(
+      `${adsetId}/ads`,
+      params,
+      token,
+      this.apiVersion
+    );
 
-      const response = await adset.getAds([], params);
-
-      return {
-        ads: response.map((ad: any) => ({
-          id: ad.id,
-          adset_id: ad.adset_id,
-          name: ad.name,
-          status: ad.status,
-          creative: ad.creative,
-          created_time: ad.created_time,
-        })),
-        paging: response.paging,
-      };
-    } catch (error) {
-      throw new Error(`Failed to fetch ads: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    return {
+      ads: (data.data || []).map((ad: any) => ({
+        id: ad.id,
+        adset_id: ad.adset_id,
+        name: ad.name,
+        status: ad.status,
+        creative: ad.creative,
+        created_time: ad.created_time,
+      })),
+      paging: data.paging,
+    };
   }
 
   /**
-   * Get Facebook Pages for an ad account
+   * Get Facebook Pages for the authenticated user
    */
-  async getPages(accountId: string): Promise<MetaPage[]> {
-    try {
-      console.log(`[Meta API] Fetching pages for account: ${accountId}`);
+  async getPages(accountId: string, userId?: string): Promise<MetaPage[]> {
+    const token = await getMetaToken(userId);
+    console.log(`[Meta API] Fetching pages for account: ${accountId}`);
 
-      const queryParams = new URLSearchParams({
-        fields: 'id,name,access_token',
-        limit: '100',
-        access_token: this.accessToken,
-      });
+    const data = await graphFetch<{ data: any[] }>(
+      'me/accounts',
+      { fields: 'id,name,category,picture{url},instagram_business_account', limit: '100' },
+      token,
+      this.apiVersion
+    );
+    console.log(`[Meta API] Pages fetched: ${data.data?.length || 0}`);
 
-      const url = `https://graph.facebook.com/${this.apiVersion}/${accountId}/promote_pages?${queryParams.toString()}`;
-
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      console.log(`[Meta API] Pages fetched: ${data?.data?.length || 0}`);
-      return (data?.data || []).map((page: any) => ({
-        id: page.id,
-        name: page.name,
-        access_token: page.access_token,
-      }));
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-      console.error(`[Meta API] Failed to fetch pages for account ${accountId}:`, errorMsg);
-      throw new Error(`Failed to fetch pages: ${errorMsg}`);
-    }
+    return (data.data || []).map((page: any) => ({
+      id: page.id,
+      name: page.name,
+      category: page.category,
+      picture: page.picture,
+      instagram_business_account: page.instagram_business_account,
+      access_token: page.access_token,
+    }));
   }
 
   /**
    * Get conversion pixels for an ad account
    */
-  async getPixels(accountId: string): Promise<MetaPixel[]> {
-    try {
-      console.log(`[Meta API] Fetching pixels for account: ${accountId}`);
+  async getPixels(accountId: string, userId?: string): Promise<MetaPixel[]> {
+    const token = await getMetaToken(userId);
+    console.log(`[Meta API] Fetching pixels for account: ${accountId}`);
 
-      const queryParams = new URLSearchParams({
-        fields: 'id,name,last_fired_time',
-        limit: '100',
-        access_token: this.accessToken,
-      });
+    const data = await graphFetch<{ data: any[] }>(
+      `${accountId}/adspixels`,
+      { fields: 'id,name,last_fired_time', limit: '100' },
+      token,
+      this.apiVersion
+    );
+    console.log(`[Meta API] Pixels fetched: ${data.data?.length || 0}`);
 
-      const url = `https://graph.facebook.com/${this.apiVersion}/${accountId}/ads_pixels?${queryParams.toString()}`;
-
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      console.log(`[Meta API] Pixels fetched: ${data?.data?.length || 0}`);
-      return (data?.data || []).map((pixel: any) => ({
-        id: pixel.id,
-        name: pixel.name,
-        last_fired_time: pixel.last_fired_time,
-      }));
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-      console.error(`[Meta API] Failed to fetch pixels for account ${accountId}:`, errorMsg);
-      throw new Error(`Failed to fetch pixels: ${errorMsg}`);
-    }
+    return (data.data || []).map((pixel: any) => ({
+      id: pixel.id,
+      name: pixel.name,
+      last_fired_time: pixel.last_fired_time,
+    }));
   }
 
   /**
    * Get custom audiences for an ad account
    */
-  async getAudiences(accountId: string): Promise<MetaAudience[]> {
-    try {
-      const account = new Business.AdAccount(accountId);
-      const response = await account.getCustomAudiences(
-        [],
-        {
-          fields: ['id', 'name', 'approximate_count', 'subtype'],
-          limit: 100,
-        }
-      );
+  async getAudiences(accountId: string, userId?: string): Promise<MetaAudience[]> {
+    const token = await getMetaToken(userId);
 
-      return response.map((audience: any) => ({
-        id: audience.id,
-        name: audience.name,
-        approximate_count: audience.approximate_count,
-        subtype: audience.subtype,
-      }));
-    } catch (error) {
-      throw new Error(`Failed to fetch audiences: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    const data = await graphFetch<{ data: any[] }>(
+      `${accountId}/customaudiences`,
+      { fields: 'id,name,approximate_count,subtype', limit: '100' },
+      token,
+      this.apiVersion
+    );
+
+    return (data.data || []).map((audience: any) => ({
+      id: audience.id,
+      name: audience.name,
+      approximate_count: audience.approximate_count,
+      subtype: audience.subtype,
+    }));
   }
 
   /**
@@ -415,80 +433,54 @@ class MetaAPIClient {
     objectId: string,
     dateStart: string,
     dateStop: string,
-    level: 'campaign' | 'adset' | 'ad' = 'campaign'
+    level: 'campaign' | 'adset' | 'ad' = 'campaign',
+    userId?: string
   ): Promise<MetaInsight[]> {
-    try {
-      let obj: any;
+    const token = await getMetaToken(userId);
 
-      if (level === 'campaign') {
-        obj = new Business.Campaign(objectId);
-      } else if (level === 'adset') {
-        obj = new Business.AdSet(objectId);
-      } else {
-        obj = new Business.Ad(objectId);
-      }
+    const fields = [
+      'campaign_id', 'adset_id', 'ad_id', 'campaign_name', 'adset_name', 'ad_name',
+      'date_start', 'date_stop', 'impressions', 'clicks', 'spend',
+      'actions', 'action_values', 'cpc', 'cpm', 'cpp', 'ctr',
+      'inline_link_clicks', 'landing_page_views',
+      'cost_per_inline_link_click', 'cost_per_landing_page_view', 'cost_per_action_type',
+    ];
 
-      const fields = [
-        'campaign_id',
-        'adset_id',
-        'ad_id',
-        'campaign_name',
-        'adset_name',
-        'ad_name',
-        'date_start',
-        'date_stop',
-        'impressions',
-        'clicks',
-        'spend',
-        'actions',
-        'action_values',
-        'cpc',
-        'cpm',
-        'cpp',
-        'ctr',
-        'inline_link_clicks',
-        'landing_page_views',
-        'cost_per_inline_link_click',
-        'cost_per_landing_page_view',
-        'cost_per_action_type',
-      ];
+    const data = await graphFetch<{ data: any[] }>(
+      `${objectId}/insights`,
+      {
+        fields: fields.join(','),
+        time_range: JSON.stringify({ since: dateStart, until: dateStop }),
+        level,
+      },
+      token,
+      this.apiVersion
+    );
 
-      const response = await obj.getInsights([], {
-        fields,
-        date_preset: 'today',
-        time_range: {
-          since: dateStart,
-          until: dateStop,
-        },
-      });
-
-      return response.map((insight: any) => ({
-        campaign_id: insight.campaign_id,
-        adset_id: insight.adset_id,
-        ad_id: insight.ad_id,
-        campaign_name: insight.campaign_name,
-        adset_name: insight.adset_name,
-        ad_name: insight.ad_name,
-        date_start: insight.date_start,
-        date_stop: insight.date_stop,
-        impressions: insight.impressions,
-        clicks: insight.clicks,
-        spend: insight.spend,
-        actions: insight.actions,
-        action_values: insight.action_values,
-        cpc: insight.cpc,
-        cpm: insight.cpm,
-        cpp: insight.cpp,
-        ctr: insight.ctr,
-        inline_link_clicks: insight.inline_link_clicks,
-        landing_page_views: insight.landing_page_views,
-        cost_per_inline_link_click: insight.cost_per_inline_link_click,
-        cost_per_landing_page_view: insight.cost_per_landing_page_view,
-        cost_per_action_type: insight.cost_per_action_type,
-      }));
-    } catch (error) {
-      throw new Error(`Failed to fetch insights: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    return (data.data || []).map((insight: any) => ({
+      campaign_id: insight.campaign_id,
+      adset_id: insight.adset_id,
+      ad_id: insight.ad_id,
+      campaign_name: insight.campaign_name,
+      adset_name: insight.adset_name,
+      ad_name: insight.ad_name,
+      date_start: insight.date_start,
+      date_stop: insight.date_stop,
+      impressions: insight.impressions,
+      clicks: insight.clicks,
+      spend: insight.spend,
+      actions: insight.actions,
+      action_values: insight.action_values,
+      cpc: insight.cpc,
+      cpm: insight.cpm,
+      cpp: insight.cpp,
+      ctr: insight.ctr,
+      inline_link_clicks: insight.inline_link_clicks,
+      landing_page_views: insight.landing_page_views,
+      cost_per_inline_link_click: insight.cost_per_inline_link_click,
+      cost_per_landing_page_view: insight.cost_per_landing_page_view,
+      cost_per_action_type: insight.cost_per_action_type,
+    }));
   }
 
   /**
@@ -504,34 +496,34 @@ class MetaAPIClient {
       lifetime_budget?: number;
       start_time?: string;
       stop_time?: string;
-    }
+    },
+    userId?: string
   ): Promise<{ id: string }> {
-    try {
-      const account = new Business.AdAccount(accountId);
-      const campaign = new Business.Campaign();
+    const token = await getMetaToken(userId);
+    const body: Record<string, any> = {
+      name: data.name,
+      objective: data.objective,
+      status: data.status,
+    };
+    if (data.daily_budget) body.daily_budget = data.daily_budget;
+    if (data.lifetime_budget) body.lifetime_budget = data.lifetime_budget;
+    if (data.start_time) body.start_time = data.start_time;
+    if (data.stop_time) body.stop_time = data.stop_time;
 
-      // Set parameters
-      campaign.setData({
-        name: data.name,
-        objective: data.objective,
-        status: data.status,
-        ...(data.daily_budget && { daily_budget: data.daily_budget }),
-        ...(data.lifetime_budget && { lifetime_budget: data.lifetime_budget }),
-        ...(data.start_time && { start_time: data.start_time }),
-        ...(data.stop_time && { stop_time: data.stop_time }),
-      });
-
-      const response = await account.createCampaign([], campaign);
-      return { id: response.id };
-    } catch (error) {
-      throw new Error(`Failed to create campaign: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    const result = await graphPost<{ id: string }>(
+      `${accountId}/campaigns`,
+      body,
+      token,
+      this.apiVersion
+    );
+    return { id: result.id };
   }
 
   /**
    * Create an ad set
    */
   async createAdSet(
+    accountId: string,
     campaignId: string,
     data: {
       name: string;
@@ -542,58 +534,61 @@ class MetaAPIClient {
       billing_event?: string;
       bid_strategy?: string;
       bid_amount?: number;
-    }
+    },
+    userId?: string
   ): Promise<{ id: string }> {
-    try {
-      const campaign = new Business.Campaign(campaignId);
-      const adset = new Business.AdSet();
+    const token = await getMetaToken(userId);
+    const body: Record<string, any> = {
+      name: data.name,
+      campaign_id: campaignId,
+      status: data.status,
+    };
+    if (data.daily_budget) body.daily_budget = data.daily_budget;
+    if (data.lifetime_budget) body.lifetime_budget = data.lifetime_budget;
+    if (data.targeting) body.targeting = JSON.stringify(data.targeting);
+    if (data.billing_event) body.billing_event = data.billing_event;
+    if (data.bid_strategy) body.bid_strategy = data.bid_strategy;
+    if (data.bid_amount) body.bid_amount = data.bid_amount;
 
-      adset.setData({
-        name: data.name,
-        status: data.status,
-        ...(data.daily_budget && { daily_budget: data.daily_budget }),
-        ...(data.lifetime_budget && { lifetime_budget: data.lifetime_budget }),
-        ...(data.targeting && { targeting: data.targeting }),
-        ...(data.billing_event && { billing_event: data.billing_event }),
-        ...(data.bid_strategy && { bid_strategy: data.bid_strategy }),
-        ...(data.bid_amount && { bid_amount: data.bid_amount }),
-      });
-
-      const response = await campaign.createAdset([], adset);
-      return { id: response.id };
-    } catch (error) {
-      throw new Error(`Failed to create ad set: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    const result = await graphPost<{ id: string }>(
+      `${accountId}/adsets`,
+      body,
+      token,
+      this.apiVersion
+    );
+    return { id: result.id };
   }
 
   /**
    * Create an ad
    */
   async createAd(
+    accountId: string,
     adsetId: string,
     data: {
       name: string;
       status: 'ACTIVE' | 'PAUSED';
       creative_id?: string;
       adset_spec?: Record<string, any>;
-    }
+    },
+    userId?: string
   ): Promise<{ id: string }> {
-    try {
-      const adset = new Business.AdSet(adsetId);
-      const ad = new Business.Ad();
+    const token = await getMetaToken(userId);
+    const body: Record<string, any> = {
+      name: data.name,
+      adset_id: adsetId,
+      status: data.status,
+    };
+    if (data.creative_id) body.creative = JSON.stringify({ creative_id: data.creative_id });
+    if (data.adset_spec) body.adset_spec = JSON.stringify(data.adset_spec);
 
-      ad.setData({
-        name: data.name,
-        status: data.status,
-        ...(data.creative_id && { creative_id: data.creative_id }),
-        ...(data.adset_spec && { adset_spec: data.adset_spec }),
-      });
-
-      const response = await adset.createAd([], ad);
-      return { id: response.id };
-    } catch (error) {
-      throw new Error(`Failed to create ad: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    const result = await graphPost<{ id: string }>(
+      `${accountId}/ads`,
+      body,
+      token,
+      this.apiVersion
+    );
+    return { id: result.id };
   }
 
   /**
@@ -608,15 +603,12 @@ class MetaAPIClient {
       lifetime_budget: number;
       start_time: string;
       stop_time: string;
-    }>
+    }>,
+    userId?: string
   ): Promise<{ success: boolean }> {
-    try {
-      const campaign = new Business.Campaign(campaignId);
-      await campaign.update([], data);
-      return { success: true };
-    } catch (error) {
-      throw new Error(`Failed to update campaign: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    const token = await getMetaToken(userId);
+    await graphPost(campaignId, data, token, this.apiVersion);
+    return { success: true };
   }
 
   /**
@@ -631,15 +623,12 @@ class MetaAPIClient {
       lifetime_budget: number;
       bid_amount: number;
       bid_strategy: string;
-    }>
+    }>,
+    userId?: string
   ): Promise<{ success: boolean }> {
-    try {
-      const adset = new Business.AdSet(adsetId);
-      await adset.update([], data);
-      return { success: true };
-    } catch (error) {
-      throw new Error(`Failed to update ad set: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    const token = await getMetaToken(userId);
+    await graphPost(adsetId, data, token, this.apiVersion);
+    return { success: true };
   }
 
   /**
@@ -651,15 +640,12 @@ class MetaAPIClient {
       name: string;
       status: 'ACTIVE' | 'PAUSED';
       creative_id: string;
-    }>
+    }>,
+    userId?: string
   ): Promise<{ success: boolean }> {
-    try {
-      const ad = new Business.Ad(adId);
-      await ad.update([], data);
-      return { success: true };
-    } catch (error) {
-      throw new Error(`Failed to update ad: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    const token = await getMetaToken(userId);
+    await graphPost(adId, data, token, this.apiVersion);
+    return { success: true };
   }
 }
 

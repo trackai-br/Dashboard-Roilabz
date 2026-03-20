@@ -117,7 +117,7 @@ export const bulkCreateCampaigns = inngest.createFunction(
             overrides.adSetDailyBudget || data.adSetBaseConfig.adSetDailyBudget;
 
           // Create ad set
-          const adSetResult = await metaAPI.createAdSet(campaignId, {
+          const adSetResult = await metaAPI.createAdSet(metaAccountId, campaignId, {
             name: data.adSetBaseConfig.adSetName,
             status: data.adSetBaseConfig.adSetStatus,
             targeting: data.adSetBaseConfig.adSetTargeting,
@@ -152,7 +152,7 @@ export const bulkCreateCampaigns = inngest.createFunction(
           };
 
           // Create ad
-          const adResult = await metaAPI.createAd(adSetId, {
+          const adResult = await metaAPI.createAd(metaAccountId, adSetId, {
             name: data.adBaseConfig.adName,
             status: data.adBaseConfig.adStatus,
             adset_spec: creativeSpec,
