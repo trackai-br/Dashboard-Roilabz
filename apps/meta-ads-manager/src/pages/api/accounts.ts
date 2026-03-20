@@ -48,6 +48,7 @@ export default async function handler(
       return res.status(500).json({ error: 'Failed to fetch account details' });
     }
 
+    res.setHeader('Cache-Control', 'no-store');
     return res.status(200).json({ data: accounts || [] });
   } catch (error) {
     console.error('Error fetching accounts:', error);

@@ -63,34 +63,37 @@ export default async function handler(
     }
 
     // STEP 2: Sync pages for all user accounts
+    // me/accounts returns the SAME pages regardless of ad account,
+    // so we fetch once and associate with all accounts.
     if (step === 'pages') {
       let pagesCount = 0;
       const accounts = await getUserAccounts(user.id);
 
       if (accounts.length > 0) {
-        const results = await Promise.allSettled(
-          accounts.map(async (account) => {
-            const pages = await metaAPI.getPages(account.meta_account_id);
-            if (pages && pages.length > 0) {
-              const pagesToSync = pages.map((page: any) => ({
-                meta_account_id: account.id,
-                page_id: page.id,
-                page_name: page.name,
-              }));
-              const { data, error } = await supabaseAdmin
-                .from('meta_pages')
-                .upsert(pagesToSync, { onConflict: 'meta_account_id,page_id' })
-                .select();
+        // Fetch pages ONCE (me/accounts is user-level, not per ad account)
+        const pages = await metaAPI.getPages(accounts[0].meta_account_id);
 
-              if (error) console.error(`Error syncing pages for ${account.meta_account_id}:`, error);
-              return data?.length || 0;
-            }
-            return 0;
-          })
-        );
+        if (pages && pages.length > 0) {
+          // Associate each page with every account (so they appear for any selected account)
+          const allPageRows = accounts.flatMap((account) =>
+            pages.map((page: any) => ({
+              meta_account_id: account.id,
+              page_id: page.id,
+              page_name: page.name,
+            }))
+          );
 
-        for (const r of results) {
-          if (r.status === 'fulfilled') pagesCount += r.value;
+          // Batch upsert in chunks of 500 (Supabase handles dedup via UNIQUE constraint)
+          const CHUNK_SIZE = 500;
+          for (let i = 0; i < allPageRows.length; i += CHUNK_SIZE) {
+            const chunk = allPageRows.slice(i, i + CHUNK_SIZE);
+            const { error } = await supabaseAdmin
+              .from('meta_pages')
+              .upsert(chunk, { onConflict: 'meta_account_id,page_id' });
+
+            if (error) console.error(`Error syncing pages chunk ${i}:`, error);
+          }
+          pagesCount = pages.length; // Report unique page count, not total rows
         }
       }
 

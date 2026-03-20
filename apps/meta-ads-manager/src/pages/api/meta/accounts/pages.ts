@@ -56,6 +56,7 @@ async function handleGet(
       return res.status(500).json({ error: 'Failed to fetch pages from database' });
     }
 
+    res.setHeader('Cache-Control', 'no-store');
     return res.status(200).json({
       pages: pages || [],
       count: pages?.length || 0,
