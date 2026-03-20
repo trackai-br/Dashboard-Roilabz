@@ -4,19 +4,6 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { requireAuth } from '@/lib/auth';
 import { metaAPI } from '@/lib/meta-api';
 
-interface SyncLogEntry {
-  user_id: string;
-  status: 'success' | 'partial' | 'failed';
-  synced_accounts: number;
-  synced_pages: number;
-  synced_pixels: number;
-  error_details?: Record<string, unknown>;
-}
-
-export const config = {
-  maxDuration: 60,
-};
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -30,19 +17,17 @@ export default async function handler(
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
+  if (!supabaseAdmin) {
+    return res.status(500).json({ error: 'Supabase admin client not initialized' });
+  }
+
+  const step = req.body?.step || 'accounts';
+
   try {
-    if (!supabaseAdmin) {
-      return res.status(500).json({ error: 'Supabase admin client not initialized' });
-    }
+    // STEP 1: Sync accounts from Meta API
+    if (step === 'accounts') {
+      let accountsCount = 0;
 
-    let accountsCount = 0;
-    let pagesCount = 0;
-    let pixelsCount = 0;
-    let status: 'success' | 'partial' | 'failed' = 'success';
-    let errorDetails: Record<string, unknown> | undefined;
-
-    // 1. Sync Accounts
-    try {
       const accounts = await metaAPI.getAdAccounts();
       if (accounts && accounts.length > 0) {
         const accountsToSync = accounts.map((account: any) => ({
@@ -59,7 +44,6 @@ export default async function handler(
 
         accountsCount = syncedAccounts?.length || 0;
 
-        // Create user_account_access entries
         if (syncedAccounts) {
           await supabaseAdmin.from('user_account_access').upsert(
             syncedAccounts.map((account: any) => ({
@@ -70,155 +54,120 @@ export default async function handler(
           );
         }
       }
-    } catch (error) {
-      status = 'partial';
-      errorDetails = { accounts: error instanceof Error ? error.message : 'unknown' };
+
+      return res.status(200).json({
+        success: true,
+        step: 'accounts',
+        synced_accounts: accountsCount,
+      });
     }
 
-    // 2. Sync Pages and Pixels for each account (only user's accounts)
-    try {
-      // Get only accounts the user has access to
-      const { data: userAccounts } = await supabaseAdmin
-        .from('user_account_access')
-        .select('account_id')
-        .eq('user_id', user.id);
+    // STEP 2: Sync pages for all user accounts
+    if (step === 'pages') {
+      let pagesCount = 0;
+      const accounts = await getUserAccounts(user.id);
 
-      if (!userAccounts || userAccounts.length === 0) {
-        // User has no accounts, log sync and return
-        const syncLog: SyncLogEntry = {
-          user_id: user.id,
-          status: accountsCount > 0 ? 'success' : 'failed',
-          synced_accounts: accountsCount,
-          synced_pages: pagesCount,
-          synced_pixels: pixelsCount,
-          error_details: accountsCount === 0 ? { message: 'No accounts synced' } : undefined,
-        };
-
-        await supabaseAdmin.from('sync_log').insert(syncLog);
-
-        return res.status(200).json({
-          success: true,
-          status: syncLog.status,
-          synced_accounts: accountsCount,
-          synced_pages: pagesCount,
-          synced_pixels: pixelsCount,
-        });
-      }
-
-      const accountIds = userAccounts.map(ua => ua.account_id);
-
-      const { data: accounts } = await supabaseAdmin
-        .from('meta_accounts')
-        .select('id, meta_account_id')
-        .in('id', accountIds)
-        .limit(100);
-
-      if (accounts && accounts.length > 0) {
-        // Parallelize pages+pixels sync across all accounts
+      if (accounts.length > 0) {
         const results = await Promise.allSettled(
           accounts.map(async (account) => {
-            let accountPages = 0;
-            let accountPixels = 0;
-
-            // Fetch pages and pixels in parallel for each account
-            const [pagesResult, pixelsResult] = await Promise.allSettled([
-              metaAPI.getPages(account.meta_account_id),
-              metaAPI.getPixels(account.meta_account_id),
-            ]);
-
-            // Sync pages
-            if (pagesResult.status === 'fulfilled' && pagesResult.value?.length > 0) {
-              const pagesToSync = pagesResult.value.map((page: any) => ({
+            const pages = await metaAPI.getPages(account.meta_account_id);
+            if (pages && pages.length > 0) {
+              const pagesToSync = pages.map((page: any) => ({
                 meta_account_id: account.id,
                 page_id: page.id,
                 page_name: page.name,
               }));
-              const { data: syncedPages, error: pagesError } = await supabaseAdmin
+              const { data, error } = await supabaseAdmin
                 .from('meta_pages')
                 .upsert(pagesToSync, { onConflict: 'meta_account_id,page_id' })
                 .select();
 
-              if (pagesError) {
-                console.error(`Error syncing pages for account ${account.meta_account_id}:`, pagesError);
-              } else {
-                accountPages = syncedPages?.length || 0;
-              }
-            } else if (pagesResult.status === 'rejected') {
-              console.error(`Exception fetching pages for account ${account.meta_account_id}:`, pagesResult.reason);
+              if (error) console.error(`Error syncing pages for ${account.meta_account_id}:`, error);
+              return data?.length || 0;
             }
+            return 0;
+          })
+        );
 
-            // Sync pixels
-            if (pixelsResult.status === 'fulfilled' && pixelsResult.value?.length > 0) {
-              const pixelsToSync = pixelsResult.value.map((pixel: any) => ({
+        for (const r of results) {
+          if (r.status === 'fulfilled') pagesCount += r.value;
+        }
+      }
+
+      return res.status(200).json({
+        success: true,
+        step: 'pages',
+        synced_pages: pagesCount,
+      });
+    }
+
+    // STEP 3: Sync pixels for all user accounts
+    if (step === 'pixels') {
+      let pixelsCount = 0;
+      const accounts = await getUserAccounts(user.id);
+
+      if (accounts.length > 0) {
+        const results = await Promise.allSettled(
+          accounts.map(async (account) => {
+            const pixels = await metaAPI.getPixels(account.meta_account_id);
+            if (pixels && pixels.length > 0) {
+              const pixelsToSync = pixels.map((pixel: any) => ({
                 meta_account_id: account.id,
                 pixel_id: pixel.id,
                 pixel_name: pixel.name,
-                last_fired_time: pixel.last_fired_time ? Math.floor(new Date(pixel.last_fired_time).getTime() / 1000) : null,
+                last_fired_time: pixel.last_fired_time
+                  ? Math.floor(new Date(pixel.last_fired_time).getTime() / 1000)
+                  : null,
               }));
-              const { data: syncedPixels, error: pixelsError } = await supabaseAdmin
+              const { data, error } = await supabaseAdmin
                 .from('meta_pixels')
                 .upsert(pixelsToSync, { onConflict: 'meta_account_id,pixel_id' })
                 .select();
 
-              if (pixelsError) {
-                console.error(`Error syncing pixels for account ${account.meta_account_id}:`, pixelsError);
-              } else {
-                accountPixels = syncedPixels?.length || 0;
-              }
-            } else if (pixelsResult.status === 'rejected') {
-              console.error(`Exception fetching pixels for account ${account.meta_account_id}:`, pixelsResult.reason);
+              if (error) console.error(`Error syncing pixels for ${account.meta_account_id}:`, error);
+              return data?.length || 0;
             }
-
-            return { accountPages, accountPixels };
+            return 0;
           })
         );
 
-        for (const result of results) {
-          if (result.status === 'fulfilled') {
-            pagesCount += result.value.accountPages;
-            pixelsCount += result.value.accountPixels;
-          } else {
-            status = 'partial';
-            errorDetails = { ...errorDetails, account_error: result.reason?.message || 'unknown' };
-          }
+        for (const r of results) {
+          if (r.status === 'fulfilled') pixelsCount += r.value;
         }
       }
-    } catch (error) {
-      console.error('Error in pages/pixels sync loop:', error);
-      status = 'partial';
-      errorDetails = { ...errorDetails, pages_pixels_loop: error instanceof Error ? error.message : 'unknown' };
+
+      return res.status(200).json({
+        success: true,
+        step: 'pixels',
+        synced_pixels: pixelsCount,
+      });
     }
 
-    // If nothing was synced and no explicit success, mark as failed
-    if (accountsCount === 0 && pagesCount === 0 && pixelsCount === 0 && status === 'success') {
-      status = 'failed';
-      errorDetails = { message: 'No data synced from Meta API' };
-    }
-
-    // 3. Log sync attempt
-    const syncLog: SyncLogEntry = {
-      user_id: user.id,
-      status,
-      synced_accounts: accountsCount,
-      synced_pages: pagesCount,
-      synced_pixels: pixelsCount,
-      error_details: errorDetails,
-    };
-
-    await supabaseAdmin.from('sync_log').insert(syncLog);
-
-    return res.status(200).json({
-      success: true,
-      status,
-      synced_accounts: accountsCount,
-      synced_pages: pagesCount,
-      synced_pixels: pixelsCount,
-    });
+    return res.status(400).json({ error: `Unknown step: ${step}` });
   } catch (error) {
-    console.error('Sync all error:', error);
+    console.error(`Sync error (step=${step}):`, error);
     return res.status(500).json({
       error: 'Sync failed',
+      step,
       details: error instanceof Error ? error.message : 'unknown',
     });
   }
+}
+
+async function getUserAccounts(userId: string) {
+  const { data: userAccounts } = await supabaseAdmin!
+    .from('user_account_access')
+    .select('account_id')
+    .eq('user_id', userId);
+
+  if (!userAccounts || userAccounts.length === 0) return [];
+
+  const accountIds = userAccounts.map((ua) => ua.account_id);
+  const { data: accounts } = await supabaseAdmin!
+    .from('meta_accounts')
+    .select('id, meta_account_id')
+    .in('id', accountIds)
+    .limit(100);
+
+  return accounts || [];
 }

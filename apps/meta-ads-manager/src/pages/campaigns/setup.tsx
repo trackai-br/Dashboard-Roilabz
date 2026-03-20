@@ -52,28 +52,39 @@ export default function CampaignSetupPage() {
         return;
       }
 
-      const res = await fetch('/api/meta/sync-all', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
+      const headers = {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.access_token}`,
+      };
 
-      if (res.status === 504) {
-        setSyncResult('Sync em andamento — recarregue em alguns segundos');
-        queryClient.invalidateQueries({ queryKey: ['meta-accounts'] });
-        return;
-      }
-      const data = await res.json();
-      if (res.ok) {
-        setSyncResult(`${data.synced_accounts} contas, ${data.synced_pages} páginas, ${data.synced_pixels} pixels sincronizados`);
-        queryClient.invalidateQueries({ queryKey: ['meta-accounts'] });
-      } else {
-        setSyncResult(`Erro: ${data.error || 'falha na sincronização'}`);
-      }
+      const callStep = async (step: string) => {
+        const res = await fetch('/api/meta/sync-all', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ step }),
+        });
+        if (!res.ok) throw new Error(`Step ${step} failed`);
+        return res.json();
+      };
+
+      // Step 1: accounts
+      setSyncResult('Sincronizando contas...');
+      const accountsData = await callStep('accounts');
+
+      // Step 2: pages
+      setSyncResult('Sincronizando páginas...');
+      const pagesData = await callStep('pages');
+
+      // Step 3: pixels
+      setSyncResult('Sincronizando pixels...');
+      const pixelsData = await callStep('pixels');
+
+      setSyncResult(
+        `${accountsData.synced_accounts} contas, ${pagesData.synced_pages} páginas, ${pixelsData.synced_pixels} pixels sincronizados`
+      );
+      queryClient.invalidateQueries({ queryKey: ['meta-accounts'] });
     } catch (e) {
-      setSyncResult('Erro de conexão — a sincronização pode ter completado parcialmente');
+      setSyncResult('Erro de conexão');
     } finally {
       setSyncing(false);
     }
