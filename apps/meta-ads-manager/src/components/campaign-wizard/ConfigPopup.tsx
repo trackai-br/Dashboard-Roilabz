@@ -94,22 +94,45 @@ export default function ConfigPopup({ onClose }: ConfigPopupProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center">
+    <div
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 9999,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
       {/* Overlay */}
       <div
-        className="absolute inset-0"
-        style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)', backdropFilter: 'blur(4px)' }}
         onClick={handleClose}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.85)',
+        }}
       />
 
       {/* Popup */}
       <div
-        className="relative flex flex-col rounded-xl border shadow-2xl"
         style={{
+          position: 'relative',
+          display: 'flex',
+          flexDirection: 'column',
           width: '95vw',
           height: '95vh',
           backgroundColor: '#1a1a2e',
-          borderColor: 'var(--border-light)',
+          borderRadius: '12px',
+          border: '1px solid rgba(57, 255, 20, 0.2)',
+          boxShadow: '0 0 40px rgba(57, 255, 20, 0.15)',
+          overflow: 'hidden',
         }}
       >
         {/* Header */}
@@ -228,8 +251,8 @@ export default function ConfigPopup({ onClose }: ConfigPopupProps) {
 
       {/* Confirm Close Modal */}
       {showConfirmClose && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setShowConfirmClose(false)} />
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)' }} onClick={() => setShowConfirmClose(false)} />
           <div
             className="relative rounded-xl p-6 border shadow-xl max-w-md"
             style={{ backgroundColor: '#1a1a2e', borderColor: 'var(--border-light)' }}
