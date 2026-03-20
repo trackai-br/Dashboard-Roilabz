@@ -107,44 +107,32 @@ export interface MetaInsight {
  * Busca o token Meta OAuth do banco de dados.
  * - Se userId fornecido, busca o token desse usuário
  * - Se não, busca o primeiro token ativo (para background jobs como Inngest)
- * - Fallback para process.env.META_ACCESS_TOKEN durante transição
  */
 async function getMetaToken(userId?: string): Promise<string> {
-  try {
-    if (supabaseAdmin) {
-      let query = supabaseAdmin
-        .from('meta_connections')
-        .select('meta_access_token, meta_token_expires_at')
-        .eq('connection_status', 'active');
-
-      if (userId) {
-        query = query.eq('user_id', userId);
-      }
-
-      const { data, error } = await query.order('updated_at', { ascending: false }).limit(1).single();
-
-      if (!error && data) {
-        // Verificar expiração
-        if (data.meta_token_expires_at && new Date(data.meta_token_expires_at) < new Date()) {
-          throw new Error('Token expirado. Reconecte sua conta do Facebook.');
-        }
-        return data.meta_access_token;
-      }
-    }
-  } catch (error) {
-    // Se o erro é de token expirado, propagar
-    if (error instanceof Error && error.message.includes('expirado')) {
-      throw error;
-    }
-    console.warn('[MetaAPI] Could not fetch token from DB, trying env fallback:', error);
+  if (!supabaseAdmin) {
+    throw new Error('Supabase admin not initialized');
   }
 
-  // Fallback para env var durante transição
-  if (process.env.META_ACCESS_TOKEN) {
-    return process.env.META_ACCESS_TOKEN;
+  let query = supabaseAdmin
+    .from('meta_connections')
+    .select('meta_access_token, meta_token_expires_at')
+    .eq('connection_status', 'active');
+
+  if (userId) {
+    query = query.eq('user_id', userId);
   }
 
-  throw new Error('Nenhuma conta do Facebook conectada.');
+  const { data, error } = await query.order('updated_at', { ascending: false }).limit(1).single();
+
+  if (error || !data) {
+    throw new Error('Nenhuma conta do Facebook conectada.');
+  }
+
+  if (data.meta_token_expires_at && new Date(data.meta_token_expires_at) < new Date()) {
+    throw new Error('Token expirado. Reconecte sua conta do Facebook.');
+  }
+
+  return data.meta_access_token;
 }
 
 /**

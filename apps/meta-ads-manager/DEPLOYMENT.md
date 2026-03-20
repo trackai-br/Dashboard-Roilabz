@@ -18,8 +18,12 @@ Certifique-se que cada variável está configurada no seu ambiente de deploy:
 INNGEST_EVENT_KEY=evt_prod_... (obtém em https://app.inngest.com)
 INNGEST_SIGNING_KEY=...         (obtém em https://app.inngest.com)
 
-# Meta API
-META_ACCESS_TOKEN=EAAB...       (obtém em Meta for Developers)
+# Meta API (OAuth — token vem do banco, não da env)
+META_APP_ID=...                 (obtém em Meta for Developers > Settings > Basic)
+META_APP_SECRET=...             (obtém em Meta for Developers > Settings > Basic)
+META_API_VERSION=v23.0
+META_OAUTH_REDIRECT_URI=https://seu-dominio/api/auth/meta/callback
+NEXT_PUBLIC_META_APP_ID=...     (mesmo valor de META_APP_ID)
 
 # Supabase
 NEXT_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
@@ -209,7 +213,7 @@ try {
 
 - [ ] Nenhuma credencial foi commitada em `.env` ou código
 - [ ] RLS está habilitado em tabela `meta_accounts`
-- [ ] Meta token é rotacionado regularmente
+- [ ] Meta token é renovado automaticamente via Inngest job (`refresh-meta-token`)
 - [ ] Inngest signing key é secreto (não expor cliente)
 - [ ] Logs não expõem dados sensíveis
 

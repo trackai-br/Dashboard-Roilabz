@@ -56,10 +56,12 @@ migrations/005_add_alerts_and_notifications.sql
 Adicione ao `.env.local`:
 
 ```bash
-# Meta API (já deve estar configurado)
-META_ACCESS_TOKEN=seu-token
-META_SYSTEM_USER_ID=seu-id
+# Meta API (OAuth — token vem do banco via Facebook Login)
+META_APP_ID=seu-app-id
+META_APP_SECRET=seu-app-secret
 META_API_VERSION=v23.0
+META_OAUTH_REDIRECT_URI=https://seu-dominio/api/auth/meta/callback
+NEXT_PUBLIC_META_APP_ID=seu-app-id
 
 # Telegram (para notificações via Telegram - opcional)
 TELEGRAM_BOT_TOKEN=seu-bot-token
@@ -163,7 +165,7 @@ POST /api/notifications               # Marcar como lida/deletar
 - **Backend**: Next.js API Routes + Inngest
 - **Database**: Supabase (PostgreSQL) + RLS
 - **Auth**: Google OAuth + Supabase Auth
-- **Meta API**: facebook-nodejs-business-sdk v19.0.0
+- **Meta API**: fetch() direto na Graph API (OAuth token do banco)
 - **Jobs**: Inngest cron jobs
 
 ### Fluxo de Sincronização:
@@ -279,7 +281,7 @@ Para cada regra habilitada:
 - `005_add_alerts_and_notifications.sql`
 
 **Lib (1 arquivo)**
-- `/lib/meta-api.ts` (wrapper do facebook-nodejs-business-sdk)
+- `/lib/meta-api.ts` (client Meta Graph API via fetch, token OAuth do banco)
 
 ---
 
@@ -310,12 +312,12 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 DATABASE_URL=
 
-# === META ===
+# === META (OAuth — token vem do banco) ===
 META_APP_ID=
 META_APP_SECRET=
-META_ACCESS_TOKEN=
-META_SYSTEM_USER_ID=
 META_API_VERSION=v23.0
+META_OAUTH_REDIRECT_URI=https://seu-dominio/api/auth/meta/callback
+NEXT_PUBLIC_META_APP_ID=
 
 # === GOOGLE OAuth ===
 NEXT_PUBLIC_GOOGLE_CLIENT_ID=

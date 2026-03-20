@@ -18,7 +18,10 @@ cp .env.example .env
 **Variáveis obrigatórias:**
 - `INNGEST_EVENT_KEY` — Chave de evento Inngest
 - `INNGEST_SIGNING_KEY` — Chave de assinatura Inngest
-- `META_ACCESS_TOKEN` — Token de acesso Meta Graph API
+- `META_APP_ID` — App ID do Facebook (Meta for Developers)
+- `META_APP_SECRET` — App Secret do Facebook
+- `NEXT_PUBLIC_META_APP_ID` — App ID (client-side, para OAuth redirect)
+- `META_OAUTH_REDIRECT_URI` — URL de callback OAuth (ex: `https://seu-dominio/api/auth/meta/callback`)
 - `NEXT_PUBLIC_SUPABASE_URL` — URL da base Supabase
 - `SUPABASE_SERVICE_ROLE_KEY` — Chave de serviço Supabase
 
@@ -71,18 +74,43 @@ npm test
 
 3. Monitore a tabela `meta_accounts` no Supabase
 
+## 🔐 Autenticação Meta (Facebook OAuth)
+
+O token de acesso Meta é obtido via **Facebook OAuth**, não por variável de ambiente.
+
+### Fluxo:
+1. Usuário clica em "Conectar com Facebook" na página `/connections`
+2. Redireciona para Facebook Login com permissões solicitadas
+3. Callback salva o token na tabela `meta_connections` no Supabase
+4. Token é válido por ~60 dias (long-lived token)
+5. Job Inngest `refresh-meta-token` renova automaticamente tokens com <7 dias para expirar (roda diariamente às 8h)
+
+### Permissões OAuth necessárias:
+- `ads_read` — Ler dados de anúncios
+- `ads_management` — Gerenciar campanhas
+- `pages_show_list` — Listar páginas
+- `pages_read_engagement` — Ler engajamento
+- `read_insights` — Ler insights/métricas
+- `business_management` — Acesso ao Business Manager
+
+### Indicador de status:
+- O header exibe um indicador visual do status do token (verde/amarelo/vermelho)
+- Se o token expirar, o usuário é notificado para reconectar
+
 ## 🔄 Fluxo de Sincronização
 
 1. **Trigger**: Cron job a cada 15 minutos (`*/15 * * * *`)
-2. **Fetch**: Busca contas em `https://graph.facebook.com/v23.0/me/adaccounts`
-3. **Process**: Extrai `meta_account_id`, `meta_account_name`, `currency`, `timezone`
-4. **Store**: INSERT/UPDATE em tabela Supabase `meta_accounts`
-5. **Track**: Atualiza `last_synced` com timestamp atual
+2. **Token**: Busca token OAuth ativo da tabela `meta_connections`
+3. **Fetch**: Busca contas em `https://graph.facebook.com/v23.0/me/adaccounts`
+4. **Process**: Extrai `meta_account_id`, `meta_account_name`, `currency`, `timezone`
+5. **Store**: INSERT/UPDATE em tabela Supabase `meta_accounts`
+6. **Track**: Atualiza `last_synced` com timestamp atual
 
 ## ⚠️ Tratamento de Erros
 
 A função trata automaticamente:
-- **401 (Unauthorized)**: Token Meta inválido ou expirado
+- **Token expirado**: Mensagem clara pedindo reconexão
+- **401 (Unauthorized)**: Token Meta inválido
 - **429 (Too Many Requests)**: Rate limiting — retry automático (até 3x)
 - **Timeout**: Falha de conexão — retry automático
 
@@ -121,8 +149,9 @@ Ver [DEPLOYMENT.md](./DEPLOYMENT.md) para instruções completas.
 
 ## 🔐 Segurança
 
-- RLS habilitado em `meta_accounts` — apenas service role pode modificar
-- Tokens armazenados em variáveis de ambiente (nunca commitar `.env`)
+- RLS habilitado em tabelas Supabase
+- Tokens OAuth armazenados no banco (tabela `meta_connections`), não em variáveis de ambiente
+- Refresh automático de tokens antes da expiração
 - Validação de assinatura Inngest automática
 
 ## 📞 Suporte

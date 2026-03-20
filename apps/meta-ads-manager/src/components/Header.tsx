@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/router';
+import { MetaTokenStatus } from './MetaTokenStatus';
 
 interface HeaderProps {
   title?: string;
@@ -58,8 +59,9 @@ export function Header({
             </h1>
           </div>
 
-          {/* Right: Action Buttons */}
+          {/* Right: Status + Action Buttons */}
           <div className="flex items-center gap-3">
+            <MetaTokenStatus />
             {/* Botão Criar Campanha */}
             <button
               onClick={() => router.push('/campaigns/setup')}
