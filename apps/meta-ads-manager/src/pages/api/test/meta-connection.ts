@@ -85,46 +85,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     results.pages = { status: 'error', error: e.message };
   }
 
-  // 5. Pixels — try multiple accounts until we find one with pixels
-  let allAccountIds: string[] = [];
+  // 5. Pixels (using known account with data)
+  const testAccountId = firstAccountId || 'act_3752184188192294';
   try {
-    const accounts = await graphGet('me/adaccounts?fields=id&limit=100', token);
-    allAccountIds = (accounts.data || []).map((a: any) => a.id);
-  } catch (_) {}
+    const pixels = await graphGet(`${testAccountId}/adspixels?fields=id,name,last_fired_time&limit=100`, token);
+    results.pixels = { status: 'ok', count: (pixels.data || []).length, account: testAccountId };
+  } catch (e: any) {
+    results.pixels = { status: 'error', error: e.message };
+  }
 
-  if (allAccountIds.length > 0) {
-    // Pixels: try first 10 accounts
-    let totalPixels = 0;
-    let pixelAccountId: string | null = null;
-    for (const accId of allAccountIds.slice(0, 10)) {
-      try {
-        const pixels = await graphGet(`${accId}/adspixels?fields=id,name,last_fired_time&limit=100`, token);
-        const count = (pixels.data || []).length;
-        if (count > 0) {
-          totalPixels += count;
-          if (!pixelAccountId) pixelAccountId = accId;
-        }
-      } catch (_) {}
-    }
-    results.pixels = { status: 'ok', count: totalPixels, checked_accounts: Math.min(10, allAccountIds.length), ...(pixelAccountId ? { found_in: pixelAccountId } : {}) };
-
-    // Campaigns: try first 10 accounts
-    let totalCampaigns = 0;
-    let campaignAccountId: string | null = null;
-    for (const accId of allAccountIds.slice(0, 10)) {
-      try {
-        const campaigns = await graphGet(`${accId}/campaigns?fields=id,name&limit=100`, token);
-        const count = (campaigns.data || []).length;
-        if (count > 0) {
-          totalCampaigns += count;
-          if (!campaignAccountId) campaignAccountId = accId;
-        }
-      } catch (_) {}
-    }
-    results.campaigns = { status: 'ok', count: totalCampaigns, checked_accounts: Math.min(10, allAccountIds.length), ...(campaignAccountId ? { found_in: campaignAccountId } : {}) };
-  } else {
-    results.pixels = { status: 'skipped', error: 'Nenhuma ad account encontrada' };
-    results.campaigns = { status: 'skipped', error: 'Nenhuma ad account encontrada' };
+  // 6. Campaigns
+  try {
+    const campaigns = await graphGet(`${testAccountId}/campaigns?fields=id,name&limit=100`, token);
+    results.campaigns = { status: 'ok', count: (campaigns.data || []).length, account: testAccountId };
+  } catch (e: any) {
+    results.campaigns = { status: 'error', error: e.message };
   }
 
   return res.status(200).json(results);
