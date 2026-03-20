@@ -1,8 +1,42 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Component, ReactNode } from 'react';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { WizardProvider, useWizard } from '@/contexts/WizardContext';
 import ConfigPopup from '@/components/campaign-wizard/ConfigPopup';
 import { supabase } from '@/lib/supabase';
+
+// Error boundary to catch popup render crashes
+class PopupErrorBoundary extends Component<
+  { children: ReactNode; onError: () => void },
+  { hasError: boolean; error: string }
+> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false, error: '' };
+  }
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error: error.message };
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}>
+          <div className="rounded-xl p-8 max-w-md" style={{ backgroundColor: '#1a1a2e', border: '1px solid var(--border-light)' }}>
+            <p className="text-lg font-bold mb-2" style={{ color: 'var(--color-danger)' }}>Erro ao abrir wizard</p>
+            <p className="text-sm mb-4" style={{ color: 'var(--color-secondary)' }}>{this.state.error}</p>
+            <button
+              onClick={this.props.onError}
+              className="px-4 py-2 rounded-lg text-sm"
+              style={{ backgroundColor: 'var(--neon-green)', color: 'var(--bg-deepest)' }}
+            >
+              Fechar
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 export default function CampaignSetupPage() {
   const [showPopup, setShowPopup] = useState(false);
@@ -26,15 +60,30 @@ export default function CampaignSetupPage() {
           setHasDraft(true);
           setDraftState(data.state);
           setDraftId(data.id);
+        } else {
+          setHasDraft(false);
         }
       } catch {
-        // No draft
+        setHasDraft(false);
       } finally {
         setLoadingDraft(false);
       }
     };
     checkDraft();
   }, [showPopup]);
+
+  const openNewWizard = () => {
+    setDraftState(null);
+    setShowPopup(true);
+  };
+
+  const openDraftWizard = () => {
+    setShowPopup(true);
+  };
+
+  const closePopup = () => {
+    setShowPopup(false);
+  };
 
   return (
     <DashboardLayout>
@@ -56,7 +105,7 @@ export default function CampaignSetupPage() {
 
           <div className="flex flex-col items-center gap-3">
             <button
-              onClick={() => { setDraftState(null); setShowPopup(true); }}
+              onClick={openNewWizard}
               className="px-8 py-3 rounded-lg font-semibold text-sm transition-all"
               style={{
                 backgroundColor: 'var(--neon-green)',
@@ -73,7 +122,7 @@ export default function CampaignSetupPage() {
 
             {!loadingDraft && hasDraft && (
               <button
-                onClick={() => setShowPopup(true)}
+                onClick={openDraftWizard}
                 className="px-6 py-2 rounded-lg border text-sm font-medium transition-all"
                 style={{
                   borderColor: 'rgba(0, 240, 255, 0.3)',
@@ -91,13 +140,15 @@ export default function CampaignSetupPage() {
       </div>
 
       {showPopup && (
-        <WizardProvider>
-          <PopupWithDraft
-            draftState={hasDraft ? draftState : null}
-            draftId={draftId}
-            onClose={() => setShowPopup(false)}
-          />
-        </WizardProvider>
+        <PopupErrorBoundary onError={closePopup}>
+          <WizardProvider>
+            <PopupWithDraft
+              draftState={hasDraft ? draftState : null}
+              draftId={draftId}
+              onClose={closePopup}
+            />
+          </WizardProvider>
+        </PopupErrorBoundary>
       )}
     </DashboardLayout>
   );
