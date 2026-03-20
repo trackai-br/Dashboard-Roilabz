@@ -60,16 +60,20 @@ export default function CampaignSetupPage() {
         },
       });
 
+      if (res.status === 504) {
+        setSyncResult('Sync em andamento — recarregue em alguns segundos');
+        queryClient.invalidateQueries({ queryKey: ['meta-accounts'] });
+        return;
+      }
       const data = await res.json();
       if (res.ok) {
         setSyncResult(`${data.synced_accounts} contas, ${data.synced_pages} páginas, ${data.synced_pixels} pixels sincronizados`);
-        // Invalidate accounts cache so wizard gets fresh data
         queryClient.invalidateQueries({ queryKey: ['meta-accounts'] });
       } else {
         setSyncResult(`Erro: ${data.error || 'falha na sincronização'}`);
       }
     } catch (e) {
-      setSyncResult('Erro de conexão');
+      setSyncResult('Erro de conexão — a sincronização pode ter completado parcialmente');
     } finally {
       setSyncing(false);
     }

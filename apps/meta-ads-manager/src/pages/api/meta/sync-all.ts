@@ -13,6 +13,10 @@ interface SyncLogEntry {
   error_details?: Record<string, unknown>;
 }
 
+export const config = {
+  maxDuration: 60,
+};
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -110,12 +114,21 @@ export default async function handler(
         .limit(100);
 
       if (accounts && accounts.length > 0) {
-        for (const account of accounts) {
-          // Sync pages
-          try {
-            const pages = await metaAPI.getPages(account.meta_account_id);
-            if (pages && pages.length > 0) {
-              const pagesToSync = pages.map((page: any) => ({
+        // Parallelize pages+pixels sync across all accounts
+        const results = await Promise.allSettled(
+          accounts.map(async (account) => {
+            let accountPages = 0;
+            let accountPixels = 0;
+
+            // Fetch pages and pixels in parallel for each account
+            const [pagesResult, pixelsResult] = await Promise.allSettled([
+              metaAPI.getPages(account.meta_account_id),
+              metaAPI.getPixels(account.meta_account_id),
+            ]);
+
+            // Sync pages
+            if (pagesResult.status === 'fulfilled' && pagesResult.value?.length > 0) {
+              const pagesToSync = pagesResult.value.map((page: any) => ({
                 meta_account_id: account.id,
                 page_id: page.id,
                 page_name: page.name,
@@ -127,23 +140,16 @@ export default async function handler(
 
               if (pagesError) {
                 console.error(`Error syncing pages for account ${account.meta_account_id}:`, pagesError);
-                status = 'partial';
-                errorDetails = { ...errorDetails, pages: pagesError.message };
               } else {
-                pagesCount += syncedPages?.length || 0;
+                accountPages = syncedPages?.length || 0;
               }
+            } else if (pagesResult.status === 'rejected') {
+              console.error(`Exception fetching pages for account ${account.meta_account_id}:`, pagesResult.reason);
             }
-          } catch (error) {
-            console.error(`Exception syncing pages for account ${account.meta_account_id}:`, error);
-            status = 'partial';
-            errorDetails = { ...errorDetails, pages_exception: error instanceof Error ? error.message : 'unknown' };
-          }
 
-          // Sync pixels
-          try {
-            const pixels = await metaAPI.getPixels(account.meta_account_id);
-            if (pixels && pixels.length > 0) {
-              const pixelsToSync = pixels.map((pixel: any) => ({
+            // Sync pixels
+            if (pixelsResult.status === 'fulfilled' && pixelsResult.value?.length > 0) {
+              const pixelsToSync = pixelsResult.value.map((pixel: any) => ({
                 meta_account_id: account.id,
                 pixel_id: pixel.id,
                 pixel_name: pixel.name,
@@ -156,16 +162,24 @@ export default async function handler(
 
               if (pixelsError) {
                 console.error(`Error syncing pixels for account ${account.meta_account_id}:`, pixelsError);
-                status = 'partial';
-                errorDetails = { ...errorDetails, pixels: pixelsError.message };
               } else {
-                pixelsCount += syncedPixels?.length || 0;
+                accountPixels = syncedPixels?.length || 0;
               }
+            } else if (pixelsResult.status === 'rejected') {
+              console.error(`Exception fetching pixels for account ${account.meta_account_id}:`, pixelsResult.reason);
             }
-          } catch (error) {
-            console.error(`Exception syncing pixels for account ${account.meta_account_id}:`, error);
+
+            return { accountPages, accountPixels };
+          })
+        );
+
+        for (const result of results) {
+          if (result.status === 'fulfilled') {
+            pagesCount += result.value.accountPages;
+            pixelsCount += result.value.accountPixels;
+          } else {
             status = 'partial';
-            errorDetails = { ...errorDetails, pixels_exception: error instanceof Error ? error.message : 'unknown' };
+            errorDetails = { ...errorDetails, account_error: result.reason?.message || 'unknown' };
           }
         }
       }
