@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { supabase } from '@/lib/supabase';
 
 interface MetaAuthButtonProps {
   onSuccess?: () => void;
@@ -15,11 +16,28 @@ const MetaAuthButton: React.FC<MetaAuthButtonProps> = ({
 }) => {
   const [isAuthLoading, setIsAuthLoading] = useState(false);
 
-  const handleMetaLogin = () => {
+  const handleMetaLogin = async () => {
     setIsAuthLoading(true);
-    // Redirecionar para a rota de OAuth que inicia o fluxo com Facebook
-    // O servidor vai gerar o state CSRF e redirecionar para Facebook
-    window.location.href = '/api/auth/meta';
+
+    try {
+      // Obter sessão atual do Supabase (armazenada em localStorage)
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session?.access_token) {
+        console.error('[MetaAuth] No active session found');
+        onError?.(new Error('Please log in first'));
+        setIsAuthLoading(false);
+        return;
+      }
+
+      // Passar token como query param para o endpoint de OAuth
+      // O servidor valida o token e salva o user_id no state
+      window.location.href = `/api/auth/meta?token=${session.access_token}`;
+    } catch (error) {
+      console.error('[MetaAuth] Error getting session:', error);
+      onError?.(error instanceof Error ? error : new Error('Failed to start OAuth'));
+      setIsAuthLoading(false);
+    }
   };
 
   const isDisabled = isLoading || isAuthLoading;

@@ -1,21 +1,18 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { supabaseAdmin } from '@/lib/supabase';
-import { getUserFromRequest } from '@/lib/auth';
 
 /**
  * GET /api/auth/meta/callback
  * Recebe o código do Facebook, troca por token (short + long-lived), e salva na base
  *
- * Fluxo detalhado:
- * 1. Valida state (proteção CSRF)
- * 2. Identifica o usuário autenticado
- * 3. Troca code por short-lived token
- * 4. Troca short-lived por long-lived token (60 dias)
- * 5. Busca informações do usuário Meta
- * 6. Busca permissões concedidas
- * 7. Salva/atualiza na tabela meta_connections
- * 8. Limpa cookie de state
- * 9. Redireciona com status
+ * Fluxo:
+ * 1. Valida state (proteção CSRF) e recupera user_id da tabela oauth_states
+ * 2. Troca code por short-lived token
+ * 3. Troca short-lived por long-lived token (60 dias)
+ * 4. Busca informações do usuário Meta
+ * 5. Busca permissões concedidas
+ * 6. Salva/atualiza na tabela meta_connections
+ * 7. Redireciona com status
  */
 export default async function handler(
   req: NextApiRequest,
@@ -26,16 +23,14 @@ export default async function handler(
   }
 
   try {
-    // ========== 1. Validar state (proteção CSRF) ==========
+    // ========== 1. Validar state e recuperar user_id ==========
     const { code, state } = req.query;
 
     if (!code || !state) {
       console.warn('[OAuth] Missing code or state in callback');
-      const errorUrl = `${process.env.NEXT_PUBLIC_APP_URL}/connections?error=csrf&message=missing_params`;
-      return res.redirect(302, errorUrl);
+      return res.redirect(302, `${process.env.NEXT_PUBLIC_APP_URL}/connections?error=csrf&message=missing_params`);
     }
 
-    // Recuperar state do Supabase
     const stateStr = state as string;
     console.log('[OAuth] Validating state from Supabase...');
 
@@ -48,35 +43,29 @@ export default async function handler(
 
     if (fetchError || !storedStateRecord) {
       console.warn('[OAuth] State not found in Supabase - CSRF attack prevented');
-      const errorUrl = `${process.env.NEXT_PUBLIC_APP_URL}/connections?error=csrf&message=state_mismatch`;
-      return res.redirect(302, errorUrl);
+      return res.redirect(302, `${process.env.NEXT_PUBLIC_APP_URL}/connections?error=csrf&message=state_mismatch`);
     }
 
-    // Verificar se state não expirou
-    const expiresAt = new Date(storedStateRecord.expires_at);
-    if (new Date() > expiresAt) {
-      console.warn('[OAuth] State expired - CSRF attack prevented');
-      const errorUrl = `${process.env.NEXT_PUBLIC_APP_URL}/connections?error=csrf&message=state_expired`;
-      return res.redirect(302, errorUrl);
+    // Verificar expiração
+    if (new Date() > new Date(storedStateRecord.expires_at)) {
+      console.warn('[OAuth] State expired');
+      await supabaseAdmin!.from('oauth_states').delete().eq('id', storedStateRecord.id);
+      return res.redirect(302, `${process.env.NEXT_PUBLIC_APP_URL}/connections?error=csrf&message=state_expired`);
     }
 
-    // Deletar state usado para evitar replay attack
-    await supabaseAdmin!
-      .from('oauth_states')
-      .delete()
-      .eq('id', storedStateRecord.id);
-
-    console.log('[OAuth] State validated successfully');
-
-    // ========== 2. Verificar se usuário está autenticado ==========
-    const user = await getUserFromRequest(req);
-    if (!user) {
-      console.warn('Unauthorized callback attempt - user not authenticated');
-      const errorUrl = `${process.env.NEXT_PUBLIC_APP_URL}/connections?error=unauthorized`;
-      return res.redirect(302, errorUrl);
+    // Recuperar user_id do state
+    const userId = storedStateRecord.user_id;
+    if (!userId) {
+      console.error('[OAuth] No user_id found in state record');
+      return res.redirect(302, `${process.env.NEXT_PUBLIC_APP_URL}/connections?error=unauthorized`);
     }
 
-    // ========== 3. Trocar code por SHORT-LIVED token ==========
+    // Deletar state usado (previne replay attack)
+    await supabaseAdmin!.from('oauth_states').delete().eq('id', storedStateRecord.id);
+
+    console.log(`[OAuth] State validated - user: ${userId}`);
+
+    // ========== 2. Trocar code por SHORT-LIVED token ==========
     const shortLivedParams = new URLSearchParams({
       client_id: process.env.META_APP_ID || '',
       client_secret: process.env.META_APP_SECRET || '',
@@ -86,33 +75,30 @@ export default async function handler(
 
     console.log('[OAuth] Exchanging code for short-lived token...');
     const shortLivedResponse = await fetch(
-      'https://graph.facebook.com/v21.0/oauth/access_token',
+      `https://graph.facebook.com/v21.0/oauth/access_token?${shortLivedParams.toString()}`,
       {
         method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-        },
+        headers: { 'Accept': 'application/json' },
       }
     );
 
     if (!shortLivedResponse.ok) {
       const errorData = await shortLivedResponse.json();
       console.error('[OAuth] Short-lived token exchange failed:', errorData);
-      const errorUrl = `${process.env.NEXT_PUBLIC_APP_URL}/connections?error=facebook&message=${encodeURIComponent(errorData.error?.message || 'Token exchange failed')}`;
-      return res.redirect(302, errorUrl);
+      return res.redirect(302, `${process.env.NEXT_PUBLIC_APP_URL}/connections?error=facebook&message=${encodeURIComponent(errorData.error?.message || 'Token exchange failed')}`);
     }
 
     const shortLivedData = await shortLivedResponse.json();
     const shortLivedToken = shortLivedData.access_token;
-    const expiresInShort = shortLivedData.expires_in; // geralmente 5400 segundos (1.5 horas)
 
     if (!shortLivedToken) {
       console.error('[OAuth] No short-lived token in response');
-      const errorUrl = `${process.env.NEXT_PUBLIC_APP_URL}/connections?error=facebook&message=no_token`;
-      return res.redirect(302, errorUrl);
+      return res.redirect(302, `${process.env.NEXT_PUBLIC_APP_URL}/connections?error=facebook&message=no_token`);
     }
 
-    // ========== 4. Trocar SHORT-LIVED por LONG-LIVED token (60 dias) ==========
+    console.log('[OAuth] Short-lived token obtained');
+
+    // ========== 3. Trocar SHORT-LIVED por LONG-LIVED token (60 dias) ==========
     const longLivedParams = new URLSearchParams({
       grant_type: 'fb_exchange_token',
       client_id: process.env.META_APP_ID || '',
@@ -120,105 +106,80 @@ export default async function handler(
       fb_exchange_token: shortLivedToken,
     });
 
-    console.log('[OAuth] Exchanging short-lived for long-lived token...');
+    console.log('[OAuth] Exchanging for long-lived token...');
     const longLivedResponse = await fetch(
-      `https://graph.facebook.com/v21.0/oauth/access_token?${longLivedParams}`,
+      `https://graph.facebook.com/v21.0/oauth/access_token?${longLivedParams.toString()}`,
       {
         method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-        },
+        headers: { 'Accept': 'application/json' },
       }
     );
 
     if (!longLivedResponse.ok) {
       const errorData = await longLivedResponse.json();
       console.error('[OAuth] Long-lived token exchange failed:', errorData);
-      const errorUrl = `${process.env.NEXT_PUBLIC_APP_URL}/connections?error=facebook&message=${encodeURIComponent(errorData.error?.message || 'Long-lived token exchange failed')}`;
-      return res.redirect(302, errorUrl);
+      return res.redirect(302, `${process.env.NEXT_PUBLIC_APP_URL}/connections?error=facebook&message=${encodeURIComponent(errorData.error?.message || 'Long-lived token exchange failed')}`);
     }
 
     const longLivedData = await longLivedResponse.json();
     const longLivedToken = longLivedData.access_token;
-    const expiresInLong = longLivedData.expires_in; // geralmente 5184000 segundos (60 dias)
+    const expiresInLong = longLivedData.expires_in; // ~5184000 segundos (60 dias)
 
     if (!longLivedToken) {
       console.error('[OAuth] No long-lived token in response');
-      const errorUrl = `${process.env.NEXT_PUBLIC_APP_URL}/connections?error=facebook&message=no_long_lived_token`;
-      return res.redirect(302, errorUrl);
+      return res.redirect(302, `${process.env.NEXT_PUBLIC_APP_URL}/connections?error=facebook&message=no_long_lived_token`);
     }
 
-    // ========== 5. Buscar informações do usuário Meta ==========
+    console.log('[OAuth] Long-lived token obtained');
+
+    // ========== 4. Buscar informações do usuário Meta ==========
     console.log('[OAuth] Fetching user info...');
     const userInfoResponse = await fetch(
       `https://graph.facebook.com/v21.0/me?fields=id,name&access_token=${longLivedToken}`,
-      {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-        },
-      }
+      { headers: { 'Accept': 'application/json' } }
     );
 
     if (!userInfoResponse.ok) {
       const errorData = await userInfoResponse.json();
       console.error('[OAuth] Failed to fetch user info:', errorData);
-      const errorUrl = `${process.env.NEXT_PUBLIC_APP_URL}/connections?error=facebook&message=${encodeURIComponent('Failed to fetch user info')}`;
-      return res.redirect(302, errorUrl);
+      return res.redirect(302, `${process.env.NEXT_PUBLIC_APP_URL}/connections?error=facebook&message=${encodeURIComponent('Failed to fetch user info')}`);
     }
 
     const metaUserInfo = await userInfoResponse.json();
-    console.log(`[OAuth] User info fetched - ID: ${metaUserInfo.id}`);
+    console.log(`[OAuth] Meta user: ${metaUserInfo.id} - ${metaUserInfo.name}`);
 
-    // ========== 6. Buscar permissões concedidas ==========
-    console.log('[OAuth] Fetching granted permissions...');
-    const permissionsResponse = await fetch(
-      `https://graph.facebook.com/v21.0/me/permissions?access_token=${longLivedToken}`,
-      {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-        },
-      }
-    );
-
+    // ========== 5. Buscar permissões concedidas ==========
     let grantedScopes: string[] = [];
-    if (permissionsResponse.ok) {
-      const permissionsData = await permissionsResponse.json();
-      grantedScopes = (permissionsData.data || [])
-        .filter((perm: any) => perm.status === 'granted')
-        .map((perm: any) => perm.permission);
-      console.log(`[OAuth] Permissions granted: ${grantedScopes.join(', ')}`);
-    } else {
+    try {
+      const permissionsResponse = await fetch(
+        `https://graph.facebook.com/v21.0/me/permissions?access_token=${longLivedToken}`,
+        { headers: { 'Accept': 'application/json' } }
+      );
+      if (permissionsResponse.ok) {
+        const permissionsData = await permissionsResponse.json();
+        grantedScopes = (permissionsData.data || [])
+          .filter((perm: any) => perm.status === 'granted')
+          .map((perm: any) => perm.permission);
+        console.log(`[OAuth] Permissions: ${grantedScopes.join(', ')}`);
+      }
+    } catch {
       console.warn('[OAuth] Could not fetch permissions, continuing without');
     }
 
-    // ========== 7. Salvar/atualizar na tabela meta_connections ==========
+    // ========== 6. Salvar/atualizar na tabela meta_connections ==========
     const tokenExpiresAt = new Date(Date.now() + expiresInLong * 1000).toISOString();
-    const connectedAt = new Date().toISOString();
+    const now = new Date().toISOString();
 
-    console.log(`[OAuth] Saving connection for user: ${user.id}`);
+    console.log(`[OAuth] Saving connection for user: ${userId}`);
 
-    // Tentar encontrar conexão existente
-    let existingConnection = null;
-    const { data: foundConnection, error: selectError } = await supabaseAdmin!
+    // Verificar se já existe conexão
+    const { data: existingConnection } = await supabaseAdmin!
       .from('meta_connections')
       .select('id')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .single();
 
-    if (selectError && selectError.code !== 'PGRST116') {
-      // PGRST116 = not found (normal)
-      console.error('[OAuth] Error checking existing connection:', selectError);
-      const errorUrl = `${process.env.NEXT_PUBLIC_APP_URL}/connections?error=database&message=${encodeURIComponent('Failed to check connection')}`;
-      return res.redirect(302, errorUrl);
-    }
-
-    existingConnection = foundConnection;
-
     if (existingConnection) {
-      // ===== ATUALIZAR conexão existente =====
-      console.log('[OAuth] Updating existing connection...');
       const { error: updateError } = await supabaseAdmin!
         .from('meta_connections')
         .update({
@@ -228,48 +189,44 @@ export default async function handler(
           meta_token_expires_at: tokenExpiresAt,
           meta_scopes: grantedScopes.join(','),
           connection_status: 'active',
-          last_used_at: connectedAt,
-          updated_at: connectedAt,
+          last_used_at: now,
+          updated_at: now,
         })
-        .eq('user_id', user.id);
+        .eq('user_id', userId);
 
       if (updateError) {
-        console.error('[OAuth] Error updating meta_connections:', updateError);
-        const errorUrl = `${process.env.NEXT_PUBLIC_APP_URL}/connections?error=database&message=${encodeURIComponent('Failed to update connection')}`;
-        return res.redirect(302, errorUrl);
+        console.error('[OAuth] Error updating connection:', updateError);
+        return res.redirect(302, `${process.env.NEXT_PUBLIC_APP_URL}/connections?error=database&message=${encodeURIComponent('Failed to update connection')}`);
       }
+      console.log('[OAuth] Connection updated');
     } else {
-      // ===== CRIAR nova conexão =====
-      console.log('[OAuth] Creating new connection...');
       const { error: insertError } = await supabaseAdmin!
         .from('meta_connections')
         .insert({
-          user_id: user.id,
+          user_id: userId,
           meta_user_id: metaUserInfo.id,
           meta_user_name: metaUserInfo.name,
           meta_access_token: longLivedToken,
           meta_token_expires_at: tokenExpiresAt,
           meta_scopes: grantedScopes.join(','),
           connection_status: 'active',
-          created_at: connectedAt,
-          updated_at: connectedAt,
+          created_at: now,
+          updated_at: now,
         });
 
       if (insertError) {
-        console.error('[OAuth] Error inserting meta_connections:', insertError);
-        const errorUrl = `${process.env.NEXT_PUBLIC_APP_URL}/connections?error=database&message=${encodeURIComponent('Failed to save connection')}`;
-        return res.redirect(302, errorUrl);
+        console.error('[OAuth] Error creating connection:', insertError);
+        return res.redirect(302, `${process.env.NEXT_PUBLIC_APP_URL}/connections?error=database&message=${encodeURIComponent('Failed to save connection')}`);
       }
+      console.log('[OAuth] Connection created');
     }
 
-    // ========== 8. Redirecionar com sucesso ==========
-    console.log('[OAuth] Success - redirecting to connections page');
-    const successUrl = `${process.env.NEXT_PUBLIC_APP_URL}/connections?connected=true&provider=meta`;
-    return res.redirect(302, successUrl);
+    // ========== 7. Redirecionar com sucesso ==========
+    console.log('[OAuth] ✅ Success!');
+    return res.redirect(302, `${process.env.NEXT_PUBLIC_APP_URL}/connections?connected=true&provider=meta`);
   } catch (error) {
     console.error('[OAuth] Unexpected error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    const errorUrl = `${process.env.NEXT_PUBLIC_APP_URL}/connections?error=server&message=${encodeURIComponent(errorMessage)}`;
-    return res.redirect(302, errorUrl);
+    return res.redirect(302, `${process.env.NEXT_PUBLIC_APP_URL}/connections?error=server&message=${encodeURIComponent(errorMessage)}`);
   }
 }

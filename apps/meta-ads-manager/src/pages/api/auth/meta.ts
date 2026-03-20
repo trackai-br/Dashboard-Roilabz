@@ -1,18 +1,19 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { randomBytes } from 'crypto';
-import { supabaseAdmin } from '@/lib/supabase';
+import { supabaseAdmin, supabase } from '@/lib/supabase';
 
 /**
- * GET /api/auth/meta
+ * GET /api/auth/meta?token=<supabase_access_token>
  * Inicia o fluxo OAuth com o Facebook
  *
  * Fluxo:
- * 1. Gera state aleatório (proteção CSRF)
- * 2. Salva em Supabase `oauth_states` table (10 minutos TTL)
- * 3. Redireciona para dialog de login do Facebook
+ * 1. Verifica autenticação do usuário via token query param
+ * 2. Gera state aleatório (proteção CSRF)
+ * 3. Salva state + user_id em Supabase `oauth_states` table (10 minutos TTL)
+ * 4. Redireciona para dialog de login do Facebook
  *
- * O usuário será validado pelo Facebook durante o login.
- * O callback handler valida o OAuth token e state retornados.
+ * O user_id é armazenado junto com o state para que o callback
+ * saiba qual usuário está conectando, sem depender de cookies/sessão.
  */
 export default async function handler(
   req: NextApiRequest,
@@ -25,10 +26,32 @@ export default async function handler(
   try {
     console.log('[OAuth] Initiating Meta OAuth flow...');
 
-    // 1. Gerar state aleatório (proteção CSRF)
+    // 1. Verificar autenticação via token query param
+    const token = req.query.token as string;
+    if (!token) {
+      console.warn('[OAuth] Missing token in request');
+      return res.redirect(
+        302,
+        `${process.env.NEXT_PUBLIC_APP_URL}/connections?error=unauthorized&message=${encodeURIComponent('Please log in first')}`
+      );
+    }
+
+    const { data: userData, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !userData.user) {
+      console.warn('[OAuth] Invalid or expired token');
+      return res.redirect(
+        302,
+        `${process.env.NEXT_PUBLIC_APP_URL}/connections?error=unauthorized&message=${encodeURIComponent('Session expired, please log in again')}`
+      );
+    }
+
+    const userId = userData.user.id;
+    console.log(`[OAuth] Authenticated user: ${userId}`);
+
+    // 2. Gerar state aleatório (proteção CSRF)
     const state = randomBytes(32).toString('hex');
 
-    // 2. Salvar state em Supabase (expira em 10 minutos)
+    // 3. Salvar state + user_id em Supabase (expira em 10 minutos)
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
     const { error: insertError } = await supabaseAdmin!
@@ -36,6 +59,7 @@ export default async function handler(
       .insert({
         state,
         provider: 'meta',
+        user_id: userId,
         expires_at: expiresAt,
       });
 
@@ -47,9 +71,9 @@ export default async function handler(
       );
     }
 
-    console.log('[OAuth] State saved to Supabase:', state.substring(0, 8) + '...');
+    console.log('[OAuth] State saved with user_id:', state.substring(0, 8) + '...');
 
-    // 3. Montar URL de autorização do Facebook (v21.0)
+    // 4. Montar URL de autorização do Facebook (v21.0)
     const params = new URLSearchParams({
       client_id: process.env.META_APP_ID || '',
       redirect_uri: process.env.META_OAUTH_REDIRECT_URI || '',
@@ -62,7 +86,7 @@ export default async function handler(
 
     console.log('[OAuth] Redirecting to Facebook OAuth dialog');
 
-    // 4. Redirecionar para Facebook
+    // 5. Redirecionar para Facebook
     return res.redirect(302, facebookAuthUrl);
   } catch (error) {
     console.error('[OAuth] OAuth init error:', error);
