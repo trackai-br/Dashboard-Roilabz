@@ -147,7 +147,7 @@ export default async function handler(
                 meta_account_id: account.id,
                 pixel_id: pixel.id,
                 pixel_name: pixel.name,
-                last_fired_time: pixel.last_fired_time,
+                last_fired_time: pixel.last_fired_time ? Math.floor(new Date(pixel.last_fired_time).getTime() / 1000) : null,
               }));
               const { data: syncedPixels, error: pixelsError } = await supabaseAdmin
                 .from('meta_pixels')
