@@ -25,14 +25,11 @@ export const syncMetaAdAccounts = inngest.createFunction(
       });
 
       let syncedAccounts = 0;
-      let syncedCampaigns = 0;
-      let syncedAdSets = 0;
-      let syncedAds = 0;
 
-      // Process each account
+      // Process each account — sync account info only
+      // (meta_ad_sets, meta_ads tables do not exist yet; campaigns sync is handled separately)
       for (const account of accounts) {
         try {
-          // Sync account info
           await step.run(`sync-account-${account.id}`, async () => {
             const { error } = await getSupabase()
               .from("meta_accounts")
@@ -50,124 +47,16 @@ export const syncMetaAdAccounts = inngest.createFunction(
             if (error) throw error;
             syncedAccounts++;
           });
-
-          // Get stored account ID for use in subsequent tables
-          const { data: storedAccount, error: accountError } = (await getSupabase()
-            .from("meta_accounts")
-            .select("id")
-            .eq("meta_account_id", account.id)
-            .single()) as any;
-
-          if (accountError || !storedAccount) {
-            console.error(`Could not fetch stored account for ${account.id}:`, accountError);
-            continue;
-          }
-
-          const accountUUID = storedAccount.id;
-
-          // Sync campaigns
-          const campaignsResult = await step.run(`sync-campaigns-${account.id}`, async () => {
-            return await metaAPI.getCampaigns(account.id);
-          });
-
-          for (const campaign of campaignsResult.campaigns) {
-            await step.run(`sync-campaign-details-${campaign.id}`, async () => {
-              const { error } = await getSupabase()
-                .from("meta_ads_campaigns")
-                .upsert(
-                  {
-                    meta_account_id: accountUUID,
-                    campaign_id: campaign.id,
-                    campaign_name: campaign.name,
-                    status: campaign.status,
-                    objective: campaign.objective,
-                    daily_budget_micros: campaign.daily_budget,
-                    budget_amount_micros: campaign.lifetime_budget,
-                    start_time: campaign.start_time,
-                    end_time: campaign.stop_time,
-                    last_synced: new Date(),
-                  } as any,
-                  { onConflict: "meta_account_id,campaign_id" }
-                );
-
-              if (error) throw error;
-              syncedCampaigns++;
-            });
-
-            // Sync ad sets for this campaign
-            const adSetsResult = await step.run(`sync-adsets-${campaign.id}`, async () => {
-              return await metaAPI.getAdSets(campaign.id);
-            });
-
-            for (const adset of adSetsResult.adsets) {
-              await step.run(`sync-adset-details-${adset.id}`, async () => {
-                const { error } = await getSupabase()
-                  .from("meta_ad_sets")
-                  .upsert(
-                    {
-                      meta_account_id: accountUUID,
-                      campaign_id: campaign.id,
-                      adset_id: adset.id,
-                      name: adset.name,
-                      status: adset.status,
-                      daily_budget: adset.daily_budget,
-                      lifetime_budget: adset.lifetime_budget,
-                      targeting: adset.targeting,
-                      billing_event: adset.billing_event,
-                      bid_strategy: adset.bid_strategy,
-                      bid_amount: adset.bid_amount,
-                      last_synced: new Date(),
-                    } as any,
-                    { onConflict: "meta_account_id,adset_id" }
-                  );
-
-                if (error) throw error;
-                syncedAdSets++;
-              });
-
-              // Sync ads for this ad set
-              const adsResult = await step.run(`sync-ads-${adset.id}`, async () => {
-                return await metaAPI.getAds(adset.id);
-              });
-
-              for (const ad of adsResult.ads) {
-                await step.run(`sync-ad-details-${ad.id}`, async () => {
-                  const { error } = await getSupabase()
-                    .from("meta_ads")
-                    .upsert(
-                      {
-                        meta_account_id: accountUUID,
-                        adset_id: ad.adset_id,
-                        ad_id: ad.id,
-                        name: ad.name,
-                        status: ad.status,
-                        creative_id: ad.creative?.id,
-                        creative_spec: ad.creative?.object_story_spec,
-                        last_synced: new Date(),
-                      } as any,
-                      { onConflict: "meta_account_id,ad_id" }
-                    );
-
-                  if (error) throw error;
-                  syncedAds++;
-                });
-              }
-            }
-          }
         } catch (accountError) {
           const message =
             accountError instanceof Error ? accountError.message : "Unknown error";
           console.error(`Error syncing account ${account.id}:`, message);
-          // Continue with next account instead of failing entire job
         }
       }
 
       return {
         success: true,
         syncedAccounts,
-        syncedCampaigns,
-        syncedAdSets,
-        syncedAds,
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";

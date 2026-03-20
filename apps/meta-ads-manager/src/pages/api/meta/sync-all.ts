@@ -116,13 +116,13 @@ export default async function handler(
             const pages = await metaAPI.getPages(account.meta_account_id);
             if (pages && pages.length > 0) {
               const pagesToSync = pages.map((page: any) => ({
-                account_id: account.id,
-                meta_page_id: page.id,
+                meta_account_id: account.id,
+                page_id: page.id,
                 page_name: page.name,
               }));
               const { data: syncedPages, error: pagesError } = await supabaseAdmin
                 .from('meta_pages')
-                .upsert(pagesToSync, { onConflict: 'account_id,meta_page_id' })
+                .upsert(pagesToSync, { onConflict: 'meta_account_id,page_id' })
                 .select();
 
               if (pagesError) {
@@ -144,13 +144,14 @@ export default async function handler(
             const pixels = await metaAPI.getPixels(account.meta_account_id);
             if (pixels && pixels.length > 0) {
               const pixelsToSync = pixels.map((pixel: any) => ({
-                account_id: account.id,
-                meta_pixel_id: pixel.id,
+                meta_account_id: account.id,
+                pixel_id: pixel.id,
                 pixel_name: pixel.name,
+                last_fired_time: pixel.last_fired_time,
               }));
               const { data: syncedPixels, error: pixelsError } = await supabaseAdmin
                 .from('meta_pixels')
-                .upsert(pixelsToSync, { onConflict: 'account_id,meta_pixel_id' })
+                .upsert(pixelsToSync, { onConflict: 'meta_account_id,pixel_id' })
                 .select();
 
               if (pixelsError) {

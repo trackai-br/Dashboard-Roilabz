@@ -49,8 +49,8 @@ async function handleGet(
 
     const { data: pixels, error } = await supabaseAdmin
       .from('meta_pixels')
-      .select('meta_pixel_id as id, pixel_name as name')
-      .eq('account_id', account.id);
+      .select('pixel_id as id, pixel_name as name, last_fired_time')
+      .eq('meta_account_id', account.id);
 
     if (error) {
       return res.status(500).json({ error: 'Failed to fetch pixels from database' });

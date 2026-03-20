@@ -49,8 +49,8 @@ async function handleGet(
 
     const { data: pages, error } = await supabaseAdmin
       .from('meta_pages')
-      .select('meta_page_id as id, page_name as name')
-      .eq('account_id', account.id);
+      .select('page_id as id, page_name as name')
+      .eq('meta_account_id', account.id);
 
     if (error) {
       return res.status(500).json({ error: 'Failed to fetch pages from database' });
