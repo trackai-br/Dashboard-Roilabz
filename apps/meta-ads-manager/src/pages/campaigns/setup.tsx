@@ -52,14 +52,17 @@ export default function CampaignSetupPage() {
         return;
       }
 
-      const res = await fetch('/api/meta/sync-accounts', {
+      const res = await fetch('/api/meta/sync-all', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${session.access_token}` },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
       });
 
       const data = await res.json();
       if (res.ok) {
-        setSyncResult(`${data.synced} contas sincronizadas`);
+        setSyncResult(`${data.synced_accounts} contas, ${data.synced_pages} páginas, ${data.synced_pixels} pixels sincronizados`);
         // Invalidate accounts cache so wizard gets fresh data
         queryClient.invalidateQueries({ queryKey: ['meta-accounts'] });
       } else {

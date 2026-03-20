@@ -18,20 +18,26 @@ export default function Tab2PagesVolume() {
   const { state, dispatch } = useWizard();
   const [distributionErrors, setDistributionErrors] = useState<string[]>([]);
 
-  // Fetch pages from Meta API
+  // Fetch pages for all selected accounts
   const { data: rawPages, isLoading: pagesLoading } = useQuery({
-    queryKey: ['wizard-pages'],
+    queryKey: ['wizard-pages', state.selectedAccountIds],
     queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) throw new Error('Not authenticated');
 
-      const res = await fetch('/api/meta/accounts/pages', {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      });
-      if (!res.ok) throw new Error('Failed to fetch pages');
-      const data = await res.json();
-      return (data.pages || data.data || []) as Array<{ id: string; name: string; category?: string }>;
+      const allPages: Array<{ id: string; name: string; category?: string }> = [];
+      for (const accountId of state.selectedAccountIds) {
+        const res = await fetch(`/api/meta/accounts/pages?accountId=${accountId}`, {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
+        if (!res.ok) continue;
+        const data = await res.json();
+        const pages = (data.pages || data.data || []) as Array<{ id: string; name: string; category?: string }>;
+        allPages.push(...pages);
+      }
+      return allPages;
     },
+    enabled: state.selectedAccountIds.length > 0,
     staleTime: 15 * 60 * 1000,
   });
 

@@ -36,7 +36,7 @@ async function handleGet(
 
     // Get user's accounts
     const userAccounts = await getUserAccounts(userId);
-    const account = userAccounts.find((acc) => acc.id === accountId);
+    const account = userAccounts.find((acc: any) => acc.id === accountId || acc.meta_account_id === accountId);
 
     if (!account) {
       return res.status(403).json({ error: 'Access denied' });
@@ -49,8 +49,8 @@ async function handleGet(
 
     const { data: pages, error } = await supabaseAdmin
       .from('meta_pages')
-      .select('page_id as id, page_name as name')
-      .eq('meta_account_id', accountId);
+      .select('meta_page_id as id, page_name as name')
+      .eq('account_id', account.id);
 
     if (error) {
       return res.status(500).json({ error: 'Failed to fetch pages from database' });

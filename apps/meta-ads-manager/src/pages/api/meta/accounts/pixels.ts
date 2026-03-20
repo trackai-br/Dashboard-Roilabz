@@ -36,7 +36,7 @@ async function handleGet(
 
     // Get user's accounts
     const userAccounts = await getUserAccounts(userId);
-    const account = userAccounts.find((acc) => acc.id === accountId);
+    const account = userAccounts.find((acc: any) => acc.id === accountId || acc.meta_account_id === accountId);
 
     if (!account) {
       return res.status(403).json({ error: 'Access denied' });
@@ -49,8 +49,8 @@ async function handleGet(
 
     const { data: pixels, error } = await supabaseAdmin
       .from('meta_pixels')
-      .select('pixel_id as id, pixel_name as name, last_fired_time')
-      .eq('meta_account_id', accountId);
+      .select('meta_pixel_id as id, pixel_name as name')
+      .eq('account_id', account.id);
 
     if (error) {
       return res.status(500).json({ error: 'Failed to fetch pixels from database' });
