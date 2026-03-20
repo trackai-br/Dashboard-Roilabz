@@ -78,11 +78,11 @@ export default async function handler(
     const userId = data.user.id;
 
 
-    // Fetch all ad accounts from Meta API
-    console.log('[Sync] Fetching accounts from Meta API...');
+    // Fetch all ad accounts from Meta API using this user's token
+    console.log('[Sync] Fetching accounts from Meta API for user:', userId);
     let metaAccounts;
     try {
-      metaAccounts = await metaAPI.getAdAccounts();
+      metaAccounts = await metaAPI.getAdAccounts(userId);
       console.log(`[Sync] Got ${metaAccounts?.length || 0} accounts from Meta API`);
     } catch (metaError) {
       console.error('[Sync] Meta API error:', metaError);
@@ -143,9 +143,15 @@ export default async function handler(
       });
 
     if (accessError) {
-      console.error('Warning: Could not create access entries:', accessError);
-      // Don't fail the whole sync if access entries fail
+      console.error('[Sync] CRITICAL: Could not create access entries:', accessError);
+      return res.status(500).json({
+        synced: 0,
+        accounts: [],
+        error: `Accounts synced but access entries failed: ${accessError.message}`,
+      });
     }
+
+    console.log(`[Sync] Created ${accountAccessEntries.length} access entries for user ${userId}`);
 
     // Update last_synced timestamp
     const now = new Date().toISOString();

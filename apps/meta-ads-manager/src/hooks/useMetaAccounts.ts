@@ -53,7 +53,7 @@ export const useMetaAccounts = (): UseQueryResult<MetaAccount[], Error> => {
       const json = await response.json();
       return json.data || [];
     },
-    staleTime: 15 * 60 * 1000, // 15 minutes
+    staleTime: 0, // Always refetch when wizard opens
     retry: 2,
   });
 };
