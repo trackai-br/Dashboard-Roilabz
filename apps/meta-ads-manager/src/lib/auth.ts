@@ -2,6 +2,36 @@ import { NextApiRequest } from "next";
 import { supabase } from "./supabase";
 
 /**
+ * Extract JWT token from Supabase session cookie
+ * Works server-side by parsing cookies manually
+ */
+function getTokenFromCookie(req: NextApiRequest): string | null {
+  const cookieHeader = req.headers.cookie || "";
+
+  // Look for sb-<project-id>-auth-token cookie
+  const cookies = cookieHeader.split(";").map(c => c.trim());
+
+  for (const cookie of cookies) {
+    if (cookie.includes("auth-token")) {
+      try {
+        const [, value] = cookie.split("=");
+        if (value) {
+          // Cookie value is JSON-encoded
+          const decoded = JSON.parse(decodeURIComponent(value));
+          return decoded.access_token || decoded;
+        }
+      } catch (e) {
+        // Try as plain token
+        const [, value] = cookie.split("=");
+        if (value) return decodeURIComponent(value);
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
  * Extract and verify JWT token from request
  * Tries both Authorization header (API calls) and cookies (browser navigation)
  */
@@ -20,17 +50,15 @@ export async function getUserFromRequest(req: NextApiRequest) {
     }
   }
 
-  // 2. Try Supabase session cookie (for browser navigation)
+  // 2. Try Supabase session cookie (for browser navigation - server-side)
   try {
-    const { data, error } = await supabase.auth.getSession();
+    const token = getTokenFromCookie(req);
 
-    if (error || !data.session) {
+    if (!token) {
       return null;
     }
 
-    const { data: userData, error: userError } = await supabase.auth.getUser(
-      data.session.access_token
-    );
+    const { data: userData, error: userError } = await supabase.auth.getUser(token);
 
     if (userError || !userData.user) {
       return null;
