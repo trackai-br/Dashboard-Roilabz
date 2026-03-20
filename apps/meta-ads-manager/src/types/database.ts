@@ -71,6 +71,7 @@ export type Database = {
           id: string;
           state: string;
           provider: 'meta' | 'google';
+          user_id: string;
           expires_at: string;
           created_at: string;
         };
@@ -78,6 +79,7 @@ export type Database = {
           id?: string;
           state: string;
           provider: 'meta' | 'google';
+          user_id: string;
           expires_at: string;
           created_at?: string;
         };
@@ -85,6 +87,7 @@ export type Database = {
           id?: string;
           state?: string;
           provider?: 'meta' | 'google';
+          user_id?: string;
           expires_at?: string;
           created_at?: string;
         };

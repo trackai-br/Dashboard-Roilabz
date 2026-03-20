@@ -516,6 +516,7 @@ CREATE TABLE oauth_states (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   state text NOT NULL UNIQUE,
   provider text NOT NULL CHECK (provider IN ('meta', 'google')),
+  user_id uuid NOT NULL,
   expires_at timestamp with time zone NOT NULL,
   created_at timestamp with time zone DEFAULT current_timestamp
 );
