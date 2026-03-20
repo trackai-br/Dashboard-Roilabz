@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { WizardProvider, useWizard } from '@/contexts/WizardContext';
 import ConfigPopup from '@/components/campaign-wizard/ConfigPopup';
 import { supabase } from '@/lib/supabase';
 
 export default function CampaignSetupPage() {
+  const queryClient = useQueryClient();
   const [showPopup, setShowPopup] = useState(false);
   const [hasDraft, setHasDraft] = useState(false);
   const [draftState, setDraftState] = useState<any>(null);
   const [draftId, setDraftId] = useState<string | null>(null);
   const [loadingDraft, setLoadingDraft] = useState(true);
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState<string | null>(null);
 
   useEffect(() => {
     const checkDraft = async () => {
@@ -38,6 +42,43 @@ export default function CampaignSetupPage() {
     checkDraft();
   }, [showPopup]);
 
+  const handleSync = async () => {
+    setSyncing(true);
+    setSyncResult(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        setSyncResult('Erro: não autenticado');
+        return;
+      }
+
+      const res = await fetch('/api/meta/sync-accounts', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setSyncResult(`${data.synced} contas sincronizadas`);
+        // Invalidate accounts cache so wizard gets fresh data
+        queryClient.invalidateQueries({ queryKey: ['meta-accounts'] });
+      } else {
+        setSyncResult(`Erro: ${data.error || 'falha na sincronização'}`);
+      }
+    } catch (e) {
+      setSyncResult('Erro de conexão');
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const openNewWizard = () => {
+    // Invalidate stale cache before opening
+    queryClient.invalidateQueries({ queryKey: ['meta-accounts'] });
+    setDraftState(null);
+    setShowPopup(true);
+  };
+
   return (
     <DashboardLayout>
       <div className="flex items-center justify-center h-full p-6">
@@ -57,12 +98,31 @@ export default function CampaignSetupPage() {
           </p>
 
           <div className="flex flex-col items-center gap-3">
+            {/* Sync button */}
             <button
-              onClick={() => {
-                console.log('[Wizard] Opening new wizard');
-                setDraftState(null);
-                setShowPopup(true);
+              onClick={handleSync}
+              disabled={syncing}
+              className="px-6 py-2 rounded-lg border text-sm font-medium transition-all disabled:opacity-50"
+              style={{
+                borderColor: 'rgba(0, 240, 255, 0.3)',
+                color: 'var(--neon-cyan)',
+                fontFamily: "'Space Grotesk', system-ui, sans-serif",
               }}
+              onMouseEnter={(e) => { if (!syncing) { e.currentTarget.style.borderColor = 'var(--neon-cyan)'; e.currentTarget.style.boxShadow = '0 0 12px rgba(0, 240, 255, 0.2)'; } }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(0, 240, 255, 0.3)'; e.currentTarget.style.boxShadow = 'none'; }}
+            >
+              {syncing ? 'Sincronizando...' : 'Sincronizar Contas'}
+            </button>
+
+            {syncResult && (
+              <p className="text-xs" style={{ color: syncResult.startsWith('Erro') ? 'var(--color-danger)' : 'var(--color-success)' }}>
+                {syncResult}
+              </p>
+            )}
+
+            {/* Main CTA */}
+            <button
+              onClick={openNewWizard}
               className="px-8 py-3 rounded-lg font-semibold text-sm transition-all"
               style={{
                 backgroundColor: 'var(--neon-green)',
@@ -80,7 +140,7 @@ export default function CampaignSetupPage() {
             {!loadingDraft && hasDraft && (
               <button
                 onClick={() => {
-                  console.log('[Wizard] Opening draft wizard');
+                  queryClient.invalidateQueries({ queryKey: ['meta-accounts'] });
                   setShowPopup(true);
                 }}
                 className="px-6 py-2 rounded-lg border text-sm font-medium transition-all"
@@ -104,10 +164,7 @@ export default function CampaignSetupPage() {
           <PopupWithDraft
             draftState={hasDraft ? draftState : null}
             draftId={draftId}
-            onClose={() => {
-              console.log('[Wizard] Closing popup');
-              setShowPopup(false);
-            }}
+            onClose={() => setShowPopup(false)}
           />
         </WizardProvider>
       )}
@@ -119,7 +176,6 @@ function PopupWithDraft({ draftState, draftId, onClose }: { draftState: any; dra
   const { dispatch } = useWizard();
 
   useEffect(() => {
-    console.log('[Wizard] PopupWithDraft mounted, draftState:', !!draftState);
     if (draftState && draftId) {
       dispatch({ type: 'LOAD_DRAFT', payload: { state: draftState, draftId } });
     }
