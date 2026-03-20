@@ -508,5 +508,34 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON meta_connections TO service_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON google_connections TO service_role;
 
 -- ============================================================================
+-- 9. Create oauth_states table for CSRF protection in OAuth flow
+-- ============================================================================
+
+DROP TABLE IF EXISTS oauth_states CASCADE;
+CREATE TABLE oauth_states (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  state text NOT NULL UNIQUE,
+  provider text NOT NULL CHECK (provider IN ('meta', 'google')),
+  expires_at timestamp with time zone NOT NULL,
+  created_at timestamp with time zone DEFAULT current_timestamp
+);
+
+-- Create indexes for faster lookups
+CREATE INDEX IF NOT EXISTS oauth_states_state_idx ON oauth_states(state);
+CREATE INDEX IF NOT EXISTS oauth_states_expires_at_idx ON oauth_states(expires_at);
+
+-- Enable Row Level Security
+ALTER TABLE oauth_states ENABLE ROW LEVEL SECURITY;
+
+-- Allow service role to manage oauth_states
+DROP POLICY IF EXISTS "Service role can manage oauth_states" ON oauth_states;
+CREATE POLICY "Service role can manage oauth_states" ON oauth_states
+  FOR ALL
+  USING (auth.role() = 'service_role')
+  WITH CHECK (auth.role() = 'service_role');
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON oauth_states TO service_role;
+
+-- ============================================================================
 -- FIM DAS MIGRATIONS
 -- ============================================================================
