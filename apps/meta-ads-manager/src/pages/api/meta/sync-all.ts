@@ -45,13 +45,23 @@ export default async function handler(
         accountsCount = syncedAccounts?.length || 0;
 
         if (syncedAccounts) {
-          await supabaseAdmin.from('user_account_access').upsert(
+          // Ensure user exists in users table (FK requirement for user_account_access)
+          await supabaseAdmin.from('users').upsert(
+            { id: user.id, email: user.email || '' },
+            { onConflict: 'id' }
+          );
+
+          const { error: accessError } = await supabaseAdmin.from('user_account_access').upsert(
             syncedAccounts.map((account: any) => ({
               user_id: user.id,
               account_id: account.id,
             })),
             { onConflict: 'user_id,account_id' }
           );
+
+          if (accessError) {
+            console.error('Error creating user_account_access:', accessError);
+          }
         }
       }
 
