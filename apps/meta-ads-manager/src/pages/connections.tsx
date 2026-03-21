@@ -56,6 +56,7 @@ const ConnectionsPage: React.FC = () => {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <svg
+                  width="24" height="24"
                   className="w-6 h-6"
                   viewBox="0 0 24 24"
                   fill="#1877F2"
@@ -106,6 +107,7 @@ const ConnectionsPage: React.FC = () => {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <svg
+                  width="24" height="24"
                   className="w-6 h-6"
                   viewBox="0 0 24 24"
                   fill="none"

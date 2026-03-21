@@ -104,6 +104,7 @@ export const MetaConnectionCard: React.FC = () => {
         <div className="mb-6">
           <div className="mb-2 flex items-center gap-3">
             <svg
+              width="24" height="24"
               className="h-6 w-6 text-neon-cyan"
               viewBox="0 0 24 24"
               fill="currentColor"
@@ -177,6 +178,7 @@ export const MetaConnectionCard: React.FC = () => {
         <div className="mb-4 flex items-start justify-between">
           <div className="flex items-center gap-3">
             <svg
+              width="24" height="24"
               className="h-6 w-6 text-neon-cyan"
               viewBox="0 0 24 24"
               fill="currentColor"

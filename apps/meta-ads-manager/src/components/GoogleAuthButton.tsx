@@ -56,6 +56,7 @@ const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
       className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600 disabled:opacity-50 border-0 rounded-lg shadow-lg hover:shadow-xl disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-3 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-950 focus:outline-none"
     >
       <svg
+        width="20" height="20"
         className={`w-5 h-5 ${isDisabled ? 'opacity-50' : ''}`}
         viewBox="0 0 24 24"
       >

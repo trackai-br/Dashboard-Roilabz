@@ -32,6 +32,7 @@ export function NotificationBell() {
         title="Notificações"
       >
         <svg
+          width="24" height="24"
           className="h-6 w-6"
           fill="none"
           stroke="currentColor"

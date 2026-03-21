@@ -50,6 +50,7 @@ const MetaAuthButton: React.FC<MetaAuthButtonProps> = ({
     >
       {/* Meta/Facebook Logo */}
       <svg
+        width="20" height="20"
         className={`w-5 h-5 ${isDisabled ? 'opacity-50' : ''}`}
         viewBox="0 0 24 24"
         fill="none"

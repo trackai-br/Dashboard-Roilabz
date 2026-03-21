@@ -33,6 +33,7 @@ export function Header({
               aria-label="Toggle menu"
             >
               <svg
+                width="24" height="24"
                 className="w-6 h-6"
                 fill="none"
                 viewBox="0 0 24 24"
