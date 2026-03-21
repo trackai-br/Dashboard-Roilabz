@@ -480,27 +480,94 @@ export default function Tab6Preview({ onGoToTemplate }: Tab6PreviewProps) {
       </div>
 
       {/* Publish Confirmation Modal */}
-      {showPublishModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 10001, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)' }} onClick={() => setShowPublishModal(false)} />
-          <div className="relative rounded-xl p-6 border shadow-xl max-w-md w-full" style={{ backgroundColor: '#1a1a2e', borderColor: 'var(--border-light)' }}>
-            <p className="text-lg font-medium mb-2" style={{ color: 'var(--color-primary)', ...headingFont }}>Confirmar Publicacao</p>
-            <p className="text-sm mb-4" style={{ color: 'var(--color-secondary)' }}>
-              Voce esta prestes a publicar{' '}
-              <strong style={{ color: 'var(--neon-green)' }}>{state.totalCampaigns}</strong> campanha{state.totalCampaigns > 1 ? 's' : ''} com{' '}
-              <strong style={{ color: 'var(--neon-cyan)' }}>{totalAdsets}</strong> adsets em{' '}
-              <strong>{state.selectedAccountIds.length}</strong> conta{state.selectedAccountIds.length > 1 ? 's' : ''}.
-            </p>
-            <p className="text-sm mb-6" style={{ color: 'var(--color-secondary)' }}>
-              Orcamento total: <strong style={{ color: 'var(--neon-green)' }}>{formatCurrency(totalBudget)}</strong>
-            </p>
-            <div className="flex gap-3 justify-end">
-              <button onClick={() => setShowPublishModal(false)} className="px-4 py-2 rounded-lg border text-sm" style={{ borderColor: 'var(--border-light)', color: 'var(--color-secondary)' }}>Cancelar</button>
-              <button onClick={handlePublish} className="px-5 py-2 rounded-lg text-sm font-semibold" style={{ backgroundColor: 'var(--neon-green)', color: 'var(--bg-deepest)' }}>Confirmar</button>
+      {showPublishModal && (() => {
+        const isActive = cfg.campaignStatus === 'ACTIVE';
+        const adsetStatuses = state.adsetTypes.map((t) => t.adsetStatus);
+        const hasActiveAdsets = adsetStatuses.includes('ACTIVE');
+        const willSpendMoney = isActive && hasActiveAdsets;
+
+        return (
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 10001, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.7)' }} onClick={() => setShowPublishModal(false)} />
+            <div className="relative rounded-xl p-6 border shadow-xl max-w-lg w-full" style={{ backgroundColor: '#1a1a2e', borderColor: willSpendMoney ? 'rgba(255, 51, 51, 0.5)' : 'rgba(57, 255, 20, 0.3)' }}>
+              <p className="text-lg font-bold mb-3" style={{ color: 'var(--color-primary)', ...headingFont }}>
+                Confirmar Publicacao
+              </p>
+
+              {/* Warning banner for ACTIVE campaigns */}
+              {willSpendMoney && (
+                <div className="p-3 rounded-lg mb-4" style={{ backgroundColor: 'rgba(255, 51, 51, 0.12)', border: '1px solid rgba(255, 51, 51, 0.4)' }}>
+                  <p className="text-sm font-semibold mb-1" style={{ color: '#ff5555' }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                    Campanhas com status ATIVO
+                  </p>
+                  <p className="text-xs" style={{ color: 'rgba(255, 85, 85, 0.9)' }}>
+                    As campanhas serao criadas <strong>ATIVAS</strong> e vao comecar a gastar dinheiro imediatamente apos a publicacao.
+                  </p>
+                </div>
+              )}
+
+              {!willSpendMoney && (
+                <div className="p-3 rounded-lg mb-4" style={{ backgroundColor: 'rgba(0, 240, 255, 0.08)', border: '1px solid rgba(0, 240, 255, 0.3)' }}>
+                  <p className="text-sm" style={{ color: 'var(--neon-cyan)' }}>
+                    As campanhas serao criadas <strong>PAUSADAS</strong>. Nenhum gasto sera feito ate voce ativa-las manualmente no Meta Ads Manager.
+                  </p>
+                </div>
+              )}
+
+              {/* Summary */}
+              <div className="space-y-2 mb-4">
+                <div className="flex justify-between text-sm">
+                  <span style={{ color: 'var(--color-secondary)' }}>Campanhas</span>
+                  <span className="font-semibold" style={{ color: 'var(--color-primary)' }}>{state.totalCampaigns}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span style={{ color: 'var(--color-secondary)' }}>Adsets totais</span>
+                  <span className="font-semibold" style={{ color: 'var(--color-primary)' }}>{totalAdsets}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span style={{ color: 'var(--color-secondary)' }}>Contas</span>
+                  <span className="font-semibold" style={{ color: 'var(--color-primary)' }}>{state.selectedAccountIds.length}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span style={{ color: 'var(--color-secondary)' }}>Orcamento diario total</span>
+                  <span className="font-bold" style={{ color: willSpendMoney ? '#ff5555' : 'var(--neon-green)' }}>{formatCurrency(totalBudget)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span style={{ color: 'var(--color-secondary)' }}>Status das campanhas</span>
+                  <span className="font-semibold" style={{ color: isActive ? '#ff5555' : 'var(--neon-cyan)' }}>
+                    {isActive ? 'ATIVO' : 'PAUSADO'}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex gap-3 justify-end pt-2 border-t" style={{ borderTopColor: 'var(--border-light)' }}>
+                <button
+                  onClick={() => setShowPublishModal(false)}
+                  className="px-5 py-2.5 rounded-lg border text-sm font-medium"
+                  style={{ borderColor: 'var(--border-light)', color: 'var(--color-secondary)' }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handlePublish}
+                  className="px-5 py-2.5 rounded-lg text-sm font-bold"
+                  style={{
+                    backgroundColor: willSpendMoney ? '#ff5555' : 'var(--neon-green)',
+                    color: willSpendMoney ? '#fff' : 'var(--bg-deepest)',
+                    ...headingFont,
+                    boxShadow: willSpendMoney ? '0 0 16px rgba(255, 51, 51, 0.4)' : '0 0 12px rgba(57, 255, 20, 0.3)',
+                  }}
+                >
+                  {willSpendMoney ? 'Publicar e Ativar' : 'Publicar Pausado'}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }
