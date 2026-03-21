@@ -3,6 +3,7 @@ import { useWizard } from '@/contexts/WizardContext';
 import Tab1Accounts from './tabs/Tab1Accounts';
 import Tab2PagesVolume from './tabs/Tab2PagesVolume';
 import Tab3Campaign from './tabs/Tab3Campaign';
+import Tab4Adsets from './tabs/Tab4Adsets';
 
 const TABS = [
   { label: 'Contas', index: 0 },
@@ -51,6 +52,19 @@ export default function ConfigPopup({ onClose }: ConfigPopupProps) {
           !!c.bidStrategy
         );
       }
+      case 3: {
+        if (state.adsetTypes.length === 0) return false;
+        return state.adsetTypes.every(
+          (t) =>
+            !!t.name &&
+            t.adsetCount > 0 &&
+            t.campaignsCount > 0 &&
+            !!t.pixelId &&
+            !!t.conversionEvent &&
+            !!t.startDate &&
+            t.targetCountries.length > 0
+        );
+      }
       default:
         return true;
     }
@@ -84,6 +98,7 @@ export default function ConfigPopup({ onClose }: ConfigPopupProps) {
       case 2:
         return <Tab3Campaign />;
       case 3:
+        return <Tab4Adsets />;
       case 4:
       case 5:
       case 6:
