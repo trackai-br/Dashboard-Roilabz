@@ -1,7 +1,6 @@
 // @ts-nocheck - Supabase client typing doesn't fully support custom tables
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { requireAuth } from '@/lib/auth';
-import { getUserAccounts } from '@/lib/supabase-rls';
 import { supabaseAdmin } from '@/lib/supabase';
 
 export default async function handler(
@@ -34,17 +33,30 @@ async function handleGet(
       return res.status(400).json({ error: 'accountId is required' });
     }
 
-    // Get user's accounts
-    const userAccounts = await getUserAccounts(userId);
-    const account = userAccounts.find((acc: any) => acc.id === accountId || acc.meta_account_id === accountId);
+    if (!supabaseAdmin) {
+      return res.status(500).json({ error: 'Supabase admin client not initialized' });
+    }
 
-    if (!account) {
+    // Get user's accounts (using admin client to bypass RLS)
+    const { data: userAccessList } = await supabaseAdmin
+      .from('user_account_access')
+      .select('account_id')
+      .eq('user_id', userId);
+
+    const accessIds = userAccessList?.map((ua: any) => ua.account_id) || [];
+    if (accessIds.length === 0) {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    // Fetch pixels from Supabase (already synced)
-    if (!supabaseAdmin) {
-      return res.status(500).json({ error: 'Supabase admin client not initialized' });
+    const { data: userAccounts } = await supabaseAdmin
+      .from('meta_accounts')
+      .select('id, meta_account_id')
+      .in('id', accessIds);
+
+    const account = (userAccounts || []).find((acc: any) => acc.id === accountId || acc.meta_account_id === accountId);
+
+    if (!account) {
+      return res.status(403).json({ error: 'Access denied' });
     }
 
     const { data: pixels, error } = await supabaseAdmin
