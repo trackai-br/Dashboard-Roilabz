@@ -89,7 +89,7 @@ export function Header({
 
             {/* Botão Bulk Create */}
             <button
-              onClick={() => router.push('/campaigns/bulk-create')}
+              onClick={() => router.push('/campaigns/setup')}
               className="hidden sm:inline-block px-4 py-2 border rounded-lg transition-all duration-200 font-medium"
               style={{
                 borderColor: 'rgba(57, 255, 20, 0.3)',

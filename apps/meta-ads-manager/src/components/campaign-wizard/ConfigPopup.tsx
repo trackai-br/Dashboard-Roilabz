@@ -6,6 +6,7 @@ import Tab3Campaign from './tabs/Tab3Campaign';
 import Tab4Adsets from './tabs/Tab4Adsets';
 import Tab5Ads from './tabs/Tab5Ads';
 import Tab6Preview from './tabs/Tab6Preview';
+import Tab7Template from './tabs/Tab7Template';
 
 const TABS = [
   { label: 'Contas', index: 0 },
@@ -19,9 +20,10 @@ const TABS = [
 
 interface ConfigPopupProps {
   onClose: () => void;
+  onSaved?: () => void;
 }
 
-export default function ConfigPopup({ onClose }: ConfigPopupProps) {
+export default function ConfigPopup({ onClose, onSaved }: ConfigPopupProps) {
   const { state, dispatch } = useWizard();
   const [showConfirmClose, setShowConfirmClose] = useState(false);
 
@@ -113,21 +115,15 @@ export default function ConfigPopup({ onClose }: ConfigPopupProps) {
       case 4:
         return <Tab5Ads />;
       case 5:
-        return <Tab6Preview />;
+        return <Tab6Preview onGoToTemplate={() => {
+          dispatch({ type: 'MARK_STEP_COMPLETE', payload: 5 });
+          dispatch({ type: 'SET_STEP', payload: 6 });
+        }} />;
       case 6:
-        return (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-              <p className="text-2xl mb-2" style={{ color: 'var(--color-tertiary)' }}>🚧</p>
-              <p className="text-lg font-medium" style={{ color: 'var(--color-secondary)', fontFamily: "'Space Grotesk', system-ui, sans-serif" }}>
-                Em construção
-              </p>
-              <p className="text-sm mt-1" style={{ color: 'var(--color-tertiary)' }}>
-                Esta etapa será implementada no próximo bloco.
-              </p>
-            </div>
-          </div>
-        );
+        return <Tab7Template onSaved={() => {
+          if (onSaved) onSaved();
+          onClose();
+        }} />;
       default:
         return null;
     }
