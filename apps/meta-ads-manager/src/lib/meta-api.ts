@@ -1,5 +1,43 @@
 import { supabaseAdmin } from './supabase';
 
+/**
+ * Erro estruturado da Meta Graph API.
+ * Preserva code, subcode e mensagens da Meta para o catalogo de erros.
+ */
+export class MetaAPIError extends Error {
+  code?: number;
+  error_subcode?: number;
+  error_user_title?: string;
+  error_user_msg?: string;
+  fbtrace_id?: string;
+  httpStatus: number;
+
+  constructor(errorData: any, httpStatus: number) {
+    const metaError = errorData?.error || {};
+    const msg = metaError.message || `HTTP ${httpStatus}`;
+    super(msg);
+    this.name = 'MetaAPIError';
+    this.code = metaError.code;
+    this.error_subcode = metaError.error_subcode;
+    this.error_user_title = metaError.error_user_title;
+    this.error_user_msg = metaError.error_user_msg;
+    this.fbtrace_id = metaError.fbtrace_id;
+    this.httpStatus = httpStatus;
+  }
+
+  toJSON() {
+    return {
+      message: this.message,
+      code: this.code,
+      error_subcode: this.error_subcode,
+      error_user_title: this.error_user_title,
+      error_user_msg: this.error_user_msg,
+      fbtrace_id: this.fbtrace_id,
+      httpStatus: this.httpStatus,
+    };
+  }
+}
+
 // Types for Meta API responses
 export interface MetaAccount {
   id: string;
@@ -150,10 +188,7 @@ async function graphFetch<T = any>(
   const response = await fetch(url);
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    const msg = errorData?.error?.message || `HTTP ${response.status}: ${response.statusText}`;
-    if (response.status === 401) throw new Error('Invalid Meta access token');
-    if (response.status === 429) throw new Error('Meta API rate limit exceeded');
-    throw new Error(msg);
+    throw new MetaAPIError(errorData, response.status);
   }
 
   return response.json();
@@ -178,8 +213,7 @@ async function graphPost<T = any>(
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    const msg = errorData?.error?.message || `HTTP ${response.status}: ${response.statusText}`;
-    throw new Error(msg);
+    throw new MetaAPIError(errorData, response.status);
   }
 
   return response.json();

@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import { useWizard } from '@/contexts/WizardContext';
 import { validateWizardState } from '@/lib/validation';
 import { supabase } from '@/lib/supabase';
+import { lookupError, formatPublishError, type MetaGraphError, type CatalogedError } from '@/lib/error-catalog';
 
 const OBJECTIVE_LABELS: Record<string, string> = {
   OUTCOME_SALES: 'Vendas',
@@ -35,6 +36,7 @@ interface PublishResult {
   campaignIndex: number;
   status: 'success' | 'failed';
   error?: string;
+  errorDetails?: MetaGraphError;
   meta_campaign_id?: string;
   campaignName?: string;
 }
@@ -258,40 +260,37 @@ export default function Tab6Preview({ onGoToTemplate }: Tab6PreviewProps) {
             const cpName = `CP ${String(entry.campaignIndex + 1).padStart(2, '0')} - ${entry.accountId} - ${entry.pageName}`;
 
             let statusIcon = '\u23F3'; // hourglass
-            let statusText = 'Aguardando';
             let statusColor = 'var(--color-tertiary)';
+            let cataloged: CatalogedError | null = null;
 
             if (result) {
               if (result.status === 'success') {
                 statusIcon = '\u2705';
-                statusText = `Publicada (ID: ${result.meta_campaign_id})`;
                 statusColor = 'var(--neon-green)';
               } else {
                 statusIcon = '\u274C';
-                statusText = result.error || 'Erro';
                 statusColor = 'var(--color-danger)';
+                const errorInfo: MetaGraphError = result.errorDetails || { message: result.error || 'Erro desconhecido' };
+                cataloged = lookupError(errorInfo);
               }
             } else if (!publishDone && publishCompleted >= entry.campaignIndex) {
               statusIcon = '\uD83D\uDD04';
-              statusText = 'Publicando...';
               statusColor = 'var(--neon-cyan)';
             }
 
             return (
-              <div key={entry.campaignIndex} className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-light)' }}>
-                <span className="text-sm">{statusIcon}</span>
-                <span className="flex-1 text-sm truncate" style={{ color: 'var(--color-primary)' }}>{cpName}</span>
-                <span className="text-xs" style={{ color: statusColor }}>{statusText}</span>
-                {result?.status === 'failed' && (
-                  <button
-                    onClick={() => handleRetry(entry.campaignIndex)}
-                    className="px-2 py-1 rounded text-xs font-medium"
-                    style={{ backgroundColor: 'rgba(255, 183, 3, 0.15)', color: '#ffb703', border: '1px solid rgba(255, 183, 3, 0.3)' }}
-                  >
-                    Retry
-                  </button>
-                )}
-              </div>
+              <PublishResultRow
+                key={entry.campaignIndex}
+                cpName={cpName}
+                statusIcon={statusIcon}
+                statusColor={statusColor}
+                result={result}
+                cataloged={cataloged}
+                publishDone={publishDone}
+                publishCompleted={publishCompleted}
+                campaignIndex={entry.campaignIndex}
+                onRetry={() => handleRetry(entry.campaignIndex)}
+              />
             );
           })}
         </div>
@@ -607,6 +606,121 @@ function InfoRow({ label, value, small }: { label: string; value: string; small?
     <div>
       <span className="text-xs" style={{ color: 'var(--color-tertiary)' }}>{label}: </span>
       <span className={small ? 'text-xs' : 'text-sm'} style={{ color: 'var(--color-primary)' }}>{value}</span>
+    </div>
+  );
+}
+
+function PublishResultRow({ cpName, statusIcon, statusColor, result, cataloged, publishDone, publishCompleted, campaignIndex, onRetry }: {
+  cpName: string;
+  statusIcon: string;
+  statusColor: string;
+  result?: PublishResult;
+  cataloged: CatalogedError | null;
+  publishDone: boolean;
+  publishCompleted: number;
+  campaignIndex: number;
+  onRetry: () => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const isFailed = result?.status === 'failed';
+  const isSuccess = result?.status === 'success';
+  const isWaiting = !result && !(!publishDone && publishCompleted >= campaignIndex);
+  const isRunning = !result && !publishDone && publishCompleted >= campaignIndex;
+
+  const statusText = isSuccess
+    ? `Publicada (ID: ${result?.meta_campaign_id})`
+    : isRunning
+    ? 'Publicando...'
+    : isFailed && cataloged
+    ? cataloged.title
+    : isFailed
+    ? (result?.error || 'Erro')
+    : 'Aguardando';
+
+  const severityColors: Record<string, string> = {
+    warning: 'rgba(255, 183, 3, 0.12)',
+    error: 'rgba(255, 51, 51, 0.08)',
+    critical: 'rgba(255, 51, 51, 0.15)',
+  };
+
+  const severityBorders: Record<string, string> = {
+    warning: 'rgba(255, 183, 3, 0.3)',
+    error: 'rgba(255, 51, 51, 0.3)',
+    critical: 'rgba(255, 51, 51, 0.5)',
+  };
+
+  return (
+    <div>
+      <div
+        className="flex items-center gap-2 px-3 py-2 rounded-lg"
+        style={{
+          backgroundColor: isFailed ? 'rgba(255, 51, 51, 0.05)' : 'rgba(255,255,255,0.02)',
+          border: `1px solid ${isFailed ? 'rgba(255, 51, 51, 0.2)' : 'var(--border-light)'}`,
+          cursor: isFailed && cataloged ? 'pointer' : 'default',
+        }}
+        onClick={() => { if (isFailed && cataloged) setExpanded(!expanded); }}
+      >
+        <span className="text-sm">{statusIcon}</span>
+        <span className="flex-1 text-sm truncate" style={{ color: 'var(--color-primary)' }}>{cpName}</span>
+        <span className="text-xs max-w-[200px] truncate" style={{ color: statusColor }}>{statusText}</span>
+        {isFailed && cataloged && (
+          <svg
+            width="14" height="14"
+            className="flex-shrink-0 transition-transform"
+            style={{ color: 'var(--color-tertiary)', transform: expanded ? 'rotate(180deg)' : 'rotate(0)' }}
+            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        )}
+        {isFailed && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onRetry(); }}
+            className="px-2 py-1 rounded text-xs font-medium flex-shrink-0"
+            style={{ backgroundColor: 'rgba(255, 183, 3, 0.15)', color: '#ffb703', border: '1px solid rgba(255, 183, 3, 0.3)' }}
+          >
+            Retry
+          </button>
+        )}
+      </div>
+
+      {/* Expanded error details */}
+      {expanded && isFailed && cataloged && (
+        <div
+          className="mx-2 mt-1 mb-2 p-3 rounded-lg text-xs space-y-2"
+          style={{
+            backgroundColor: severityColors[cataloged.severity] || severityColors.error,
+            border: `1px solid ${severityBorders[cataloged.severity] || severityBorders.error}`,
+          }}
+        >
+          <div>
+            <span className="font-bold" style={{ color: 'var(--color-primary)' }}>{cataloged.title}</span>
+            {cataloged.severity === 'critical' && (
+              <span className="ml-2 px-1.5 py-0.5 rounded text-[10px] font-bold" style={{ backgroundColor: 'rgba(255, 51, 51, 0.3)', color: '#ff5555' }}>
+                CRITICO
+              </span>
+            )}
+          </div>
+          <p style={{ color: 'var(--color-secondary)' }}>{cataloged.description}</p>
+          <div className="p-2 rounded" style={{ backgroundColor: 'rgba(57, 255, 20, 0.06)', border: '1px solid rgba(57, 255, 20, 0.15)' }}>
+            <span className="font-semibold" style={{ color: 'var(--neon-green)' }}>O que fazer: </span>
+            <span style={{ color: 'var(--color-primary)' }}>{cataloged.action}</span>
+          </div>
+          {result?.error && result.error !== cataloged.title && (
+            <div className="pt-1 border-t" style={{ borderTopColor: 'rgba(255,255,255,0.05)' }}>
+              <span className="font-medium" style={{ color: 'var(--color-tertiary)' }}>Mensagem original: </span>
+              <span style={{ color: 'var(--color-tertiary)' }}>{result.error}</span>
+            </div>
+          )}
+          {result?.errorDetails?.code && (
+            <div style={{ color: 'var(--color-tertiary)' }}>
+              Codigo: {result.errorDetails.code}
+              {result.errorDetails.error_subcode ? ` / Subcodigo: ${result.errorDetails.error_subcode}` : ''}
+              {result.errorDetails.fbtrace_id ? ` / Trace: ${result.errorDetails.fbtrace_id}` : ''}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

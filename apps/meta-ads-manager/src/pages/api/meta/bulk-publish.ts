@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { createClient } from '@supabase/supabase-js';
 import { requireAuth } from '@/lib/auth';
 import { getUserAccounts } from '@/lib/supabase-rls';
-import { metaAPI } from '@/lib/meta-api';
+import { metaAPI, MetaAPIError } from '@/lib/meta-api';
 
 const DELAY_MS = 500;
 
@@ -210,8 +210,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         campaignName,
       });
     } catch (err: any) {
-      // Retry once on rate limit
-      if (err.message?.includes('rate limit')) {
+      const isRateLimit = err instanceof MetaAPIError
+        ? (err.code === 17 || err.code === 32 || err.code === 4)
+        : err.message?.includes('rate limit');
+
+      if (isRateLimit) {
         await delay(5000);
         try {
           const retryResult = await metaAPI.createCampaign(metaAccountId, {
@@ -230,6 +233,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             campaignIndex: entry.campaignIndex,
             status: 'failed',
             error: retryErr.message || 'Retry failed',
+            errorDetails: retryErr instanceof MetaAPIError ? retryErr.toJSON() : undefined,
             campaignName,
           });
         }
@@ -238,6 +242,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           campaignIndex: entry.campaignIndex,
           status: 'failed',
           error: err.message || 'Unknown error',
+          errorDetails: err instanceof MetaAPIError ? err.toJSON() : undefined,
           campaignName,
         });
       }
