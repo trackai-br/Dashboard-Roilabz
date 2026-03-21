@@ -54,6 +54,9 @@ export default function ConfigPopup({ onClose }: ConfigPopupProps) {
       }
       case 3: {
         if (state.adsetTypes.length === 0) return false;
+        const totalConfigured = state.adsetTypes.reduce((sum, t) => sum + t.adsetCount * t.campaignsCount, 0);
+        const totalProgrammed = state.adsetsPerCampaign * state.totalCampaigns;
+        if (totalConfigured !== totalProgrammed) return false;
         return state.adsetTypes.every(
           (t) =>
             !!t.name &&
