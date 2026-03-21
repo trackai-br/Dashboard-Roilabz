@@ -7,28 +7,19 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  // Check authentication
+  res.setHeader('Cache-Control', 'no-store');
+
   const { user, error: authError } = await requireAuth(req);
   if (authError || !user) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  if (req.method === 'GET') {
-    return handleGet(req, res, user.id);
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  res.setHeader('Allow', ['GET']);
-  return res.status(405).json({ error: 'Method not allowed' });
-}
-
-async function handleGet(
-  req: NextApiRequest,
-  res: NextApiResponse,
-  userId: string
-) {
   try {
-    const { accountId } = req.query;
-
+    const accountId = req.query.accountId as string;
     if (!accountId) {
       return res.status(400).json({ error: 'accountId is required' });
     }
@@ -37,45 +28,41 @@ async function handleGet(
       return res.status(500).json({ error: 'Supabase admin client not initialized' });
     }
 
-    // Get user's accounts (using admin client to bypass RLS)
-    const { data: userAccessList } = await supabaseAdmin
-      .from('user_account_access')
-      .select('account_id')
-      .eq('user_id', userId);
-
-    const accessIds = userAccessList?.map((ua: any) => ua.account_id) || [];
-    if (accessIds.length === 0) {
-      return res.status(403).json({ error: 'Access denied' });
-    }
-
-    const { data: userAccounts } = await supabaseAdmin
+    // Look up account UUID from meta_account_id
+    const { data: account, error: accountError } = await supabaseAdmin
       .from('meta_accounts')
-      .select('id, meta_account_id')
-      .in('id', accessIds);
+      .select('id')
+      .eq('meta_account_id', accountId)
+      .maybeSingle();
 
-    const account = (userAccounts || []).find((acc: any) => acc.id === accountId || acc.meta_account_id === accountId);
+    if (accountError) {
+      console.error('[pixels] Error looking up account:', accountError);
+      return res.status(500).json({ error: 'Failed to look up account' });
+    }
 
     if (!account) {
-      return res.status(403).json({ error: 'Access denied' });
+      return res.status(404).json({ error: 'Account not found' });
     }
 
-    const { data: pixels, error } = await supabaseAdmin
+    // Fetch pixels for this account
+    const { data: pixels, error: pixelsError } = await supabaseAdmin
       .from('meta_pixels')
-      .select('pixel_id as id, pixel_name as name, last_fired_time')
+      .select('pixel_id, pixel_name, last_fired_time')
       .eq('meta_account_id', account.id);
 
-    if (error) {
-      return res.status(500).json({ error: 'Failed to fetch pixels from database' });
+    if (pixelsError) {
+      console.error('[pixels] Error fetching pixels:', pixelsError);
+      return res.status(500).json({ error: 'Failed to fetch pixels' });
     }
 
     return res.status(200).json({
-      pixels: pixels || [],
+      pixels: (pixels || []).map((p: any) => ({ id: p.pixel_id, name: p.pixel_name, last_fired_time: p.last_fired_time })),
       count: pixels?.length || 0,
     });
   } catch (error) {
-    console.error('Error fetching pixels:', error);
+    console.error('[pixels] Unhandled error:', error);
     return res.status(500).json({
-      error: 'Failed to fetch pixels',
+      error: 'Internal server error',
       details: error instanceof Error ? error.message : 'Unknown error',
     });
   }
