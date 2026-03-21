@@ -4,6 +4,7 @@ import Tab1Accounts from './tabs/Tab1Accounts';
 import Tab2PagesVolume from './tabs/Tab2PagesVolume';
 import Tab3Campaign from './tabs/Tab3Campaign';
 import Tab4Adsets from './tabs/Tab4Adsets';
+import Tab5Ads from './tabs/Tab5Ads';
 import Tab6Preview from './tabs/Tab6Preview';
 
 const TABS = [
@@ -69,6 +70,12 @@ export default function ConfigPopup({ onClose }: ConfigPopupProps) {
             t.targetCountries.length > 0
         );
       }
+      case 4: {
+        const ad = state.adConfig;
+        if (!ad) return false;
+        const urlOk = ad.destinationUrl.startsWith('http://') || ad.destinationUrl.startsWith('https://');
+        return urlOk && ad.creativeFiles.length > 0 && !!ad.primaryText && !!ad.headline;
+      }
       default:
         return true;
     }
@@ -103,9 +110,10 @@ export default function ConfigPopup({ onClose }: ConfigPopupProps) {
         return <Tab3Campaign />;
       case 3:
         return <Tab4Adsets />;
+      case 4:
+        return <Tab5Ads />;
       case 5:
         return <Tab6Preview />;
-      case 4:
       case 6:
         return (
           <div className="flex items-center justify-center h-full">

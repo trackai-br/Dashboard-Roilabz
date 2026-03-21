@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useWizard } from '@/contexts/WizardContext';
+import { validateWizardState } from '@/lib/validation';
 
 const OBJECTIVE_LABELS: Record<string, string> = {
   OUTCOME_SALES: 'Vendas',
@@ -48,27 +49,12 @@ export default function Tab6Preview() {
     ? budgetDisplay * state.totalCampaigns
     : budgetDisplay * totalAdsets;
 
-  // --- Warnings ---
-  const warnings = useMemo(() => {
-    const w: string[] = [];
-    const programmed = state.adsetsPerCampaign * state.totalCampaigns;
-    if (totalAdsets !== programmed) {
-      w.push(`Total de adsets dos tipos (${totalAdsets}) \u2260 total programado (${programmed})`);
-    }
-    if (ad) {
-      const adsetCreativeNames = new Set(state.adsetTypes.flatMap((t) => t.creativesInAdset));
-      const fileNames = new Set(ad.creativeFiles.map((f) => f.fileName));
-      for (const name of adsetCreativeNames) {
-        if (name && !fileNames.has(name)) {
-          w.push(`Criativo "${name}" referenciado nos adsets mas não encontrado nos arquivos`);
-        }
-      }
-    }
-    if (!ad?.destinationUrl) {
-      w.push('URL de destino não configurada na Tab Anúncios');
-    }
-    return w;
-  }, [state, ad, totalAdsets]);
+  // --- Validation ---
+  const validation = useMemo(() => validateWizardState(state), [state]);
+  const warnings = useMemo(() => [
+    ...validation.errors.map((e) => e.message),
+    ...validation.warnings.map((w) => w.message),
+  ], [validation]);
 
   // --- Distribution table ---
   const tableRows = useMemo(() => {
