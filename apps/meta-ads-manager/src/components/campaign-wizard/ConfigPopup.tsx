@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useWizard } from '@/contexts/WizardContext';
 import Tab1Accounts from './tabs/Tab1Accounts';
 import Tab2PagesVolume from './tabs/Tab2PagesVolume';
+import Tab3Campaign from './tabs/Tab3Campaign';
 
 const TABS = [
   { label: 'Contas', index: 0 },
@@ -40,6 +41,16 @@ export default function ConfigPopup({ onClose }: ConfigPopupProps) {
         return state.selectedAccountIds.length > 0;
       case 1:
         return state.selectedPageIds.length > 0 && state.distributionMap.length > 0;
+      case 2: {
+        const c = state.campaignConfig;
+        return (
+          !!c.objective &&
+          !!c.namingPattern.levaNumber &&
+          !!c.namingPattern.creativeLabel &&
+          c.budgetValue > 0 &&
+          !!c.bidStrategy
+        );
+      }
       default:
         return true;
     }
@@ -71,6 +82,7 @@ export default function ConfigPopup({ onClose }: ConfigPopupProps) {
       case 1:
         return <Tab2PagesVolume />;
       case 2:
+        return <Tab3Campaign />;
       case 3:
       case 4:
       case 5:
