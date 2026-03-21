@@ -12,23 +12,32 @@ export interface DistributionEntry {
 }
 
 export interface CampaignConfig {
-  name: string;
-  objective: string;
-  status: 'ACTIVE' | 'PAUSED';
-  budgetType: 'daily' | 'lifetime';
-  dailyBudget?: number;
-  lifetimeBudget?: number;
-  startTime?: string;
-  stopTime?: string;
+  objective: string;          // OUTCOME_SALES, OUTCOME_LEADS, OUTCOME_TRAFFIC, etc.
+  namingPattern: {
+    levaNumber: string;       // ex: "08" — manual
+    creativeLabel: string;    // ex: "Cr1" — manual
+    // Dinâmicos (preenchidos pelo sistema na hora da publicação):
+    // [DATA], [CONTA], [CP NÚMERO], [PÁGINA]
+  };
+  budgetType: 'CBO' | 'ABO';
+  budgetValue: number;        // se CBO: valor por campanha / se ABO: valor por adset (em centavos)
+  bidStrategy: string;        // LOWEST_COST_WITHOUT_CAP, LOWEST_COST_WITH_BID_CAP, COST_CAP, LOWEST_COST_WITH_MIN_ROAS
+  campaignStatus: 'ACTIVE' | 'PAUSED';
 }
 
 export interface AdsetTypeConfig {
-  id: string;
-  name: string;
-  billingEvent: string;
-  bidStrategy: string;
-  bidAmount?: number;
-  targeting: Record<string, unknown>;
+  id: string;                        // uuid local para identificar o tipo
+  name: string;                      // nome digitado livre (ex: "Cr1_leva10_Angulo2")
+  adsetCount: number;                // quantos adsets deste tipo
+  campaignsCount: number;            // em quantas campanhas este tipo aparece
+  creativesInAdset: string[];        // nomes dos criativos dentro de cada adset (cada um vira 1 ad)
+  conversionLocation: string;        // WEBSITE, APP, MESSENGER, WHATSAPP, etc.
+  bidCapValue?: number;              // se estratégia for Bid Cap — valor em centavos
+  pixelId: string;                   // pixel selecionado
+  conversionEvent: string;           // PURCHASE, LEAD, VIEW_CONTENT, etc.
+  startDate: string;                 // ISO date (mesma para todos adsets deste tipo)
+  targetCountries: string[];         // array de country codes (ex: ["BR", "US"])
+  adsetStatus: 'ACTIVE' | 'PAUSED';
 }
 
 export interface AdConfig {
@@ -50,7 +59,7 @@ export interface WizardState {
   adsetsPerCampaign: number;
   totalCampaigns: number;
   distributionMap: DistributionEntry[];
-  campaignConfig: CampaignConfig | null;
+  campaignConfig: CampaignConfig;
   adsetTypes: AdsetTypeConfig[];
   adConfig: AdConfig | null;
   templateName: string;
@@ -66,7 +75,14 @@ const initialState: WizardState = {
   adsetsPerCampaign: 50,
   totalCampaigns: 1,
   distributionMap: [],
-  campaignConfig: null,
+  campaignConfig: {
+    objective: 'OUTCOME_SALES',
+    namingPattern: { levaNumber: '', creativeLabel: '' },
+    budgetType: 'CBO',
+    budgetValue: 0,
+    bidStrategy: 'LOWEST_COST_WITHOUT_CAP',
+    campaignStatus: 'PAUSED',
+  },
   adsetTypes: [],
   adConfig: null,
   templateName: '',

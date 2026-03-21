@@ -46,6 +46,33 @@ export interface ApiResponse<T> {
   };
 }
 
+export interface CampaignConfig {
+  objective: string;
+  namingPattern: {
+    levaNumber: string;
+    creativeLabel: string;
+  };
+  budgetType: 'CBO' | 'ABO';
+  budgetValue: number;
+  bidStrategy: string;
+  campaignStatus: 'ACTIVE' | 'PAUSED';
+}
+
+export interface AdsetTypeConfig {
+  id: string;
+  name: string;
+  adsetCount: number;
+  campaignsCount: number;
+  creativesInAdset: string[];
+  conversionLocation: string;
+  bidCapValue?: number;
+  pixelId: string;
+  conversionEvent: string;
+  startDate: string;
+  targetCountries: string[];
+  adsetStatus: 'ACTIVE' | 'PAUSED';
+}
+
 export interface SyncLog {
   id: string;
   user_id: string;
