@@ -75,9 +75,20 @@ export default function CampaignSetupPage() {
       setSyncResult('Sincronizando páginas...');
       const pagesData = await callStep('pages');
 
-      // Step 3: pixels
+      // Step 3: pixels (also logs the full sync result)
       setSyncResult('Sincronizando pixels...');
-      const pixelsData = await callStep('pixels');
+      const pixelsRes = await fetch('/api/meta/sync-all', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          step: 'pixels',
+          logSync: true,
+          synced_accounts: accountsData.synced_accounts,
+          synced_pages: pagesData.synced_pages,
+        }),
+      });
+      if (!pixelsRes.ok) throw new Error('Step pixels failed');
+      const pixelsData = await pixelsRes.json();
 
       setSyncResult(
         `${accountsData.synced_accounts} contas, ${pagesData.synced_pages} páginas, ${pixelsData.synced_pixels} pixels sincronizados`

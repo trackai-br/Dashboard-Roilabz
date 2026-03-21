@@ -158,6 +158,21 @@ export default async function handler(
         }
       }
 
+      // Log sync attempt if requested (final step)
+      if (req.body?.logSync) {
+        const syncedAccounts = req.body.synced_accounts || 0;
+        const syncedPages = req.body.synced_pages || 0;
+        await supabaseAdmin.from('sync_log').insert({
+          user_id: user.id,
+          status: 'success',
+          synced_accounts: syncedAccounts,
+          synced_pages: syncedPages,
+          synced_pixels: pixelsCount,
+        }).then(({ error }) => {
+          if (error) console.error('[sync] Error writing sync_log:', error);
+        });
+      }
+
       return res.status(200).json({
         success: true,
         step: 'pixels',
