@@ -170,6 +170,7 @@ export default function CampaignSetupPage() {
               <button
                 onClick={() => {
                   queryClient.invalidateQueries({ queryKey: ['meta-accounts'] });
+        queryClient.invalidateQueries({ queryKey: ['wizard-pages'] });
                   setShowPopup(true);
                 }}
                 className="px-6 py-2 rounded-lg border text-sm font-medium transition-all"

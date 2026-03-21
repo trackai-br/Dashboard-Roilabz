@@ -38,7 +38,7 @@ export default function Tab2PagesVolume() {
       return allPages;
     },
     enabled: state.selectedAccountIds.length > 0,
-    staleTime: 15 * 60 * 1000,
+    staleTime: 0, // Always refetch — pages may have been synced recently
   });
 
   // Build pages with adset counts
@@ -126,13 +126,17 @@ export default function Tab2PagesVolume() {
           Selecione as páginas onde as campanhas serão vinculadas
         </p>
 
-        {pagesLoading ? (
+        {state.selectedAccountIds.length === 0 ? (
+          <div className="p-4 rounded-lg" style={{ backgroundColor: 'rgba(255, 183, 3, 0.1)', border: '1px solid rgba(255, 183, 3, 0.3)' }}>
+            <p className="text-sm" style={{ color: 'var(--color-warning)' }}>Selecione pelo menos uma conta na etapa anterior.</p>
+          </div>
+        ) : pagesLoading ? (
           <div className="animate-pulse text-sm py-8 text-center" style={{ color: 'var(--color-secondary)' }}>
             Carregando páginas...
           </div>
         ) : pages.length === 0 ? (
           <div className="p-4 rounded-lg" style={{ backgroundColor: 'rgba(255, 183, 3, 0.1)', border: '1px solid rgba(255, 183, 3, 0.3)' }}>
-            <p className="text-sm" style={{ color: 'var(--color-warning)' }}>Nenhuma página encontrada.</p>
+            <p className="text-sm" style={{ color: 'var(--color-warning)' }}>Nenhuma página encontrada para as contas selecionadas.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-64 overflow-y-auto">
