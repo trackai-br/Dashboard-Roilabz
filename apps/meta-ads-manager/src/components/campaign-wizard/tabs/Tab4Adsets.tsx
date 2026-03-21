@@ -156,7 +156,7 @@ export default function Tab4Adsets() {
       {state.adsetTypes.length === 0 && (
         <div className="p-8 rounded-lg text-center" style={{ backgroundColor: 'rgba(255, 255, 255, 0.02)', border: '1px dashed var(--border-light)' }}>
           <p className="text-sm" style={{ color: 'var(--color-secondary)' }}>
-            Nenhum tipo de adset configurado. Clique em "+ Adicionar Tipo de Adset" para começar.
+            Nenhum tipo de adset configurado. Clique em &ldquo;+ Adicionar Tipo de Adset&rdquo; para começar.
           </p>
         </div>
       )}
