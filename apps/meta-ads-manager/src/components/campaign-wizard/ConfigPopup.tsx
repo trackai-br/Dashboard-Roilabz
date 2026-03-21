@@ -4,6 +4,7 @@ import Tab1Accounts from './tabs/Tab1Accounts';
 import Tab2PagesVolume from './tabs/Tab2PagesVolume';
 import Tab3Campaign from './tabs/Tab3Campaign';
 import Tab4Adsets from './tabs/Tab4Adsets';
+import Tab6Preview from './tabs/Tab6Preview';
 
 const TABS = [
   { label: 'Contas', index: 0 },
@@ -102,8 +103,9 @@ export default function ConfigPopup({ onClose }: ConfigPopupProps) {
         return <Tab3Campaign />;
       case 3:
         return <Tab4Adsets />;
-      case 4:
       case 5:
+        return <Tab6Preview />;
+      case 4:
       case 6:
         return (
           <div className="flex items-center justify-center h-full">

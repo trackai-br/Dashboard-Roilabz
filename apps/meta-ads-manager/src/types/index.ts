@@ -73,6 +73,30 @@ export interface AdsetTypeConfig {
   adsetStatus: 'ACTIVE' | 'PAUSED';
 }
 
+export interface CreativeFile {
+  id: string;
+  fileName: string;
+  driveUrl: string;
+  type: 'image' | 'video';
+}
+
+export interface AdConfig {
+  destinationUrl: string;
+  creativeFormat: 'image' | 'video' | 'carousel';
+  driveLink: string;
+  creativeFiles: CreativeFile[];
+  primaryText: string;
+  headline: string;
+  description: string;
+  utmParams: {
+    utm_source?: string;
+    utm_medium?: string;
+    utm_campaign?: string;
+    utm_content?: string;
+    utm_term?: string;
+  };
+}
+
 export interface SyncLog {
   id: string;
   user_id: string;

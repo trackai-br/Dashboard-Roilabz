@@ -40,15 +40,28 @@ export interface AdsetTypeConfig {
   adsetStatus: 'ACTIVE' | 'PAUSED';
 }
 
+export interface CreativeFile {
+  id: string;
+  fileName: string;
+  driveUrl: string;
+  type: 'image' | 'video';
+}
+
 export interface AdConfig {
-  name: string;
-  status: 'ACTIVE' | 'PAUSED';
-  creativeFormat: string;
+  destinationUrl: string;
+  creativeFormat: 'image' | 'video' | 'carousel';
+  driveLink: string;
+  creativeFiles: CreativeFile[];
+  primaryText: string;
   headline: string;
-  body: string;
-  url: string;
-  imageUrl?: string;
-  videoUrl?: string;
+  description: string;
+  utmParams: {
+    utm_source?: string;
+    utm_medium?: string;
+    utm_campaign?: string;
+    utm_content?: string;
+    utm_term?: string;
+  };
 }
 
 export interface WizardState {
