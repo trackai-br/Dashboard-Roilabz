@@ -1,6 +1,36 @@
 import { supabase } from './supabase';
 
 /**
+ * Wait for Supabase to finish processing any pending auth (e.g. OAuth code exchange).
+ * Returns the session once available, or null after timeout.
+ */
+function waitForSession(timeoutMs = 3000): Promise<import('@supabase/supabase-js').Session | null> {
+  return new Promise((resolve) => {
+    // First try synchronous check
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.access_token) {
+        resolve(session);
+        return;
+      }
+
+      // Wait for auth state change (OAuth code exchange may be in progress)
+      const timer = setTimeout(() => {
+        sub.unsubscribe();
+        resolve(null);
+      }, timeoutMs);
+
+      const { data: { subscription: sub } } = supabase.auth.onAuthStateChange((_event, session) => {
+        if (session?.access_token) {
+          clearTimeout(timer);
+          sub.unsubscribe();
+          resolve(session);
+        }
+      });
+    });
+  });
+}
+
+/**
  * Fetch autenticado — adiciona Authorization header automaticamente.
  * Tenta refresh se sessao expirou.
  * Redireciona para /login se nao ha sessao.
@@ -9,7 +39,7 @@ export async function authenticatedFetch(
   url: string,
   options?: RequestInit
 ): Promise<Response> {
-  let session = (await supabase.auth.getSession()).data.session;
+  let session = await waitForSession();
 
   if (!session?.access_token) {
     try {

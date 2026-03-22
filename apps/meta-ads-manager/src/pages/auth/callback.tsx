@@ -1,56 +1,46 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { supabase } from '@/lib/supabase';
 
 export default function AuthCallback() {
   const router = useRouter();
+  const handled = useRef(false);
 
   useEffect(() => {
-    const handleCallback = async () => {
-      try {
-        // Check if we have a valid session
-        const {
-          data: { session },
-          error: sessionError,
-        } = await supabase.auth.getSession();
+    if (handled.current) return;
+    handled.current = true;
 
-        if (sessionError) throw sessionError;
-
-        if (session) {
-          // User is authenticated, create user record if it doesn't exist
-          const { user } = session;
-          if (user) {
-            const { error: upsertError } = await supabase
-              .from('users')
-              .upsert(
-                {
-                  id: user.id,
-                  email: user.email || '',
-                  full_name: user.user_metadata?.full_name || '',
-                  avatar_url: user.user_metadata?.avatar_url || '',
-                  provider: 'google',
-                },
-                {
-                  onConflict: 'id',
-                }
-              );
-
-            if (upsertError) console.error('Error upserting user:', upsertError);
-          }
-
-          // Redirect to dashboard
+    // Listen for the SIGNED_IN event which fires reliably after
+    // the Supabase client processes the OAuth code from the URL.
+    // Calling getSession() directly races with the async code exchange.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_IN' && session?.user) {
+          subscription.unsubscribe();
           router.push('/dashboard');
-        } else {
-          // No session, redirect to login
-          router.push('/login');
         }
-      } catch (error) {
-        console.error('Auth callback error:', error);
-        router.push('/login?error=auth_failed');
       }
-    };
+    );
 
-    handleCallback();
+    // Fallback: if the session already exists (e.g. page refresh),
+    // redirect immediately.
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        subscription.unsubscribe();
+        router.push('/dashboard');
+      }
+    });
+
+    // Safety timeout — if nothing happens in 10s, redirect to login
+    const timeout = setTimeout(() => {
+      subscription.unsubscribe();
+      router.push('/login?error=auth_timeout');
+    }, 10000);
+
+    return () => {
+      clearTimeout(timeout);
+      subscription.unsubscribe();
+    };
   }, [router]);
 
   return (

@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import React, { useState } from 'react';
+import { supabase } from '@/lib/supabase';
 
 interface GoogleAuthButtonProps {
   onSuccess?: () => void;
@@ -16,19 +16,9 @@ const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
 }) => {
   const [isAuthLoading, setIsAuthLoading] = useState(false);
 
-  const supabase = useMemo(() => {
-    const url = typeof window !== 'undefined' ? process.env.NEXT_PUBLIC_SUPABASE_URL : '';
-    const key = typeof window !== 'undefined' ? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY : '';
-    if (!url || !key) return null;
-    return createClient(url, key);
-  }, []);
-
   const handleGoogleLogin = async () => {
     try {
       setIsAuthLoading(true);
-      if (!supabase) {
-        throw new Error('Supabase client not initialized');
-      }
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
