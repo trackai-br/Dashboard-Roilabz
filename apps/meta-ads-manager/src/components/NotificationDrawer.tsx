@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { authenticatedFetch } from '@/lib/api-client';
 
 interface Notification {
   id: string;
@@ -33,7 +34,7 @@ export function NotificationDrawer({
   } = useQuery({
     queryKey: ['notifications'],
     queryFn: async () => {
-      const res = await fetch('/api/notifications');
+      const res = await authenticatedFetch('/api/notifications');
       if (!res.ok) throw new Error('Falha ao buscar notificações');
       return res.json();
     },
@@ -45,9 +46,8 @@ export function NotificationDrawer({
 
   const markReadMutation = useMutation({
     mutationFn: async (ids: string[]) => {
-      const res = await fetch('/api/notifications', {
+      const res = await authenticatedFetch('/api/notifications', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ notificationIds: ids, action: 'mark-read' }),
       });
       if (!res.ok) throw new Error('Falha ao marcar como lida');
@@ -61,9 +61,8 @@ export function NotificationDrawer({
 
   const deleteMutation = useMutation({
     mutationFn: async (ids: string[]) => {
-      const res = await fetch('/api/notifications', {
+      const res = await authenticatedFetch('/api/notifications', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ notificationIds: ids, action: 'delete' }),
       });
       if (!res.ok) throw new Error('Falha ao deletar');

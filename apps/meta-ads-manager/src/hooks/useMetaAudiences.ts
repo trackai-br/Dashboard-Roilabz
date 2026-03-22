@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { authenticatedFetch } from '@/lib/api-client';
 
 export interface MetaAudience {
   id: string;
@@ -13,7 +14,7 @@ export function useMetaAudiences(accountId?: string) {
     queryFn: async () => {
       if (!accountId) return [];
 
-      const res = await fetch(
+      const res = await authenticatedFetch(
         `/api/meta/accounts/audiences?accountId=${accountId}`
       );
       if (!res.ok) throw new Error('Failed to fetch audiences');

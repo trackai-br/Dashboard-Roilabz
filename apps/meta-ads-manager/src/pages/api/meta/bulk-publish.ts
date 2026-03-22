@@ -1,8 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { createClient } from '@supabase/supabase-js';
 import { requireAuth } from '@/lib/auth';
-import { getUserAccounts } from '@/lib/supabase-rls';
 import { metaAPI, MetaAPIError } from '@/lib/meta-api';
+
+// Vercel serverless: extend timeout (Pro plan = 60s, Hobby = 10s)
+export const config = {
+  maxDuration: 60,
+};
 
 const DELAY_MS = 500;
 
@@ -16,19 +20,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { user, error: authError } = await requireAuth(req);
   if (authError || !user) return res.status(401).json({ error: 'Unauthorized' });
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-    process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-  );
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !supabaseServiceKey) {
+    return res.status(500).json({ error: 'Server configuration error' });
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   const { distribution, campaignConfig, adsetTypes, adConfig } = req.body;
   if (!distribution || !campaignConfig || !adsetTypes || !adConfig) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
-  // Get user accounts for name resolution
-  const userAccounts = await getUserAccounts(user.id);
-  const accountMap = new Map(userAccounts.map((a: any) => [a.meta_account_id, a]));
+  // Get user accounts using service_role client (bypasses RLS)
+  const { data: userAccounts, error: accountsError } = await supabase
+    .from('meta_accounts')
+    .select('id, meta_account_id, meta_account_name')
+    .eq('user_id', user.id);
+
+  if (accountsError) {
+    return res.status(500).json({ error: 'Failed to fetch accounts' });
+  }
+
+  const accountMap = new Map((userAccounts || []).map((a: any) => [a.meta_account_id, a]));
 
   // Create publish job
   const { data: job, error: jobError } = await supabase
@@ -49,20 +64,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const jobId = (job as any).id;
 
-  // Return immediately with jobId — processing happens async below
-  res.status(202).json({ jobId, total: distribution.length });
-
-  // Process campaigns sequentially in background
+  // Process campaigns SYNCHRONOUSLY (Vercel kills functions after response)
   const results: any[] = [];
   let completed = 0;
+  const startTime = Date.now();
+  const MAX_DURATION_MS = 50000; // 50s safety margin under 60s Vercel limit
 
   for (let i = 0; i < distribution.length; i++) {
+    // Timeout guard — mark remaining as timeout and return partial results
+    if (Date.now() - startTime > MAX_DURATION_MS) {
+      for (let j = i; j < distribution.length; j++) {
+        results.push({
+          campaignIndex: distribution[j].campaignIndex,
+          status: 'failed',
+          error: 'Timeout: tempo limite do servidor atingido. Tente publicar menos campanhas por vez.',
+        });
+      }
+      break;
+    }
+
     const entry = distribution[i];
     const account = accountMap.get(entry.accountId);
     const metaAccountId = account?.meta_account_id || entry.accountId;
     const accountName = account?.meta_account_name || entry.accountId;
 
-    // Generate campaign name
     const now = new Date();
     const dateStr = `${String(now.getDate()).padStart(2, '0')}.${String(now.getMonth() + 1).padStart(2, '0')}`;
     const cpNum = String(entry.campaignIndex + 1).padStart(2, '0');
@@ -77,7 +102,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         special_ad_categories: [],
       };
       if (campaignConfig.budgetType === 'CBO') {
-        campaignBody.daily_budget = campaignConfig.budgetValue; // already in cents
+        campaignBody.daily_budget = campaignConfig.budgetValue;
       }
 
       const campaignResult = await metaAPI.createCampaign(metaAccountId, campaignBody, user.id);
@@ -160,7 +185,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             const adBody: any = {
               name: adsetName,
               status: adsetType.adsetStatus,
-              adset_spec: {
+              creative: {
                 object_story_spec: {
                   page_id: entry.pageId,
                   link_data: {
@@ -195,7 +220,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 ad_id: adResult.id,
                 name: adsetName,
                 status: adsetType.adsetStatus,
-                creative_spec: adBody.adset_spec,
+                creative_spec: adBody.creative,
                 last_synced: new Date(),
               } as any);
             }
@@ -249,7 +274,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     completed++;
-    // Update job progress
+    // Update job progress in DB
     await supabase
       .from('publish_jobs')
       .update({
@@ -262,4 +287,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       } as any)
       .eq('id', jobId);
   }
+
+  // Return final results synchronously
+  const finalStatus = results.every((r) => r.status === 'success') ? 'completed' : 'partial';
+  return res.status(200).json({
+    jobId,
+    status: finalStatus,
+    total: distribution.length,
+    completedCampaigns: completed,
+    results,
+  });
 }

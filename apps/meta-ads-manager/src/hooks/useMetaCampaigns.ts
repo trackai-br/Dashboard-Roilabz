@@ -1,5 +1,5 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
+import { authenticatedFetch } from '@/lib/api-client';
 
 export interface Campaign {
   id: string;
@@ -35,16 +35,6 @@ export const useMetaCampaigns = (
   return useQuery<Campaign[], Error>({
     queryKey: ['meta-campaigns', accountId, limit, offset],
     queryFn: async () => {
-      // Get current session with access token
-      const {
-        data: { session },
-        error: sessionError,
-      } = await supabase.auth.getSession();
-
-      if (sessionError || !session?.access_token) {
-        throw new Error('No valid session - user must be logged in');
-      }
-
       const params = new URLSearchParams();
       if (accountId) {
         params.append('accountId', accountId);
@@ -56,13 +46,7 @@ export const useMetaCampaigns = (
         params.append('offset', offset.toString());
       }
 
-      // Fetch with Authorization header containing JWT token
-      const response = await fetch(`/api/meta/campaigns?${params.toString()}`, {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await authenticatedFetch(`/api/meta/campaigns?${params.toString()}`);
 
       if (!response.ok) {
         throw new Error(`Failed to fetch campaigns: ${response.statusText}`);
@@ -114,7 +98,7 @@ export const useMetaCampaignStats = (accountId?: string) => {
         params.append('accountId', accountId);
       }
 
-      const response = await fetch(`/api/meta/campaigns?${params.toString()}`);
+      const response = await authenticatedFetch(`/api/meta/campaigns?${params.toString()}`);
 
       if (!response.ok) {
         throw new Error(`Failed to fetch campaign stats: ${response.statusText}`);

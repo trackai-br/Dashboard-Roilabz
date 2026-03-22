@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
+import { authenticatedFetch } from '@/lib/api-client';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { KPISection } from '@/components/KPISection';
 import { CampaignsTableNew } from '@/components/CampaignsTableNew';
@@ -41,22 +41,8 @@ export default function Dashboard() {
 
     try {
       // Get current session with access token
-      const {
-        data: { session },
-        error: sessionError,
-      } = await supabase.auth.getSession();
-
-      if (sessionError || !session?.access_token) {
-        throw new Error('No valid session - please log in');
-      }
-
-      // Fetch with Authorization header containing JWT token
-      const response = await fetch('/api/meta/sync-all', {
+      const response = await authenticatedFetch('/api/meta/sync-all', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
-        },
       });
 
       if (!response.ok) {

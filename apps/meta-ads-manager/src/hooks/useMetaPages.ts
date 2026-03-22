@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
+import { authenticatedFetch } from '@/lib/api-client';
 
 export interface MetaPage {
   id: string;
@@ -13,14 +13,7 @@ export function useMetaPages(accountId?: string) {
     queryFn: async () => {
       if (!accountId) return [];
 
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) return [];
-
-      const res = await fetch(`/api/meta/accounts/pages?accountId=${accountId}`, {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
+      const res = await authenticatedFetch(`/api/meta/accounts/pages?accountId=${accountId}`);
       if (!res.ok) throw new Error('Failed to fetch pages');
       const data = await res.json();
       return data.pages as MetaPage[];

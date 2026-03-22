@@ -1,7 +1,7 @@
-import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useWizard } from '@/contexts/WizardContext';
 import { validateWizardState } from '@/lib/validation';
-import { supabase } from '@/lib/supabase';
+import { authenticatedFetch } from '@/lib/api-client';
 import { lookupError, formatPublishError, type MetaGraphError, type CatalogedError } from '@/lib/error-catalog';
 
 const OBJECTIVE_LABELS: Record<string, string> = {
@@ -58,7 +58,6 @@ export default function Tab6Preview({ onGoToTemplate }: Tab6PreviewProps) {
   const [publishResults, setPublishResults] = useState<PublishResult[]>([]);
   const [publishCompleted, setPublishCompleted] = useState(0);
   const [publishDone, setPublishDone] = useState(false);
-  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const cfg = state.campaignConfig;
   const ad = state.adConfig;
@@ -120,36 +119,6 @@ export default function Tab6Preview({ onGoToTemplate }: Tab6PreviewProps) {
   };
 
   // --- Publishing ---
-  const pollStatus = useCallback(async (jobId: string) => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) return;
-
-      const res = await fetch(`/api/meta/publish-status/${jobId}`, {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      });
-      if (!res.ok) return;
-      const data = await res.json();
-
-      setPublishResults(data.results || []);
-      setPublishCompleted(data.completedCampaigns || 0);
-
-      if (data.status !== 'running') {
-        setPublishDone(true);
-        if (pollingRef.current) {
-          clearInterval(pollingRef.current);
-          pollingRef.current = null;
-        }
-      }
-    } catch { /* ignore */ }
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (pollingRef.current) clearInterval(pollingRef.current);
-    };
-  }, []);
-
   const handlePublish = async () => {
     setShowPublishModal(false);
     setIsPublishing(true);
@@ -158,15 +127,8 @@ export default function Tab6Preview({ onGoToTemplate }: Tab6PreviewProps) {
     setPublishCompleted(0);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) throw new Error('Nao autenticado');
-
-      const res = await fetch('/api/meta/bulk-publish', {
+      const res = await authenticatedFetch('/api/meta/bulk-publish', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
-        },
         body: JSON.stringify({
           distribution: state.distributionMap,
           campaignConfig: state.campaignConfig,
@@ -175,30 +137,26 @@ export default function Tab6Preview({ onGoToTemplate }: Tab6PreviewProps) {
         }),
       });
 
-      if (!res.ok) throw new Error('Falha ao iniciar publicacao');
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Falha ao iniciar publicacao');
+      }
       const data = await res.json();
       setPublishJobId(data.jobId);
-
-      // Start polling
-      pollingRef.current = setInterval(() => pollStatus(data.jobId), 2000);
-    } catch {
+      setPublishResults(data.results || []);
+      setPublishCompleted(data.completedCampaigns || 0);
       setPublishDone(true);
-      setPublishResults([{ campaignIndex: -1, status: 'failed', error: 'Falha ao iniciar publicacao' }]);
+    } catch (err: any) {
+      setPublishDone(true);
+      setPublishResults([{ campaignIndex: -1, status: 'failed', error: err.message || 'Falha ao iniciar publicacao' }]);
     }
   };
 
   const handleRetry = async (campaignIndex: number) => {
     if (!publishJobId) return;
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) return;
-
-      const res = await fetch('/api/meta/retry-publish', {
+      const res = await authenticatedFetch('/api/meta/retry-publish', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
-        },
         body: JSON.stringify({
           jobId: publishJobId,
           campaignIndex,

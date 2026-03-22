@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { authenticatedFetch } from '@/lib/api-client';
 
 interface EditCampaignDrawerProps {
   isOpen: boolean;
@@ -34,9 +35,8 @@ export function EditCampaignDrawer({
 
   const updateMutation = useMutation({
     mutationFn: async () => {
-      const res = await fetch(`/api/meta/campaigns/${campaign.id}`, {
+      const res = await authenticatedFetch(`/api/meta/campaigns/${campaign.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
 

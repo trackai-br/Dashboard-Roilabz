@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useCallback, useRef, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { authenticatedFetch } from '@/lib/api-client';
 
 // --- Types ---
 
@@ -218,15 +218,8 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
 
   const saveDraft = useCallback(async (wizardState: WizardState) => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) return;
-
-      await fetch('/api/drafts/save', {
+      await authenticatedFetch('/api/drafts/save', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
-        },
         body: JSON.stringify({ state: wizardState }),
       });
     } catch (e) {

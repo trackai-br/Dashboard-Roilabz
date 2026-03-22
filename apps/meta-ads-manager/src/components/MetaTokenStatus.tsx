@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
+import { authenticatedFetch } from '@/lib/api-client';
 import { useRouter } from 'next/router';
 
 type TokenState = 'ok' | 'expiring' | 'expired' | 'disconnected' | 'loading';
@@ -16,12 +16,7 @@ function useTokenStatus(): TokenStatus & { isLoading: boolean } {
   const { data, isLoading } = useQuery<TokenStatus>({
     queryKey: ['meta-token-status'],
     queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) return { state: 'disconnected', daysLeft: null };
-
-      const res = await fetch('/api/auth/meta/connection', {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      });
+      const res = await authenticatedFetch('/api/auth/meta/connection');
 
       if (!res.ok || res.status === 404) return { state: 'disconnected', daysLeft: null };
 

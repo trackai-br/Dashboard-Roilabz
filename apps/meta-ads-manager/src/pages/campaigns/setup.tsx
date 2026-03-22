@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { WizardProvider, useWizard } from '@/contexts/WizardContext';
 import ConfigPopup from '@/components/campaign-wizard/ConfigPopup';
-import { supabase } from '@/lib/supabase';
+import { authenticatedFetch } from '@/lib/api-client';
 
 interface Template {
   id: string;
@@ -30,12 +30,7 @@ export default function CampaignSetupPage() {
 
   const fetchTemplates = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) return;
-
-      const res = await fetch('/api/templates/save', {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      });
+      const res = await authenticatedFetch('/api/templates/save');
       if (res.ok) {
         const data = await res.json();
         setTemplates(data.templates || []);
@@ -50,12 +45,7 @@ export default function CampaignSetupPage() {
   useEffect(() => {
     const checkDraft = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session?.access_token) { setLoadingDraft(false); return; }
-
-        const res = await fetch('/api/drafts/current', {
-          headers: { Authorization: `Bearer ${session.access_token}` },
-        });
+        const res = await authenticatedFetch('/api/drafts/current');
 
         if (res.ok) {
           const data = await res.json();
@@ -79,22 +69,10 @@ export default function CampaignSetupPage() {
     setSyncing(true);
     setSyncResult(null);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        setSyncResult('Erro: não autenticado');
-        return;
-      }
-
-      const headers = {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${session.access_token}`,
-      };
-
-      const callStep = async (step: string) => {
-        const res = await fetch('/api/meta/sync-all', {
+      const callStep = async (step: string, extra?: Record<string, any>) => {
+        const res = await authenticatedFetch('/api/meta/sync-all', {
           method: 'POST',
-          headers,
-          body: JSON.stringify({ step }),
+          body: JSON.stringify({ step, ...extra }),
         });
         if (!res.ok) throw new Error(`Step ${step} failed`);
         return res.json();
@@ -107,9 +85,8 @@ export default function CampaignSetupPage() {
       const pagesData = await callStep('pages');
 
       setSyncResult('Sincronizando pixels...');
-      const pixelsRes = await fetch('/api/meta/sync-all', {
+      const pixelsRes = await authenticatedFetch('/api/meta/sync-all', {
         method: 'POST',
-        headers,
         body: JSON.stringify({
           step: 'pixels',
           logSync: true,
@@ -148,15 +125,8 @@ export default function CampaignSetupPage() {
   const handleDeleteTemplate = async (id: string) => {
     setDeletingTemplateId(id);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) return;
-
-      const res = await fetch('/api/templates/save', {
+      const res = await authenticatedFetch('/api/templates/save', {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
-        },
         body: JSON.stringify({ id }),
       });
 

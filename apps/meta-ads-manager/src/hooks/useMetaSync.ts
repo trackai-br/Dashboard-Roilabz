@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
+import { authenticatedFetch } from '@/lib/api-client';
 
 export interface SyncStatus {
   id?: string;
@@ -17,14 +17,7 @@ export const useMetaSync = () => {
   const { data: syncLog, isLoading: logLoading } = useQuery({
     queryKey: ['sync-log'],
     queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return null;
-
-      const response = await fetch('/api/logs/sync', {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
+      const response = await authenticatedFetch('/api/logs/sync');
 
       if (!response.ok) return null;
       const json = await response.json();
@@ -37,17 +30,8 @@ export const useMetaSync = () => {
 
   const syncMutation = useMutation({
     mutationFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        throw new Error('No valid session');
-      }
-
-      const response = await fetch('/api/meta/sync-all', {
+      const response = await authenticatedFetch('/api/meta/sync-all', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
-        },
       });
 
       if (!response.ok) {

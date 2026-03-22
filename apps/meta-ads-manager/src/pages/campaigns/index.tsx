@@ -4,6 +4,7 @@ import { DashboardLayout } from '@/components/DashboardLayout';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { useMetaAccounts } from '@/hooks/useMetaAccounts';
 import { useQuery } from '@tanstack/react-query';
+import { authenticatedFetch } from '@/lib/api-client';
 import Link from 'next/link';
 
 interface Campaign {
@@ -56,7 +57,7 @@ export default function CampaignsPage() {
       params.append('dateStart', dateStart);
       params.append('dateStop', dateStop);
 
-      const res = await fetch(`/api/meta/campaigns?${params.toString()}`);
+      const res = await authenticatedFetch(`/api/meta/campaigns?${params.toString()}`);
       if (!res.ok) throw new Error('Failed to fetch campaigns');
       return res.json();
     },

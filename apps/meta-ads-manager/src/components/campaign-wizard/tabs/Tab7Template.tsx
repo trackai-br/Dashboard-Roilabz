@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useWizard } from '@/contexts/WizardContext';
-import { supabase } from '@/lib/supabase';
+import { authenticatedFetch } from '@/lib/api-client';
 
 interface Tab7TemplateProps {
   onSaved: () => void;
@@ -33,16 +33,8 @@ export default function Tab7Template({ onSaved }: Tab7TemplateProps) {
     setError(null);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) throw new Error('Nao autenticado');
-
-      // Save template
-      const res = await fetch('/api/templates/save', {
+      const res = await authenticatedFetch('/api/templates/save', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
-        },
         body: JSON.stringify({
           name: templateName.trim(),
           configJson: state,
@@ -55,9 +47,8 @@ export default function Tab7Template({ onSaved }: Tab7TemplateProps) {
       }
 
       // Delete draft
-      await fetch('/api/drafts/current', {
+      await authenticatedFetch('/api/drafts/current', {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${session.access_token}` },
       });
 
       onSaved();

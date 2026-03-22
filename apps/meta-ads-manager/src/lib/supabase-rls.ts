@@ -13,7 +13,9 @@ function getAdminClient() {
  * Get all accounts accessible by the authenticated user
  */
 export async function getUserAccounts(userId: string) {
-  const { data, error } = await supabase
+  const admin = getAdminClient();
+
+  const { data, error } = await admin
     .from("user_account_access")
     .select("account_id, access_level")
     .eq("user_id", userId);
@@ -29,7 +31,7 @@ export async function getUserAccounts(userId: string) {
     return [];
   }
 
-  const { data: accounts, error: accountsError } = await supabase
+  const { data: accounts, error: accountsError } = await admin
     .from("meta_accounts")
     .select("*")
     .in("id", accountIds);
@@ -56,7 +58,7 @@ export async function hasAccountAccess(
     admin: ["admin"],
   };
 
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from("user_account_access")
     .select("access_level")
     .eq("user_id", userId)
@@ -155,7 +157,7 @@ export async function revokeAccountAccess(userId: string, accountId: string) {
  * Get access logs for an account
  */
 export async function getAccessLogs(accountId: string, limit = 100) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from("access_logs")
     .select("*")
     .eq("account_id", accountId)
@@ -195,7 +197,7 @@ export async function upsertUser(userId: string, email: string, role: "user" | "
  * Get user details
  */
 export async function getUser(userId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from("users")
     .select("*")
     .eq("id", userId)

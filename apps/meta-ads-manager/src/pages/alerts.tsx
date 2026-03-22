@@ -3,6 +3,7 @@ import { DashboardLayout } from '@/components/DashboardLayout';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { useMetaAccounts } from '@/hooks/useMetaAccounts';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { authenticatedFetch } from '@/lib/api-client';
 
 interface AlertRule {
   id: string;
@@ -47,7 +48,7 @@ export default function AlertsPage() {
   } = useQuery({
     queryKey: ['alerts', selectedAccountId],
     queryFn: async () => {
-      const res = await fetch('/api/alerts');
+      const res = await authenticatedFetch('/api/alerts');
       if (!res.ok) throw new Error('Falha ao carregar regras');
       return res.json();
     },
@@ -63,9 +64,8 @@ export default function AlertsPage() {
         throw new Error('Preencha todos os campos obrigatórios');
       }
 
-      const res = await fetch('/api/alerts', {
+      const res = await authenticatedFetch('/api/alerts', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           accountId: selectedAccountId,
           name: formData.name,

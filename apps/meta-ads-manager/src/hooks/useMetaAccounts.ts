@@ -1,5 +1,5 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
+import { authenticatedFetch } from '@/lib/api-client';
 
 export interface MetaAccount {
   id: string;
@@ -28,23 +28,7 @@ export const useMetaAccounts = (): UseQueryResult<MetaAccount[], Error> => {
   return useQuery<MetaAccount[], Error>({
     queryKey: ['meta-accounts'],
     queryFn: async () => {
-      // Get current session with access token
-      const {
-        data: { session },
-        error: sessionError,
-      } = await supabase.auth.getSession();
-
-      if (sessionError || !session?.access_token) {
-        throw new Error('No valid session - user must be logged in');
-      }
-
-      // Fetch with Authorization header containing JWT token
-      const response = await fetch('/api/accounts', {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await authenticatedFetch('/api/accounts');
 
       if (!response.ok) {
         throw new Error(`Failed to fetch accounts: ${response.statusText}`);
@@ -79,7 +63,7 @@ export const useMetaAccountsKPIs = (
         };
       }
 
-      const response = await fetch(`/api/meta/campaigns?accountId=${accountId}`);
+      const response = await authenticatedFetch(`/api/meta/campaigns?accountId=${accountId}`);
 
       if (!response.ok) {
         throw new Error(`Failed to fetch KPIs: ${response.statusText}`);

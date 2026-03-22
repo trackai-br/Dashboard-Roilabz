@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { useQuery } from '@tanstack/react-query';
+import { authenticatedFetch } from '@/lib/api-client';
 
 interface Ad {
   id: string;
@@ -25,7 +26,7 @@ export default function AdSetDetailPage() {
   } = useQuery({
     queryKey: ['ads', adSetId],
     queryFn: async () => {
-      const res = await fetch(`/api/meta/ads?adsetId=${adSetId}`);
+      const res = await authenticatedFetch(`/api/meta/ads?adsetId=${adSetId}`);
       if (!res.ok) throw new Error('Failed to fetch ads');
       return res.json();
     },

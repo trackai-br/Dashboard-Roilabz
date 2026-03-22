@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
+import { authenticatedFetch } from '@/lib/api-client';
 
 export interface SyncLog {
   id: string;
@@ -16,14 +16,7 @@ export const useSyncLogs = () => {
   return useQuery({
     queryKey: ['sync-logs'],
     queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return [];
-
-      const response = await fetch('/api/logs/sync', {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
+      const response = await authenticatedFetch('/api/logs/sync');
 
       if (!response.ok) throw new Error('Failed to fetch logs');
       const json = await response.json();

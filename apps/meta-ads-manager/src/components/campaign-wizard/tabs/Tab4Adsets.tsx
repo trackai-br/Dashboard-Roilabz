@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
+import { authenticatedFetch } from '@/lib/api-client';
 import { useWizard, AdsetTypeConfig } from '@/contexts/WizardContext';
 
 const CONVERSION_LOCATIONS = [
@@ -60,15 +60,10 @@ export default function Tab4Adsets() {
   const { data: allPixels } = useQuery({
     queryKey: ['wizard-pixels', state.selectedAccountIds],
     queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) return [];
-
       const pixels: Array<{ id: string; name: string }> = [];
       for (const accountId of state.selectedAccountIds) {
         try {
-          const res = await fetch(`/api/meta/accounts/pixels?accountId=${accountId}`, {
-            headers: { Authorization: `Bearer ${session.access_token}` },
-          });
+          const res = await authenticatedFetch(`/api/meta/accounts/pixels?accountId=${accountId}`);
           if (!res.ok) continue;
           const data = await res.json();
           for (const p of data.pixels || []) {

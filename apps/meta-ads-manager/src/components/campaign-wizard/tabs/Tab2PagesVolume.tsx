@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
+import { authenticatedFetch } from '@/lib/api-client';
 import { useWizard } from '@/contexts/WizardContext';
 import { calculateDistribution } from '@/lib/distribution';
 
@@ -22,14 +22,9 @@ export default function Tab2PagesVolume() {
   const { data: rawPages, isLoading: pagesLoading } = useQuery({
     queryKey: ['wizard-pages', state.selectedAccountIds],
     queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) throw new Error('Not authenticated');
-
       const allPages: Array<{ id: string; name: string; category?: string }> = [];
       for (const accountId of state.selectedAccountIds) {
-        const res = await fetch(`/api/meta/accounts/pages?accountId=${accountId}`, {
-          headers: { Authorization: `Bearer ${session.access_token}` },
-        });
+        const res = await authenticatedFetch(`/api/meta/accounts/pages?accountId=${accountId}`);
         if (!res.ok) continue;
         const data = await res.json();
         const pages = (data.pages || data.data || []) as Array<{ id: string; name: string; category?: string }>;
@@ -51,15 +46,10 @@ export default function Tab2PagesVolume() {
 
     // Fetch adset counts for each page
     const fetchCounts = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) return;
-
       const updated = await Promise.all(
         rawPages.map(async (p) => {
           try {
-            const res = await fetch(`/api/meta/pages/${p.id}/adset-count`, {
-              headers: { Authorization: `Bearer ${session.access_token}` },
-            });
+            const res = await authenticatedFetch(`/api/meta/pages/${p.id}/adset-count`);
             if (!res.ok) return { ...p, activeAdsets: 0, loading: false };
             const data = await res.json();
             return { ...p, activeAdsets: data.count || 0, loading: false };

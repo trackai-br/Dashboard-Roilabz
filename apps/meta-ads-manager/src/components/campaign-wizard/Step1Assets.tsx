@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { authenticatedFetch } from '@/lib/api-client';
 
 interface Pixel {
   id: string;
@@ -27,23 +27,12 @@ export default function Step1Assets({ accountId }: Step1Props) {
       if (!accountId) return;
 
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session?.access_token) {
-          setError('Usuário não autenticado');
-          setLoading(false);
-          return;
-        }
-
         setLoading(true);
         setError(null);
 
         const [pixelsRes, pagesRes] = await Promise.all([
-          fetch(`/api/meta/pixels?accountId=${accountId}`, {
-            headers: { Authorization: `Bearer ${session.access_token}` },
-          }),
-          fetch(`/api/meta/pages?accountId=${accountId}`, {
-            headers: { Authorization: `Bearer ${session.access_token}` },
-          }),
+          authenticatedFetch(`/api/meta/pixels?accountId=${accountId}`),
+          authenticatedFetch(`/api/meta/pages?accountId=${accountId}`),
         ]);
 
         if (!pixelsRes.ok || !pagesRes.ok) throw new Error('Failed to fetch assets');

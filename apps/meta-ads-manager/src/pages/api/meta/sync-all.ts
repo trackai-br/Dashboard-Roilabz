@@ -3,6 +3,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { supabaseAdmin } from '@/lib/supabase';
 import { requireAuth } from '@/lib/auth';
 import { metaAPI } from '@/lib/meta-api';
+import { getUserAccounts } from '@/lib/supabase-rls';
 
 export default async function handler(
   req: NextApiRequest,
@@ -191,20 +192,3 @@ export default async function handler(
   }
 }
 
-async function getUserAccounts(userId: string) {
-  const { data: userAccounts } = await supabaseAdmin!
-    .from('user_account_access')
-    .select('account_id')
-    .eq('user_id', userId);
-
-  if (!userAccounts || userAccounts.length === 0) return [];
-
-  const accountIds = userAccounts.map((ua) => ua.account_id);
-  const { data: accounts } = await supabaseAdmin!
-    .from('meta_accounts')
-    .select('id, meta_account_id')
-    .in('id', accountIds)
-    .limit(100);
-
-  return accounts || [];
-}

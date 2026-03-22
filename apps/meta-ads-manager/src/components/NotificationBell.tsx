@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { authenticatedFetch } from '@/lib/api-client';
 import { NotificationDrawer } from './NotificationDrawer';
 
 export function NotificationBell() {
@@ -12,7 +13,7 @@ export function NotificationBell() {
   } = useQuery({
     queryKey: ['notifications'],
     queryFn: async () => {
-      const res = await fetch('/api/notifications');
+      const res = await authenticatedFetch('/api/notifications');
       if (!res.ok) throw new Error('Falha ao buscar notificações');
       return res.json();
     },

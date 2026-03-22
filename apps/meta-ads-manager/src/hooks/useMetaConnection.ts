@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
+import { authenticatedFetch } from '@/lib/api-client';
 
 export interface MetaConnection {
   id: string;
@@ -16,14 +16,6 @@ export interface MetaConnection {
 }
 
 /**
- * Retorna o token de acesso do Supabase para enviar nas requisições autenticadas.
- */
-async function getAccessToken(): Promise<string | null> {
-  const { data: { session } } = await supabase.auth.getSession();
-  return session?.access_token ?? null;
-}
-
-/**
  * Hook para gerenciar conexão com Meta/Facebook
  */
 export const useMetaConnection = () => {
@@ -37,12 +29,7 @@ export const useMetaConnection = () => {
   } = useQuery<MetaConnection | null>({
     queryKey: ['meta-connection'],
     queryFn: async () => {
-      const token = await getAccessToken();
-      if (!token) return null;
-
-      const res = await fetch('/api/auth/meta/connection', {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
+      const res = await authenticatedFetch('/api/auth/meta/connection');
 
       if (!res.ok) {
         if (res.status === 404) return null;
@@ -55,15 +42,8 @@ export const useMetaConnection = () => {
 
   const disconnectMutation = useMutation({
     mutationFn: async () => {
-      const token = await getAccessToken();
-      if (!token) throw new Error('Não autenticado');
-
-      const res = await fetch('/api/auth/meta/disconnect', {
+      const res = await authenticatedFetch('/api/auth/meta/disconnect', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
       });
       if (!res.ok) throw new Error('Falha ao desconectar');
       return res.json();
