@@ -115,27 +115,18 @@ async function handleGet(
             'campaign'
           );
 
-          // Aggregate insights (safely handle undefined/null values)
+          // Aggregate insights (use parseFloat — Meta returns decimals for spend/cpc/etc)
+          const safeAdd = (a: string | undefined, b: string | undefined) =>
+            String(parseFloat(a || '0') + parseFloat(b || '0'));
+
           const aggregated = insights.reduce(
             (acc, insight) => ({
               ...acc,
-              impressions: (
-                BigInt(acc.impressions ?? '0') + BigInt(insight.impressions ?? '0')
-              ).toString(),
-              clicks: (
-                BigInt(acc.clicks ?? '0') + BigInt(insight.clicks ?? '0')
-              ).toString(),
-              spend: (
-                BigInt(acc.spend ?? '0') + BigInt(insight.spend ?? '0')
-              ).toString(),
-              inline_link_clicks: (
-                BigInt(acc.inline_link_clicks ?? '0') +
-                BigInt(insight.inline_link_clicks ?? '0')
-              ).toString(),
-              landing_page_views: (
-                BigInt(acc.landing_page_views ?? '0') +
-                BigInt(insight.landing_page_views ?? '0')
-              ).toString(),
+              impressions: safeAdd(acc.impressions, insight.impressions),
+              clicks: safeAdd(acc.clicks, insight.clicks),
+              spend: safeAdd(acc.spend, insight.spend),
+              inline_link_clicks: safeAdd(acc.inline_link_clicks, insight.inline_link_clicks),
+              landing_page_views: safeAdd(acc.landing_page_views, insight.landing_page_views),
               cpc: insight.cpc ?? acc.cpc,
               cpm: insight.cpm ?? acc.cpm,
               ctr: insight.ctr ?? acc.ctr,
