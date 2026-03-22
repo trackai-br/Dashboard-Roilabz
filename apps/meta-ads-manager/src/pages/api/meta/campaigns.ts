@@ -1,34 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createClient } from '@supabase/supabase-js';
 import { requireAuth } from '@/lib/auth';
 import { getUserAccounts } from '@/lib/supabase-rls';
 import { metaAPI } from '@/lib/meta-api';
-
-interface CampaignMetrics {
-  campaign_id: string;
-  campaign_name: string;
-  date_start: string;
-  date_stop: string;
-  status: string;
-  spend: string;
-  impressions: string;
-  clicks: string;
-  cpc?: string;
-  cpm?: string;
-  ctr?: string;
-  inline_link_clicks?: string;
-  landing_page_views?: string;
-  cost_per_inline_link_click?: string;
-  cost_per_landing_page_view?: string;
-  cost_per_action_type?: Array<{ action_type: string; value: string }>;
-  actions?: Array<{ action_type: string; value: string }>;
-}
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  // Check authentication
   const { user, error: authError } = await requireAuth(req);
   if (authError || !user) {
     return res.status(401).json({ error: 'Unauthorized' });
@@ -48,24 +26,14 @@ async function handleGet(
   userId: string
 ) {
   try {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-      process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-    );
-
-    const {
-      accountId,
-      dateStart,
-      dateStop,
-    } = req.query;
+    const { accountId, dateStart, dateStop } = req.query;
 
     // Validate and set default dates
-    const getDefaultDateStart = () => new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .split('T')[0];
-    const getDefaultDateStop = () => new Date().toISOString().split('T')[0];
+    const getDefaultDateStart = () =>
+      new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const getDefaultDateStop = () =>
+      new Date().toISOString().split('T')[0];
 
-    // Validate date format (YYYY-MM-DD)
     const isValidDate = (date: string | undefined): boolean => {
       if (!date) return true;
       return /^\d{4}-\d{2}-\d{2}$/.test(date);
@@ -78,49 +46,76 @@ async function handleGet(
     const finalDateStart = (dateStart as string) || getDefaultDateStart();
     const finalDateStop = (dateStop as string) || getDefaultDateStop();
 
-    // Get user's accounts
+    // Get user's accounts from DB
     const userAccounts = await getUserAccounts(userId);
     if (userAccounts.length === 0) {
-      return res.status(200).json({ campaigns: [] });
+      return res.status(200).json({ campaigns: [], count: 0 });
     }
 
-    // Filter by accountId if provided
+    // Filter by accountId if provided (uses internal DB id)
     const targetAccounts = accountId
-      ? userAccounts.filter((acc) => acc.id === accountId)
+      ? userAccounts.filter((acc: any) => acc.id === accountId)
       : userAccounts;
 
     if (targetAccounts.length === 0) {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    // Fetch campaigns from database using meta_account_id (TEXT IDs from Meta)
-    const { data: campaigns, error } = await supabase
-      .from('meta_ads_campaigns')
-      .select('*')
-      .in('meta_account_id', targetAccounts.map((acc) => acc.meta_account_id))
-      .order('updated_at', { ascending: false });
+    // Fetch campaigns directly from Meta API for each account
+    const allCampaigns: any[] = [];
 
-    if (error) {
-      return res.status(500).json({ error: 'Failed to fetch campaigns' });
-    }
+    await Promise.all(
+      targetAccounts.map(async (account: any) => {
+        try {
+          const { campaigns } = await metaAPI.getCampaigns(
+            account.meta_account_id,
+            undefined,
+            100,
+            undefined,
+            userId
+          );
+
+          for (const campaign of campaigns) {
+            allCampaigns.push({
+              id: campaign.id,
+              campaign_id: campaign.id,
+              campaign_name: campaign.name,
+              meta_account_id: account.meta_account_id,
+              account_name: account.meta_account_name,
+              status: campaign.effective_status || campaign.status,
+              objective: campaign.objective,
+              daily_budget: campaign.daily_budget,
+              lifetime_budget: campaign.lifetime_budget,
+              start_time: campaign.start_time,
+              created_time: campaign.created_time,
+            });
+          }
+        } catch (err) {
+          console.error(
+            `Error fetching campaigns for account ${account.meta_account_id}:`,
+            err instanceof Error ? err.message : err
+          );
+        }
+      })
+    );
 
     // Fetch insights for each campaign from Meta API
     const campaignsWithMetrics = await Promise.all(
-      (campaigns || []).map(async (campaign) => {
+      allCampaigns.map(async (campaign) => {
         try {
           const insights = await metaAPI.getInsights(
             campaign.campaign_id,
             finalDateStart,
             finalDateStop,
-            'campaign'
+            'campaign',
+            userId
           );
 
-          // Aggregate insights (use parseFloat — Meta returns decimals for spend/cpc/etc)
           const safeAdd = (a: string | undefined, b: string | undefined) =>
             String(parseFloat(a || '0') + parseFloat(b || '0'));
 
           const aggregated = insights.reduce(
-            (acc, insight) => ({
+            (acc: any, insight: any) => ({
               ...acc,
               impressions: safeAdd(acc.impressions, insight.impressions),
               clicks: safeAdd(acc.clicks, insight.clicks),
@@ -135,7 +130,7 @@ async function handleGet(
               cost_per_action_type: insight.cost_per_action_type ?? acc.cost_per_action_type,
               actions: insight.actions ?? acc.actions,
             }),
-            {} as CampaignMetrics
+            {} as Record<string, any>
           );
 
           return {
@@ -147,7 +142,6 @@ async function handleGet(
             },
           };
         } catch (err) {
-          // Return campaign without metrics if API call fails
           return {
             ...campaign,
             metrics: {
