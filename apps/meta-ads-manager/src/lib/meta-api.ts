@@ -518,6 +518,7 @@ class MetaAPIClient {
       lifetime_budget?: number;
       start_time?: string;
       stop_time?: string;
+      special_ad_categories?: string[];
     },
     userId?: string
   ): Promise<{ id: string }> {
@@ -526,6 +527,7 @@ class MetaAPIClient {
       name: data.name,
       objective: data.objective,
       status: data.status,
+      special_ad_categories: data.special_ad_categories ?? [],
     };
     if (data.daily_budget) body.daily_budget = data.daily_budget;
     if (data.lifetime_budget) body.lifetime_budget = data.lifetime_budget;

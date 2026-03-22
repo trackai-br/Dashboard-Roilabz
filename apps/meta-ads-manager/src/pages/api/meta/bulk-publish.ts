@@ -186,6 +186,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           // 3. Create Ads (1 per creative in adset type)
           for (const creativeName of adsetType.creativesInAdset.filter(Boolean)) {
             const creativeFile = adConfig.creativeFiles.find((f: any) => f.fileName === creativeName);
+            const creativeUrl = creativeFile?.driveUrl || '';
+
+            console.log(`[bulk-publish] Ad creative URL: ${creativeUrl || '(empty)'} (file: ${creativeName})`);
+            if (!creativeUrl) {
+              console.warn(`[bulk-publish] WARNING: No driveUrl for creative "${creativeName}" — ad will have no media`);
+            }
+
+            // TODO: Video creatives may need upload via POST /act_{id}/advideos instead of image_url.
+            // Currently, videos are passed as image_url which may not work for all formats.
+            // For reliable video ad creation, consider uploading via advideos endpoint first.
+            const isVideo = creativeFile?.type === 'video';
+            if (isVideo) {
+              console.warn(`[bulk-publish] Creative "${creativeName}" is a video — using image_url fallback. Full video upload not yet implemented.`);
+            }
+
             const adBody: any = {
               name: adsetName,
               status: adsetType.adsetStatus,
@@ -197,7 +212,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     link: adConfig.destinationUrl,
                     name: adConfig.headline,
                     caption: adConfig.description,
-                    ...(creativeFile?.driveUrl && { image_url: creativeFile.driveUrl }),
+                    ...(creativeUrl && { image_url: creativeUrl }),
                   },
                 },
               },
@@ -250,6 +265,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             name: campaignName,
             objective: campaignConfig.objective,
             status: campaignConfig.campaignStatus,
+            special_ad_categories: [],
           }, user.id);
           results.push({
             campaignIndex: entry.campaignIndex,
