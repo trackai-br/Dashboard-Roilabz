@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { createClient } from '@supabase/supabase-js';
 import { requireAuth } from '@/lib/auth';
 import { metaAPI, MetaAPIError } from '@/lib/meta-api';
+import { getUserAccounts } from '@/lib/supabase-rls';
 
 // Vercel serverless: extend timeout (Pro plan = 60s, Hobby = 10s)
 export const config = {
@@ -33,17 +34,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
-  // Get user accounts using service_role client (bypasses RLS)
-  const { data: userAccounts, error: accountsError } = await supabase
-    .from('meta_accounts')
-    .select('id, meta_account_id, meta_account_name')
-    .eq('user_id', user.id);
-
-  if (accountsError) {
+  // Get user accounts via user_account_access join (meta_accounts has no user_id column)
+  let userAccounts: any[];
+  try {
+    userAccounts = await getUserAccounts(user.id);
+  } catch (err) {
+    console.error('[bulk-publish] Error fetching user accounts:', err);
     return res.status(500).json({ error: 'Failed to fetch accounts' });
   }
 
-  const accountMap = new Map((userAccounts || []).map((a: any) => [a.meta_account_id, a]));
+  if (userAccounts.length === 0) {
+    return res.status(400).json({ error: 'Nenhuma conta encontrada. Sincronize primeiro.' });
+  }
+
+  const accountMap = new Map(userAccounts.map((a: any) => [a.meta_account_id, a]));
 
   // Create publish job
   const { data: job, error: jobError } = await supabase
