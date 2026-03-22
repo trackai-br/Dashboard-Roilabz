@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useWizard, AdConfig, CreativeFile } from '@/contexts/WizardContext';
+import { useDriveFiles } from '@/hooks/useDriveFiles';
 
 function generateId() {
   return Math.random().toString(36).substring(2, 10);
@@ -11,8 +12,16 @@ const FORMAT_OPTIONS = [
   { value: 'carousel' as const, label: 'Carrossel', icon: 'car' },
 ];
 
+function formatFileSize(bytes: number): string {
+  if (bytes === 0) return '—';
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 export default function Tab5Ads() {
   const { state, dispatch } = useWizard();
+  const { files: driveFiles, isLoading: driveLoading, error: driveError, fetchFiles, clearFiles } = useDriveFiles();
 
   // Initialize local state from context or defaults
   const ad = state.adConfig;
@@ -30,7 +39,12 @@ export default function Tab5Ads() {
   const [utmTerm, setUtmTerm] = useState(ad?.utmParams.utm_term || '');
   const [urlTouched, setUrlTouched] = useState(false);
 
-  // New creative form
+  // Track which drive files are selected (by file ID)
+  const [selectedDriveIds, setSelectedDriveIds] = useState<Set<string>>(() => {
+    return new Set(creativeFiles.map((f) => f.id));
+  });
+
+  // New creative form (manual fallback)
   const [newFileName, setNewFileName] = useState('');
   const [newFileType, setNewFileType] = useState<'image' | 'video'>('image');
 
@@ -75,7 +89,54 @@ export default function Tab5Ads() {
     return warnings;
   }, [creativeFiles, state.adsetTypes]);
 
-  // Add creative
+  // Fetch drive files and auto-select all
+  const handleFetchDrive = async () => {
+    await fetchFiles(driveLink);
+  };
+
+  // When driveFiles change (after fetch), auto-select all and sync to context
+  const hasDriveFiles = driveFiles.length > 0;
+  const driveFilesKey = driveFiles.map((f) => f.id).join(',');
+
+  React.useEffect(() => {
+    if (!hasDriveFiles) return;
+    const allIds = new Set(driveFiles.map((f) => f.id));
+    setSelectedDriveIds(allIds);
+
+    const mapped: CreativeFile[] = driveFiles.map((f) => ({
+      id: f.id,
+      fileName: f.fileName,
+      driveUrl: f.driveUrl,
+      type: f.type,
+    }));
+    setCreativeFiles(mapped);
+    syncToContext({ creativeFiles: mapped, driveLink });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [driveFilesKey]);
+
+  // Toggle drive file selection
+  const toggleDriveFile = (fileId: string) => {
+    const next = new Set(selectedDriveIds);
+    if (next.has(fileId)) {
+      next.delete(fileId);
+    } else {
+      next.add(fileId);
+    }
+    setSelectedDriveIds(next);
+
+    // Rebuild creativeFiles from selection
+    const fromDrive: CreativeFile[] = driveFiles
+      .filter((f) => next.has(f.id))
+      .map((f) => ({ id: f.id, fileName: f.fileName, driveUrl: f.driveUrl, type: f.type }));
+    // Keep manually added files (those not in driveFiles)
+    const driveIds = new Set(driveFiles.map((f) => f.id));
+    const manual = creativeFiles.filter((f) => !driveIds.has(f.id));
+    const updated = [...fromDrive, ...manual];
+    setCreativeFiles(updated);
+    syncToContext({ creativeFiles: updated });
+  };
+
+  // Add creative (manual fallback)
   const addCreative = () => {
     const name = newFileName.trim();
     if (!name) return;
@@ -95,6 +156,8 @@ export default function Tab5Ads() {
   const removeCreative = (id: string) => {
     const updated = creativeFiles.filter((f) => f.id !== id);
     setCreativeFiles(updated);
+    selectedDriveIds.delete(id);
+    setSelectedDriveIds(new Set(selectedDriveIds));
     syncToContext({ creativeFiles: updated });
   };
 
@@ -200,21 +263,112 @@ export default function Tab5Ads() {
         <h3 className="text-sm font-bold mb-2" style={{ color: 'var(--color-primary)', ...headingFont }}>
           Upload de Criativos via Google Drive
         </h3>
-        <input
-          type="text"
-          value={driveLink}
-          onChange={(e) => setDriveLink(e.target.value)}
-          onBlur={handleBlur}
-          placeholder="https://drive.google.com/drive/folders/..."
-          className="w-full px-3 py-2 rounded-lg border text-sm outline-none mb-4"
-          style={inputStyle}
-        />
 
+        {/* Drive link input + fetch button */}
+        <div className="flex items-center gap-2 mb-3">
+          <input
+            type="text"
+            value={driveLink}
+            onChange={(e) => setDriveLink(e.target.value)}
+            onBlur={handleBlur}
+            placeholder="https://drive.google.com/drive/folders/..."
+            className="flex-1 px-3 py-2 rounded-lg border text-sm outline-none"
+            style={inputStyle}
+          />
+          <button
+            onClick={handleFetchDrive}
+            disabled={driveLoading || !driveLink.trim()}
+            className="px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap disabled:opacity-30"
+            style={{
+              backgroundColor: 'rgba(57, 255, 20, 0.15)',
+              color: 'var(--neon-green)',
+              border: '1px solid rgba(57, 255, 20, 0.3)',
+            }}
+          >
+            {driveLoading ? 'Buscando...' : 'Buscar Criativos'}
+          </button>
+        </div>
+
+        {/* Loading state */}
+        {driveLoading && (
+          <div className="flex items-center gap-2 p-3 rounded-lg mb-3" style={{ backgroundColor: 'rgba(57, 255, 20, 0.05)', border: '1px solid rgba(57, 255, 20, 0.2)' }}>
+            <svg className="animate-spin h-4 w-4" style={{ color: 'var(--neon-green)' }} viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+            <span className="text-sm" style={{ color: 'var(--neon-green)' }}>Buscando arquivos do Drive...</span>
+          </div>
+        )}
+
+        {/* Error state */}
+        {driveError && (
+          <div className="flex items-start gap-2 p-3 rounded-lg mb-3" style={{ backgroundColor: 'rgba(255, 100, 100, 0.08)', border: '1px solid rgba(255, 100, 100, 0.3)' }}>
+            <svg width="16" height="16" className="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} style={{ color: '#ff6464' }}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+            </svg>
+            <span className="text-sm" style={{ color: '#ff6464' }}>{driveError}</span>
+          </div>
+        )}
+
+        {/* Drive files list (from fetch) */}
+        {driveFiles.length > 0 && !driveLoading && (
+          <div className="mb-3">
+            <p className="text-xs font-medium mb-2" style={{ color: 'var(--neon-green)' }}>
+              Criativos encontrados ({driveFiles.length} arquivos):
+            </p>
+            <div className="space-y-1.5">
+              {driveFiles.map((file) => {
+                const isChecked = selectedDriveIds.has(file.id);
+                return (
+                  <label
+                    key={file.id}
+                    className="flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-all"
+                    style={{
+                      backgroundColor: isChecked ? 'rgba(57, 255, 20, 0.04)' : 'rgba(255, 255, 255, 0.02)',
+                      border: `1px solid ${isChecked ? 'rgba(57, 255, 20, 0.25)' : 'var(--border-light)'}`,
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={() => toggleDriveFile(file.id)}
+                      className="rounded"
+                      style={{ accentColor: 'var(--neon-green)' }}
+                    />
+                    <span
+                      className="px-2 py-0.5 rounded text-xs font-medium"
+                      style={{
+                        backgroundColor: file.type === 'video' ? 'rgba(139, 92, 246, 0.15)' : 'rgba(0, 240, 255, 0.1)',
+                        color: file.type === 'video' ? '#a78bfa' : 'var(--neon-cyan)',
+                      }}
+                    >
+                      {file.type === 'video' ? 'VID' : 'IMG'}
+                    </span>
+                    <span className="flex-1 text-sm truncate" style={{ color: 'var(--color-primary)' }}>
+                      {file.fileName}
+                    </span>
+                    <span className="text-xs" style={{ color: 'var(--color-tertiary)' }}>
+                      {formatFileSize(file.size)}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Separator */}
+        <div className="flex items-center gap-3 my-4" style={{ opacity: 0.5 }}>
+          <div className="flex-1 h-px" style={{ backgroundColor: 'var(--border-light)' }} />
+          <span className="text-xs" style={{ color: 'var(--color-tertiary)' }}>OU adicione manualmente</span>
+          <div className="flex-1 h-px" style={{ backgroundColor: 'var(--border-light)' }} />
+        </div>
+
+        {/* Existing creative files list (selected from Drive + manual) */}
         <p className="text-xs font-medium mb-2" style={{ color: 'var(--color-secondary)' }}>
-          Criativos identificados
+          Criativos selecionados ({creativeFiles.length})
         </p>
 
-        {/* Creative list */}
         {creativeFiles.length > 0 && (
           <div className="space-y-2 mb-3">
             {creativeFiles.map((file) => (
@@ -231,6 +385,15 @@ export default function Tab5Ads() {
                 <span className="flex-1 text-sm truncate" style={{ color: 'var(--color-primary)' }}>
                   {file.fileName}
                 </span>
+                {file.driveUrl ? (
+                  <span className="text-xs px-1.5 py-0.5 rounded" style={{ backgroundColor: 'rgba(57, 255, 20, 0.1)', color: 'var(--neon-green)' }}>
+                    Drive
+                  </span>
+                ) : (
+                  <span className="text-xs px-1.5 py-0.5 rounded" style={{ backgroundColor: 'rgba(255, 183, 3, 0.1)', color: '#ffb703' }}>
+                    Manual
+                  </span>
+                )}
                 <button
                   onClick={() => removeCreative(file.id)}
                   className="p-1 rounded hover:bg-white/10"
@@ -245,7 +408,7 @@ export default function Tab5Ads() {
           </div>
         )}
 
-        {/* Add creative form */}
+        {/* Add creative form (manual fallback) */}
         <div className="flex items-center gap-2">
           <input
             type="text"
