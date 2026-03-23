@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { requireAuth } from '@/lib/auth';
+import { extractFolderId } from '@/lib/drive-utils';
 
 type ErrorCode =
   | 'MISSING_LINK'
@@ -196,12 +197,12 @@ function handleDriveError(res: NextApiResponse, driveError: any, folderId: strin
   const reason = driveError.errors?.[0]?.reason || '';
   const message = driveError.message || '';
 
-  // 404 - Pasta nao encontrada
+  // 404 - Pasta nao encontrada OU privada (API key nao distingue)
   if (code === 404) {
     return res.status(400).json({
       errorCode: 'FOLDER_NOT_FOUND' as ErrorCode,
-      error: 'Pasta nao encontrada no Google Drive.',
-      hint: 'Verifique se o link esta correto e se a pasta nao foi deletada.',
+      error: 'Pasta nao encontrada ou privada no Google Drive.',
+      hint: 'Verifique se: 1) O link esta correto e a pasta nao foi deletada. 2) A pasta esta compartilhada publicamente (clique com botao direito → Compartilhar → "Qualquer pessoa com o link").',
       folderId,
     });
   }
@@ -242,28 +243,3 @@ function handleDriveError(res: NextApiResponse, driveError: any, folderId: strin
   });
 }
 
-/**
- * Extrai o folder ID de varios formatos de link do Google Drive:
- * - https://drive.google.com/drive/folders/ABC123
- * - https://drive.google.com/drive/folders/ABC123?usp=sharing
- * - https://drive.google.com/drive/u/0/folders/ABC123
- * - ABC123 (ID direto)
- */
-function extractFolderId(link: string): string | null {
-  if (/^[a-zA-Z0-9_-]{10,}$/.test(link.trim())) {
-    return link.trim();
-  }
-
-  const patterns = [
-    /\/folders\/([a-zA-Z0-9_-]+)/,
-    /id=([a-zA-Z0-9_-]+)/,
-    /\/d\/([a-zA-Z0-9_-]+)/,
-  ];
-
-  for (const pattern of patterns) {
-    const match = link.match(pattern);
-    if (match?.[1]) return match[1];
-  }
-
-  return null;
-}
