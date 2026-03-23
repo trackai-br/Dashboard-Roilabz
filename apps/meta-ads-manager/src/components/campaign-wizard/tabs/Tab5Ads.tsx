@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useWizard, AdConfig, CreativeFile } from '@/contexts/WizardContext';
-import { useDriveFiles } from '@/hooks/useDriveFiles';
+import { useDriveFiles, DriveError } from '@/hooks/useDriveFiles';
 
 function generateId() {
   return Math.random().toString(36).substring(2, 10);
@@ -21,7 +21,7 @@ function formatFileSize(bytes: number): string {
 
 export default function Tab5Ads() {
   const { state, dispatch } = useWizard();
-  const { files: driveFiles, isLoading: driveLoading, error: driveError, fetchFiles, clearFiles } = useDriveFiles();
+  const { files: driveFiles, isLoading: driveLoading, error: driveError, result: driveResult, fetchFiles, clearFiles } = useDriveFiles();
 
   // Initialize local state from context or defaults
   const ad = state.adConfig;
@@ -301,20 +301,19 @@ export default function Tab5Ads() {
         )}
 
         {/* Error state */}
-        {driveError && (
-          <div className="flex items-start gap-2 p-3 rounded-lg mb-3" style={{ backgroundColor: 'rgba(255, 100, 100, 0.08)', border: '1px solid rgba(255, 100, 100, 0.3)' }}>
-            <svg width="16" height="16" className="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} style={{ color: '#ff6464' }}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-            </svg>
-            <span className="text-sm" style={{ color: '#ff6464' }}>{driveError}</span>
-          </div>
-        )}
+        {driveError && <DriveErrorBox error={driveError} />}
 
         {/* Drive files list (from fetch) */}
         {driveFiles.length > 0 && !driveLoading && (
           <div className="mb-3">
             <p className="text-xs font-medium mb-2" style={{ color: 'var(--neon-green)' }}>
-              Criativos encontrados ({driveFiles.length} arquivos):
+              {driveResult?.folderName && (<span style={{ color: 'var(--color-secondary)' }}>Pasta: {driveResult.folderName} — </span>)}
+              {driveFiles.length} criativos encontrados
+              {driveResult?.diagnostics && (
+                <span style={{ color: 'var(--color-tertiary)' }}>
+                  {' '}({driveResult.diagnostics.images || 0} img, {driveResult.diagnostics.videos || 0} vid)
+                </span>
+              )}
             </p>
             <div className="space-y-1.5">
               {driveFiles.map((file) => {
@@ -582,6 +581,81 @@ export default function Tab5Ads() {
         </div>
       </div>
     </div>
+  );
+}
+
+// --- Drive Error Display ---
+const ERROR_CONFIG: Record<string, { icon: 'lock' | 'search' | 'file' | 'warning' | 'server'; color: string; bg: string; border: string }> = {
+  FOLDER_PRIVATE:   { icon: 'lock',    color: '#ff6464', bg: 'rgba(255, 100, 100, 0.08)', border: 'rgba(255, 100, 100, 0.3)' },
+  FOLDER_NOT_FOUND: { icon: 'search',  color: '#ffb703', bg: 'rgba(255, 183, 3, 0.08)',   border: 'rgba(255, 183, 3, 0.3)' },
+  NO_MEDIA_FILES:   { icon: 'file',    color: '#ffb703', bg: 'rgba(255, 183, 3, 0.08)',   border: 'rgba(255, 183, 3, 0.3)' },
+  INVALID_LINK:     { icon: 'warning', color: '#ffb703', bg: 'rgba(255, 183, 3, 0.08)',   border: 'rgba(255, 183, 3, 0.3)' },
+  MISSING_LINK:     { icon: 'warning', color: '#ffb703', bg: 'rgba(255, 183, 3, 0.08)',   border: 'rgba(255, 183, 3, 0.3)' },
+  RATE_LIMITED:     { icon: 'warning', color: '#ffb703', bg: 'rgba(255, 183, 3, 0.08)',   border: 'rgba(255, 183, 3, 0.3)' },
+  API_KEY_INVALID:  { icon: 'server',  color: '#ff6464', bg: 'rgba(255, 100, 100, 0.08)', border: 'rgba(255, 100, 100, 0.3)' },
+  MISSING_API_KEY:  { icon: 'server',  color: '#ff6464', bg: 'rgba(255, 100, 100, 0.08)', border: 'rgba(255, 100, 100, 0.3)' },
+};
+
+function DriveErrorBox({ error }: { error: DriveError }) {
+  const cfg = ERROR_CONFIG[error.code] || { icon: 'warning' as const, color: '#ff6464', bg: 'rgba(255, 100, 100, 0.08)', border: 'rgba(255, 100, 100, 0.3)' };
+
+  return (
+    <div className="p-3 rounded-lg mb-3 space-y-2" style={{ backgroundColor: cfg.bg, border: `1px solid ${cfg.border}` }}>
+      <div className="flex items-start gap-2">
+        <ErrorIcon type={cfg.icon} color={cfg.color} />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium" style={{ color: cfg.color }}>{error.message}</p>
+          <p className="text-xs mt-1" style={{ color: cfg.color, opacity: 0.8 }}>{error.hint}</p>
+        </div>
+      </div>
+      {error.diagnostics?.fileTypesFound && (
+        <div className="flex flex-wrap gap-1 mt-2 pl-6">
+          {error.diagnostics.fileTypesFound.map((ext: string, i: number) => (
+            <span key={i} className="text-xs px-1.5 py-0.5 rounded" style={{ backgroundColor: 'rgba(255,255,255,0.06)', color: 'var(--color-tertiary)' }}>
+              .{ext}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ErrorIcon({ type, color }: { type: string; color: string }) {
+  const cls = "w-4 h-4 flex-shrink-0 mt-0.5";
+  if (type === 'lock') {
+    return (
+      <svg width="16" height="16" className={cls} fill="none" viewBox="0 0 24 24" stroke={color} strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+      </svg>
+    );
+  }
+  if (type === 'search') {
+    return (
+      <svg width="16" height="16" className={cls} fill="none" viewBox="0 0 24 24" stroke={color} strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+      </svg>
+    );
+  }
+  if (type === 'file') {
+    return (
+      <svg width="16" height="16" className={cls} fill="none" viewBox="0 0 24 24" stroke={color} strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
+      </svg>
+    );
+  }
+  if (type === 'server') {
+    return (
+      <svg width="16" height="16" className={cls} fill="none" viewBox="0 0 24 24" stroke={color} strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 17.25v-.228a4.5 4.5 0 00-.12-1.03l-2.268-9.64a3.375 3.375 0 00-3.285-2.602H7.923a3.375 3.375 0 00-3.285 2.602l-2.268 9.64a4.5 4.5 0 00-.12 1.03v.228m19.5 0a3 3 0 01-3 3H5.25a3 3 0 01-3-3m19.5 0a3 3 0 00-3-3H5.25a3 3 0 00-3 3m16.5 0h.008v.008h-.008v-.008zm-3 0h.008v.008h-.008v-.008z" />
+      </svg>
+    );
+  }
+  // warning (default)
+  return (
+    <svg width="16" height="16" className={cls} fill="none" viewBox="0 0 24 24" stroke={color} strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+    </svg>
   );
 }
 
