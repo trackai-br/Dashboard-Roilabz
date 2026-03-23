@@ -593,7 +593,9 @@ class MetaAPIClient {
       name: string;
       status: 'ACTIVE' | 'PAUSED';
       creative_id?: string;
+      creative?: Record<string, any>;
       adset_spec?: Record<string, any>;
+      tracking_specs?: any[];
     },
     userId?: string
   ): Promise<{ id: string }> {
@@ -603,8 +605,13 @@ class MetaAPIClient {
       adset_id: adsetId,
       status: data.status,
     };
-    if (data.creative_id) body.creative = JSON.stringify({ creative_id: data.creative_id });
+    if (data.creative_id) {
+      body.creative = JSON.stringify({ creative_id: data.creative_id });
+    } else if (data.creative) {
+      body.creative = JSON.stringify(data.creative);
+    }
     if (data.adset_spec) body.adset_spec = JSON.stringify(data.adset_spec);
+    if (data.tracking_specs) body.tracking_specs = JSON.stringify(data.tracking_specs);
 
     const result = await graphPost<{ id: string }>(
       `${accountId}/ads`,
