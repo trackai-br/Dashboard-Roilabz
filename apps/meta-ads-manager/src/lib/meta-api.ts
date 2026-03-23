@@ -558,6 +558,9 @@ class MetaAPIClient {
       billing_event?: string;
       bid_strategy?: string;
       bid_amount?: number;
+      start_time?: string;
+      end_time?: string;
+      promoted_object?: Record<string, any>;
     },
     userId?: string
   ): Promise<{ id: string }> {
@@ -573,6 +576,9 @@ class MetaAPIClient {
     if (data.billing_event) body.billing_event = data.billing_event;
     if (data.bid_strategy) body.bid_strategy = data.bid_strategy;
     if (data.bid_amount) body.bid_amount = data.bid_amount;
+    if (data.start_time) body.start_time = data.start_time;
+    if (data.end_time) body.end_time = data.end_time;
+    if (data.promoted_object) body.promoted_object = JSON.stringify(data.promoted_object);
 
     const result = await graphPost<{ id: string }>(
       `${accountId}/adsets`,
