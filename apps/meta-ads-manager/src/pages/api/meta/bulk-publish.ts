@@ -223,13 +223,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           }
           for (const creativeName of validCreatives) {
             const creativeFile = adConfig.creativeFiles.find((f: any) => f.fileName === creativeName);
-            const creativeUrl = creativeFile?.driveUrl || '';
+            const rawUrl = creativeFile?.driveUrl || '';
 
-            console.log(`[bulk-publish] Ad creative URL: ${creativeUrl || '(empty)'} (file: ${creativeName})`);
-            if (!creativeUrl) {
+            if (!rawUrl) {
               console.warn(`[bulk-publish] WARNING: No driveUrl for creative "${creativeName}" — skipping ad (no media)`);
               continue;
             }
+
+            // Convert Google Drive download URL to direct serve URL (no redirect)
+            let creativeUrl = rawUrl;
+            const driveIdMatch = rawUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+            if (driveIdMatch) {
+              creativeUrl = `https://lh3.googleusercontent.com/d/${driveIdMatch[1]}=s0`;
+            }
+            console.log(`[bulk-publish] Ad creative URL: ${creativeUrl} (file: ${creativeName})`);
 
             const isVideo = creativeFile?.type === 'video';
             if (isVideo) {
