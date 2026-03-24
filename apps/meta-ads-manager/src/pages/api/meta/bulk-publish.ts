@@ -226,25 +226,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               continue;
             }
 
-            // Upload image to Meta via /adimages and get image_hash
             const isVideo = creativeFile?.type === 'video';
-            let imageHash: string | null = null;
-
             if (isVideo) {
               console.warn(`[bulk-publish] Creative "${creativeName}" is a video — video upload not yet implemented, skipping`);
               continue;
             }
-
-            try {
-              console.log(`[bulk-publish] Uploading image to Meta: ${creativeName}`);
-              const uploadResult = await metaAPI.uploadImage(metaAccountId, creativeUrl, user.id);
-              imageHash = uploadResult.hash;
-              console.log(`[bulk-publish] Image uploaded, hash: ${imageHash}`);
-            } catch (uploadErr: any) {
-              console.error(`[bulk-publish] Image upload failed for "${creativeName}":`, uploadErr.message);
-              continue;
-            }
-            await humanDelay();
 
             const adBody: any = {
               name: adsetName,
@@ -257,7 +243,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     link: adConfig.destinationUrl,
                     name: adConfig.headline,
                     description: adConfig.description,
-                    image_hash: imageHash,
+                    picture: creativeUrl,
                   },
                 },
               },
