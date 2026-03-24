@@ -157,32 +157,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           const adsetSuffix = adsetType.adsetCount > 1 ? ` ${String(a + 1).padStart(2, '0')}` : '';
           const adsetName = `${adsetType.name}${adsetSuffix}`;
 
-          // Determinar bid_strategy: se requer bid_amount e nao tem, usar LOWEST_COST_WITHOUT_CAP
-          console.log(`[bulk-publish] bidStrategy recebido: "${campaignConfig.bidStrategy}", bidCapValue: "${adsetType.bidCapValue}"`);
-          const needsBidAmount = ['LOWEST_COST_WITH_BID_CAP', 'COST_CAP'].includes(campaignConfig.bidStrategy);
-          const hasBidAmount = !!adsetType.bidCapValue;
-          const effectiveBidStrategy = (needsBidAmount && !hasBidAmount)
-            ? 'LOWEST_COST_WITHOUT_CAP'
-            : campaignConfig.bidStrategy;
-
-          if (needsBidAmount && !hasBidAmount) {
-            console.warn(`[bulk-publish] bid_strategy "${campaignConfig.bidStrategy}" requer bid_amount mas bidCapValue esta vazio — fallback para LOWEST_COST_WITHOUT_CAP`);
-          }
-
           const adsetBody: any = {
             name: adsetName,
             status: adsetType.adsetStatus,
             targeting: { geo_locations: { countries: adsetType.targetCountries } },
             billing_event: 'IMPRESSIONS',
-            bid_strategy: effectiveBidStrategy,
             start_time: adsetType.startDate,
           };
 
+          // bid_strategy: so enviar quando NAO for o default E tiver os campos obrigatorios
+          // Meta usa "custo mais baixo" automaticamente quando bid_strategy esta ausente
+          const bidStrategy = campaignConfig.bidStrategy;
+          const hasBidAmount = !!adsetType.bidCapValue;
+
+          if (bidStrategy === 'LOWEST_COST_WITHOUT_CAP') {
+            // Nao enviar — Meta defaults para custo mais baixo
+            console.log(`[bulk-publish] bid_strategy: omitido (LOWEST_COST_WITHOUT_CAP = default Meta)`);
+          } else if (['LOWEST_COST_WITH_BID_CAP', 'COST_CAP'].includes(bidStrategy) && hasBidAmount) {
+            adsetBody.bid_strategy = bidStrategy;
+            adsetBody.bid_amount = adsetType.bidCapValue;
+            console.log(`[bulk-publish] bid_strategy: ${bidStrategy}, bid_amount: ${adsetType.bidCapValue}`);
+          } else if (bidStrategy === 'LOWEST_COST_WITH_MIN_ROAS') {
+            // ROAS minimo precisa de roas_average_floor — nao implementado, omitir
+            console.warn(`[bulk-publish] bid_strategy ROAS minimo sem roas_average_floor — omitindo bid_strategy`);
+          } else {
+            console.warn(`[bulk-publish] bid_strategy "${bidStrategy}" sem bid_amount — omitindo bid_strategy`);
+          }
+
           if (campaignConfig.budgetType === 'ABO') {
             adsetBody.daily_budget = campaignConfig.budgetValue;
-          }
-          if (hasBidAmount) {
-            adsetBody.bid_amount = adsetType.bidCapValue;
           }
           if (adsetType.pixelId) {
             adsetBody.promoted_object = {
