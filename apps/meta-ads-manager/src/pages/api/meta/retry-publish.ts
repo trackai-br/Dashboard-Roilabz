@@ -41,7 +41,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const now = new Date();
   const dateStr = `${String(now.getDate()).padStart(2, '0')}.${String(now.getMonth() + 1).padStart(2, '0')}`;
   const cpNum = String(entry.campaignIndex + 1).padStart(2, '0');
-  const campaignName = `[${dateStr}][${accountName}][CP ${cpNum}][LEVA ${campaignConfig.namingPattern.levaNumber}][${entry.pageName}] ${campaignConfig.namingPattern.creativeLabel}`;
+  const suffix = Math.random().toString(16).slice(2, 6);
+  const campaignName = `[${dateStr}][${accountName}][CP ${cpNum}][LEVA ${campaignConfig.namingPattern.levaNumber}][${entry.pageName}] ${campaignConfig.namingPattern.creativeLabel} #${suffix}`;
 
   try {
     const campaignResult = await metaAPI.createCampaign(metaAccountId, {

@@ -9,10 +9,22 @@ export const config = {
   maxDuration: 60,
 };
 
-const DELAY_MS = 500;
+const DELAY_MIN_MS = 800;
+const DELAY_MAX_MS = 2000;
 
 function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/** Delay aleatorio entre min e max para simular cadencia humana */
+function humanDelay() {
+  const jitter = DELAY_MIN_MS + Math.random() * (DELAY_MAX_MS - DELAY_MIN_MS);
+  return delay(Math.round(jitter));
+}
+
+/** Gera sufixo curto unico (4 chars hex) para evitar nomes duplicados */
+function uniqueSuffix() {
+  return Math.random().toString(16).slice(2, 6);
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -95,7 +107,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const now = new Date();
     const dateStr = `${String(now.getDate()).padStart(2, '0')}.${String(now.getMonth() + 1).padStart(2, '0')}`;
     const cpNum = String(entry.campaignIndex + 1).padStart(2, '0');
-    const campaignName = `[${dateStr}][${accountName}][CP ${cpNum}][LEVA ${campaignConfig.namingPattern.levaNumber}][${entry.pageName}] ${campaignConfig.namingPattern.creativeLabel}`;
+    const campaignName = `[${dateStr}][${accountName}][CP ${cpNum}][LEVA ${campaignConfig.namingPattern.levaNumber}][${entry.pageName}] ${campaignConfig.namingPattern.creativeLabel} #${uniqueSuffix()}`;
 
     try {
       // 1. Create Campaign
@@ -111,7 +123,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       const campaignResult = await metaAPI.createCampaign(metaAccountId, campaignBody, user.id);
       const metaCampaignId = campaignResult.id;
-      await delay(DELAY_MS);
+      await humanDelay();
 
       // Store campaign in DB
       const { data: storedAccount } = await supabase
@@ -166,7 +178,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
           const adsetResult = await metaAPI.createAdSet(metaAccountId, metaCampaignId, adsetBody, user.id);
           const metaAdsetId = adsetResult.id;
-          await delay(DELAY_MS);
+          await humanDelay();
 
           // Store adset in DB
           if (storedAccount) {
@@ -230,7 +242,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
 
             const adResult = await metaAPI.createAd(metaAccountId, metaAdsetId, adBody, user.id);
-            await delay(DELAY_MS);
+            await humanDelay();
 
             if (storedAccount) {
               await supabase.from('meta_ads').insert({
@@ -259,26 +271,46 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         : err.message?.includes('rate limit');
 
       if (isRateLimit) {
-        await delay(5000);
-        try {
-          const retryResult = await metaAPI.createCampaign(metaAccountId, {
-            name: campaignName,
-            objective: campaignConfig.objective,
-            status: campaignConfig.campaignStatus,
-            special_ad_categories: [],
-          }, user.id);
-          results.push({
-            campaignIndex: entry.campaignIndex,
-            status: 'success',
-            meta_campaign_id: retryResult.id,
-            campaignName,
-          });
-        } catch (retryErr: any) {
+        // Backoff exponencial: 2s, 4s, 8s (com jitter)
+        let retrySuccess = false;
+        for (let attempt = 0; attempt < 3; attempt++) {
+          const backoffBase = 2000 * Math.pow(2, attempt);
+          const backoffJitter = backoffBase + Math.random() * 1000;
+          console.log(`[bulk-publish] Rate limit — retry ${attempt + 1}/3 em ${Math.round(backoffJitter)}ms`);
+          await delay(backoffJitter);
+
+          try {
+            const retryResult = await metaAPI.createCampaign(metaAccountId, {
+              name: campaignName,
+              objective: campaignConfig.objective,
+              status: campaignConfig.campaignStatus,
+              special_ad_categories: [],
+            }, user.id);
+            results.push({
+              campaignIndex: entry.campaignIndex,
+              status: 'success',
+              meta_campaign_id: retryResult.id,
+              campaignName,
+            });
+            retrySuccess = true;
+            break;
+          } catch (retryErr: any) {
+            if (attempt === 2) {
+              results.push({
+                campaignIndex: entry.campaignIndex,
+                status: 'failed',
+                error: retryErr.message || 'Retry failed after 3 attempts',
+                errorDetails: retryErr instanceof MetaAPIError ? retryErr.toJSON() : undefined,
+                campaignName,
+              });
+            }
+          }
+        }
+        if (!retrySuccess && !results.find(r => r.campaignIndex === entry.campaignIndex)) {
           results.push({
             campaignIndex: entry.campaignIndex,
             status: 'failed',
-            error: retryErr.message || 'Retry failed',
-            errorDetails: retryErr instanceof MetaAPIError ? retryErr.toJSON() : undefined,
+            error: 'Rate limit — retries esgotados',
             campaignName,
           });
         }

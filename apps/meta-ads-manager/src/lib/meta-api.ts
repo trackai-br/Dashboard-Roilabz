@@ -173,6 +173,50 @@ async function getMetaToken(userId?: string): Promise<string> {
   return data.meta_access_token;
 }
 
+const META_USER_AGENT = 'RoiLabz/1.0 (Meta Ads Dashboard)';
+
+/**
+ * Le headers de uso da API e loga quando o consumo esta alto.
+ * Headers: x-business-use-case-usage, x-app-usage, x-ad-account-usage
+ */
+function checkRateLimitHeaders(response: Response, context: string) {
+  const businessUsage = response.headers.get('x-business-use-case-usage');
+  const appUsage = response.headers.get('x-app-usage');
+
+  if (businessUsage) {
+    try {
+      const parsed = JSON.parse(businessUsage);
+      for (const [accountId, usageArr] of Object.entries(parsed)) {
+        const usage = (usageArr as any[])?.[0];
+        if (usage) {
+          const maxUsage = Math.max(
+            usage.call_count || 0,
+            usage.total_cputime || 0,
+            usage.total_time || 0
+          );
+          if (maxUsage > 75) {
+            console.warn(`[meta-api] Rate limit alto (${maxUsage}%) para conta ${accountId} em ${context}`);
+          }
+        }
+      }
+    } catch {}
+  }
+
+  if (appUsage) {
+    try {
+      const parsed = JSON.parse(appUsage);
+      const maxUsage = Math.max(
+        parsed.call_count || 0,
+        parsed.total_cputime || 0,
+        parsed.total_time || 0
+      );
+      if (maxUsage > 75) {
+        console.warn(`[meta-api] App usage alto (${maxUsage}%) em ${context}`);
+      }
+    } catch {}
+  }
+}
+
 /**
  * Helper para fazer chamadas à Graph API do Facebook
  */
@@ -185,7 +229,12 @@ async function graphFetch<T = any>(
   const queryParams = new URLSearchParams({ ...params, access_token: token });
   const url = `https://graph.facebook.com/${apiVersion}/${path}?${queryParams.toString()}`;
 
-  const response = await fetch(url);
+  const response = await fetch(url, {
+    headers: { 'User-Agent': META_USER_AGENT },
+  });
+
+  checkRateLimitHeaders(response, `GET ${path}`);
+
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     throw new MetaAPIError(errorData, response.status);
@@ -207,9 +256,14 @@ async function graphPost<T = any>(
 
   const response = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'User-Agent': META_USER_AGENT,
+    },
     body: JSON.stringify({ ...body, access_token: token }),
   });
+
+  checkRateLimitHeaders(response, `POST ${path}`);
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
