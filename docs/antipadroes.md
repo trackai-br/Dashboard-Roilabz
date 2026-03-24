@@ -29,3 +29,8 @@ atualizado: 2026-03-23
 - **Contexto:** Usuarios digitam nomes errados que nao batem com arquivos do Drive
 - **Detalhes:** Usar dropdown com lista de arquivos carregados
 - **Tags:** [[wizard]] [[UX]]
+
+## [2026-03-23] NUNCA usar url_tags para ads inline com object_story_spec
+- **Contexto:** Campo `url_tags` no POST /ads e aceito sem erro mas Meta IGNORA o valor para ads criados com `object_story_spec` inline
+- **Detalhes:** Append UTM params diretamente na URL do campo `link` e `call_to_action.value.link` dentro do `link_data`
+- **Tags:** [[Meta-API]] [[UTM]] [[object-story-spec]]

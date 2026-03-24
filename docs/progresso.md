@@ -9,7 +9,9 @@ atualizado: 2026-03-23
 ## [2026-03-23] Investigacao UTM params no ad (url_tags)
 - **Plano:** Verificar se `url_tags` esta chegando ao payload do ad. Adicionar log de debug.
 - **Hipoteses:** (A) Deploy nao estava live, (B) UTM vazio, (C) url_tags nao aceito inline
-- **Abordagem escolhida:** Log de debug para `urlTags` no bulk-publish
+- **Resultado:** url_tags chega ao payload e ad e criado com sucesso, mas UTM nao aparece no Gerenciador. `url_tags` no POST /ads NAO funciona para ads inline com object_story_spec.
+- **Nova abordagem:** Append UTM params diretamente na URL do campo `link` e no `call_to_action.value.link`
+- **Implementacao:** Concluida. `urlTags` appendado na URL com separador `?` ou `&`. Removido `adBody.url_tags`. Aguardando teste em producao.
 
 ## [2026-03-23] Correcao completa do fluxo bulk-publish
 - **Plano:** Corrigir erros na publicacao em massa (campanha + adset + ad)

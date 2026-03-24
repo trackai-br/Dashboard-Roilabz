@@ -33,6 +33,12 @@ atualizado: 2026-03-23
 
 ## [2026-03-23] Debug — url_tags no ad
 - **O que foi testado:** Log de utmParams e urlTags para verificar se chegam ao payload
+- **Resultado:** CONFIRMADO — url_tags chega ao payload mas Meta IGNORA para ads inline com object_story_spec
+- **Conclusao:** url_tags nao funciona para inline ads. Corrigido para append UTM direto na URL.
+- **Ambiente:** Producao (Vercel)
+
+## [2026-03-23] Teste manual — bulk-publish ad com UTM na URL
+- **O que foi testado:** UTM params appendados diretamente no campo `link` e `call_to_action.value.link`
 - **Resultado:** PENDENTE — aguardando deploy e teste do usuario
-- **Linha de log esperada:** `[bulk-publish] utmParams: {...} -> urlTags: "utm_source=..."`
+- **Linha de log esperada:** `[bulk-publish] finalLink (com UTM): https://...?utm_source=...`
 - **Ambiente:** Producao (Vercel)

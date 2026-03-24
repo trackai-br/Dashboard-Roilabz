@@ -256,6 +256,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
             console.log(`[bulk-publish] utmParams:`, JSON.stringify(adConfig.utmParams), `-> urlTags: "${urlTags}"`);
 
+            // Append UTM params diretamente na URL (url_tags NAO funciona para inline ads com object_story_spec)
+            let finalLink = adConfig.destinationUrl;
+            if (urlTags) {
+              const separator = adConfig.destinationUrl.includes('?') ? '&' : '?';
+              finalLink = `${adConfig.destinationUrl}${separator}${urlTags}`;
+            }
+            console.log(`[bulk-publish] finalLink (com UTM): ${finalLink}`);
+
             const adBody: any = {
               name: adsetName,
               status: adsetType.adsetStatus,
@@ -264,23 +272,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                   page_id: entry.pageId,
                   link_data: {
                     message: adConfig.primaryText,
-                    link: adConfig.destinationUrl,
+                    link: finalLink,
                     name: adConfig.headline,
                     description: adConfig.description,
                     picture: creativeUrl,
                     call_to_action: {
                       type: 'LEARN_MORE',
-                      value: { link: adConfig.destinationUrl },
+                      value: { link: finalLink },
                     },
                   },
                 },
               },
             };
-
-            // URL tags (UTM parameters) — campo da Meta API para params na URL
-            if (urlTags) {
-              adBody.url_tags = urlTags;
-            }
 
             // Tracking specs for pixel conversion tracking
             if (adsetType.pixelId) {

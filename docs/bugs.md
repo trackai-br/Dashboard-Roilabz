@@ -41,3 +41,9 @@ atualizado: 2026-03-23
 - **Contexto:** Ads criados sem CTA (opcao "site" precisava ser habilitada manualmente), sem UTM params na URL, e adsets sem optimization_goal
 - **Detalhes:** Fix: (1) Adicionar `call_to_action: { type: LEARN_MORE, value: { link } }` no link_data. (2) Adicionar `url_tags` com UTM params no ad. (3) Adicionar `optimization_goal: OFFSITE_CONVERSIONS` no adset quando tem pixel. (4) Trocar `caption` (depreciado) por `description`.
 - **Tags:** [[Meta-API]] [[bulk-publish]] [[UTM]] [[CTA]]
+
+## [BUG-007] url_tags NAO funciona para ads inline com object_story_spec
+- **Data:** 2026-03-23
+- **Contexto:** Campo `url_tags` no POST /ads e aceito sem erro, ad e criado, mas UTM params NAO aparecem no Gerenciador de Anuncios do Facebook
+- **Detalhes:** Investigacao confirmou que `url_tags` chega ao payload corretamente mas Meta ignora o campo para ads inline com `object_story_spec`. Fix: append UTM params diretamente na URL dos campos `link` e `call_to_action.value.link` dentro do `link_data`. Removido `url_tags` do body do ad.
+- **Tags:** [[Meta-API]] [[UTM]] [[object-story-spec]] [[bulk-publish]]
