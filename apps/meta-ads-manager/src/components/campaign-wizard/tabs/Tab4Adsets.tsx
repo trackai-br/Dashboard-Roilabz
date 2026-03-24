@@ -91,7 +91,7 @@ export default function Tab4Adsets() {
       name: '',
       adsetCount: 1,
       campaignsCount: state.totalCampaigns,
-      creativesInAdset: [''],
+      creativesInAdset: [],
       conversionLocation: 'WEBSITE',
       pixelId: '',
       conversionEvent: 'PURCHASE',
@@ -179,6 +179,7 @@ export default function Tab4Adsets() {
           needsBidCap={needsBidCap}
           pixels={allPixels || []}
           totalCampaigns={state.totalCampaigns}
+          availableCreatives={state.adConfig?.creativeFiles?.map((f) => f.fileName) || []}
         />
       ))}
 
@@ -210,16 +211,15 @@ interface AdsetTypeCardProps {
   needsBidCap: boolean;
   pixels: Array<{ id: string; name: string }>;
   totalCampaigns: number;
+  availableCreatives: string[];
 }
 
-function AdsetTypeCard({ adsetType, expanded, onToggle, onUpdate, onRemove, needsBidCap, pixels, totalCampaigns }: AdsetTypeCardProps) {
-  const [newCreative, setNewCreative] = useState('');
+function AdsetTypeCard({ adsetType, expanded, onToggle, onUpdate, onRemove, needsBidCap, pixels, totalCampaigns, availableCreatives }: AdsetTypeCardProps) {
+  const hasCreativeFiles = availableCreatives.length > 0;
 
-  const addCreative = () => {
-    const name = newCreative.trim();
+  const addCreative = (name: string) => {
     if (!name) return;
     onUpdate({ creativesInAdset: [...adsetType.creativesInAdset, name] });
-    setNewCreative('');
   };
 
   const removeCreative = (index: number) => {
@@ -232,6 +232,11 @@ function AdsetTypeCard({ adsetType, expanded, onToggle, onUpdate, onRemove, need
     updated[index] = value;
     onUpdate({ creativesInAdset: updated });
   };
+
+  // Criativos ainda não selecionados neste adset
+  const unusedCreatives = availableCreatives.filter(
+    (name) => !adsetType.creativesInAdset.includes(name)
+  );
 
   const toggleCountry = (code: string) => {
     const has = adsetType.targetCountries.includes(code);
@@ -326,43 +331,48 @@ function AdsetTypeCard({ adsetType, expanded, onToggle, onUpdate, onRemove, need
 
           {/* c) Criativos */}
           <Field label="Criativos dentro de cada adset (cada criativo = 1 anúncio)">
+            {!hasCreativeFiles && (
+              <p className="text-xs mb-2 px-1" style={{ color: 'var(--color-warning, #f59e0b)' }}>
+                Carregue os criativos do Drive no passo 5 (Anúncios) para selecionar aqui.
+              </p>
+            )}
             <div className="space-y-2">
-              {adsetType.creativesInAdset.map((cr, i) => (
+              {adsetType.creativesInAdset.filter(Boolean).map((cr, i) => (
                 <div key={i} className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={cr}
-                    onChange={(e) => updateCreative(i, e.target.value)}
-                    placeholder={`Criativo ${i + 1}`}
-                    className="flex-1 px-3 py-1.5 rounded-lg border text-sm outline-none"
-                    style={inputStyle}
-                  />
-                  {adsetType.creativesInAdset.length > 1 && (
-                    <button onClick={() => removeCreative(i)} className="p-1 rounded hover:bg-white/10" style={{ color: 'var(--color-danger)' }}>
-                      <svg width="16" height="16" className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                    </button>
-                  )}
+                  <span
+                    className="flex-1 px-3 py-1.5 rounded-lg border text-sm truncate"
+                    style={{ ...inputStyle, opacity: 0.9 }}
+                    title={cr}
+                  >
+                    {cr}
+                  </span>
+                  <button onClick={() => removeCreative(i)} className="p-1 rounded hover:bg-white/10" style={{ color: 'var(--color-danger)' }}>
+                    <svg width="16" height="16" className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
                 </div>
               ))}
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={newCreative}
-                  onChange={(e) => setNewCreative(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && addCreative()}
-                  placeholder="Novo criativo..."
-                  className="flex-1 px-3 py-1.5 rounded-lg border text-sm outline-none"
-                  style={inputStyle}
-                />
-                <button
-                  onClick={addCreative}
-                  disabled={!newCreative.trim()}
-                  className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all disabled:opacity-30"
-                  style={{ backgroundColor: 'rgba(57, 255, 20, 0.15)', color: 'var(--neon-green)', border: '1px solid rgba(57, 255, 20, 0.3)' }}
-                >
-                  +
-                </button>
-              </div>
+              {hasCreativeFiles && unusedCreatives.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <select
+                    value=""
+                    onChange={(e) => {
+                      if (e.target.value) addCreative(e.target.value);
+                    }}
+                    className="flex-1 px-3 py-1.5 rounded-lg border text-sm outline-none"
+                    style={inputStyle}
+                  >
+                    <option value="">Selecionar criativo...</option>
+                    {unusedCreatives.map((name) => (
+                      <option key={name} value={name}>{name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              {hasCreativeFiles && unusedCreatives.length === 0 && adsetType.creativesInAdset.filter(Boolean).length > 0 && (
+                <p className="text-xs px-1" style={{ color: 'var(--color-tertiary)' }}>
+                  Todos os criativos já foram adicionados.
+                </p>
+              )}
             </div>
           </Field>
 
