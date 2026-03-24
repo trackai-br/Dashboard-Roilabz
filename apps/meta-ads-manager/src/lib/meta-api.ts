@@ -644,6 +644,30 @@ class MetaAPIClient {
   }
 
   /**
+   * Upload an image to the ad account via URL and return the image_hash
+   */
+  async uploadImage(
+    accountId: string,
+    imageUrl: string,
+    userId?: string
+  ): Promise<{ hash: string }> {
+    const token = await getMetaToken(userId);
+    const body = { url: imageUrl };
+    const result = await graphPost<{ images: Record<string, { hash: string }> }>(
+      `${accountId}/adimages`,
+      body,
+      token,
+      this.apiVersion
+    );
+    // Response format: { images: { "filename": { hash: "...", url: "..." } } }
+    const firstImage = Object.values(result.images || {})[0];
+    if (!firstImage?.hash) {
+      throw new Error('Image upload failed: no hash returned');
+    }
+    return { hash: firstImage.hash };
+  }
+
+  /**
    * Create an ad
    */
   async createAd(

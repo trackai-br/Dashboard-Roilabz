@@ -222,16 +222,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
             console.log(`[bulk-publish] Ad creative URL: ${creativeUrl || '(empty)'} (file: ${creativeName})`);
             if (!creativeUrl) {
-              console.warn(`[bulk-publish] WARNING: No driveUrl for creative "${creativeName}" — ad will have no media`);
+              console.warn(`[bulk-publish] WARNING: No driveUrl for creative "${creativeName}" — skipping ad (no media)`);
+              continue;
             }
 
-            // TODO: Video creatives may need upload via POST /act_{id}/advideos instead of image_url.
-            // Currently, videos are passed as image_url which may not work for all formats.
-            // For reliable video ad creation, consider uploading via advideos endpoint first.
+            // Upload image to Meta via /adimages and get image_hash
             const isVideo = creativeFile?.type === 'video';
+            let imageHash: string | null = null;
+
             if (isVideo) {
-              console.warn(`[bulk-publish] Creative "${creativeName}" is a video — using image_url fallback. Full video upload not yet implemented.`);
+              console.warn(`[bulk-publish] Creative "${creativeName}" is a video — video upload not yet implemented, skipping`);
+              continue;
             }
+
+            try {
+              console.log(`[bulk-publish] Uploading image to Meta: ${creativeName}`);
+              const uploadResult = await metaAPI.uploadImage(metaAccountId, creativeUrl, user.id);
+              imageHash = uploadResult.hash;
+              console.log(`[bulk-publish] Image uploaded, hash: ${imageHash}`);
+            } catch (uploadErr: any) {
+              console.error(`[bulk-publish] Image upload failed for "${creativeName}":`, uploadErr.message);
+              continue;
+            }
+            await humanDelay();
 
             const adBody: any = {
               name: adsetName,
@@ -243,8 +256,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     message: adConfig.primaryText,
                     link: adConfig.destinationUrl,
                     name: adConfig.headline,
-                    caption: adConfig.description,
-                    ...(creativeUrl && { image_url: creativeUrl }),
+                    description: adConfig.description,
+                    image_hash: imageHash,
                   },
                 },
               },
