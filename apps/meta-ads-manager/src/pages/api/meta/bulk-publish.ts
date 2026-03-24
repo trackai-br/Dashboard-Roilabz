@@ -176,8 +176,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             };
           }
 
+          console.log(`[bulk-publish] createAdSet payload:`, JSON.stringify(adsetBody, null, 2));
           const adsetResult = await metaAPI.createAdSet(metaAccountId, metaCampaignId, adsetBody, user.id);
           const metaAdsetId = adsetResult.id;
+          console.log(`[bulk-publish] AdSet criado: ${metaAdsetId}`);
           await humanDelay();
 
           // Store adset in DB
@@ -241,7 +243,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               }
             }
 
+            console.log(`[bulk-publish] createAd payload:`, JSON.stringify(adBody, null, 2));
             const adResult = await metaAPI.createAd(metaAccountId, metaAdsetId, adBody, user.id);
+            console.log(`[bulk-publish] Ad criado: ${adResult.id}`);
             await humanDelay();
 
             if (storedAccount) {
@@ -266,6 +270,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         campaignName,
       });
     } catch (err: any) {
+      console.error(`[bulk-publish] ERRO na campanha ${i}:`, err instanceof MetaAPIError ? JSON.stringify(err.toJSON(), null, 2) : err.message);
       const isRateLimit = err instanceof MetaAPIError
         ? (err.code === 17 || err.code === 32 || err.code === 4)
         : err.message?.includes('rate limit');
