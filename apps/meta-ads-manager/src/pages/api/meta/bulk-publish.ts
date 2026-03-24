@@ -121,8 +121,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         campaignBody.daily_budget = campaignConfig.budgetValue;
       }
 
+      console.log(`[bulk-publish] === CAMPANHA ${i} ===`);
+      console.log(`[bulk-publish] createCampaign payload:`, JSON.stringify(campaignBody));
       const campaignResult = await metaAPI.createCampaign(metaAccountId, campaignBody, user.id);
       const metaCampaignId = campaignResult.id;
+      console.log(`[bulk-publish] Campanha criada: ${metaCampaignId}`);
       await humanDelay();
 
       // Store campaign in DB
@@ -155,6 +158,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           const adsetName = `${adsetType.name}${adsetSuffix}`;
 
           // Determinar bid_strategy: se requer bid_amount e nao tem, usar LOWEST_COST_WITHOUT_CAP
+          console.log(`[bulk-publish] bidStrategy recebido: "${campaignConfig.bidStrategy}", bidCapValue: "${adsetType.bidCapValue}"`);
           const needsBidAmount = ['LOWEST_COST_WITH_BID_CAP', 'COST_CAP'].includes(campaignConfig.bidStrategy);
           const hasBidAmount = !!adsetType.bidCapValue;
           const effectiveBidStrategy = (needsBidAmount && !hasBidAmount)
