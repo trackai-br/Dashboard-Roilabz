@@ -680,6 +680,7 @@ class MetaAPIClient {
       creative?: Record<string, any>;
       adset_spec?: Record<string, any>;
       tracking_specs?: any[];
+      url_tags?: string;
     },
     userId?: string
   ): Promise<{ id: string }> {
@@ -695,6 +696,7 @@ class MetaAPIClient {
       body.creative = data.creative;
     }
     if (data.adset_spec) body.adset_spec = data.adset_spec;
+    if (data.url_tags) body.url_tags = data.url_tags;
     if (data.tracking_specs) body.tracking_specs = data.tracking_specs;
 
     const result = await graphPost<{ id: string }>(

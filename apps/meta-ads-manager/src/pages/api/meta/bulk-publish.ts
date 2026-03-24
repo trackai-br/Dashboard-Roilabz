@@ -192,6 +192,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               pixel_id: adsetType.pixelId,
               custom_event_type: adsetType.conversionEvent,
             };
+            adsetBody.optimization_goal = 'OFFSITE_CONVERSIONS';
           }
 
           console.log(`[bulk-publish] createAdSet payload:`, JSON.stringify(adsetBody, null, 2));
@@ -244,6 +245,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               continue;
             }
 
+            // Build URL tags from UTM params
+            let urlTags = '';
+            if (adConfig.utmParams) {
+              const params = new URLSearchParams();
+              for (const [k, v] of Object.entries(adConfig.utmParams)) {
+                if (v) params.set(k, v as string);
+              }
+              urlTags = params.toString();
+            }
+
             const adBody: any = {
               name: adsetName,
               status: adsetType.adsetStatus,
@@ -256,20 +267,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     name: adConfig.headline,
                     description: adConfig.description,
                     picture: creativeUrl,
+                    call_to_action: {
+                      type: 'LEARN_MORE',
+                      value: { link: adConfig.destinationUrl },
+                    },
                   },
                 },
               },
             };
 
-            // Add UTM tracking
-            if (adConfig.utmParams) {
-              const params = new URLSearchParams();
-              for (const [k, v] of Object.entries(adConfig.utmParams)) {
-                if (v) params.set(k, v as string);
-              }
-              if (params.toString()) {
-                adBody.tracking_specs = [{ 'action.type': ['offsite_conversion'], fb_pixel: [adsetType.pixelId] }];
-              }
+            // URL tags (UTM parameters) — campo da Meta API para params na URL
+            if (urlTags) {
+              adBody.url_tags = urlTags;
+            }
+
+            // Tracking specs for pixel conversion tracking
+            if (adsetType.pixelId) {
+              adBody.tracking_specs = [{ 'action.type': ['offsite_conversion'], fb_pixel: [adsetType.pixelId] }];
             }
 
             console.log(`[bulk-publish] createAd payload:`, JSON.stringify(adBody, null, 2));
