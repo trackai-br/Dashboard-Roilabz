@@ -30,3 +30,9 @@ atualizado: 2026-03-23
 - **O que foi testado:** Criacao de ad com picture + call_to_action + url_tags
 - **Resultado:** PENDENTE — deploy em andamento
 - **Ambiente:** Producao (Vercel)
+
+## [2026-03-23] Debug — url_tags no ad
+- **O que foi testado:** Log de utmParams e urlTags para verificar se chegam ao payload
+- **Resultado:** PENDENTE — aguardando deploy e teste do usuario
+- **Linha de log esperada:** `[bulk-publish] utmParams: {...} -> urlTags: "utm_source=..."`
+- **Ambiente:** Producao (Vercel)

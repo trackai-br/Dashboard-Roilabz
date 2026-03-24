@@ -254,6 +254,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               }
               urlTags = params.toString();
             }
+            console.log(`[bulk-publish] utmParams:`, JSON.stringify(adConfig.utmParams), `-> urlTags: "${urlTags}"`);
 
             const adBody: any = {
               name: adsetName,

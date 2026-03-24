@@ -6,6 +6,11 @@ atualizado: 2026-03-23
 
 # Progresso
 
+## [2026-03-23] Investigacao UTM params no ad (url_tags)
+- **Plano:** Verificar se `url_tags` esta chegando ao payload do ad. Adicionar log de debug.
+- **Hipoteses:** (A) Deploy nao estava live, (B) UTM vazio, (C) url_tags nao aceito inline
+- **Abordagem escolhida:** Log de debug para `urlTags` no bulk-publish
+
 ## [2026-03-23] Correcao completa do fluxo bulk-publish
 - **Plano:** Corrigir erros na publicacao em massa (campanha + adset + ad)
 - **Resultado:**
