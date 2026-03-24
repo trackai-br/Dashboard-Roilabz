@@ -216,7 +216,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           }
 
           // 3. Create Ads (1 per creative in adset type)
-          for (const creativeName of adsetType.creativesInAdset.filter(Boolean)) {
+          const validCreatives = adsetType.creativesInAdset.filter(Boolean);
+          console.log(`[bulk-publish] creativesInAdset (${validCreatives.length}):`, JSON.stringify(adsetType.creativesInAdset));
+          if (validCreatives.length === 0) {
+            console.warn(`[bulk-publish] WARNING: Nenhum criativo no adset "${adsetName}" — nenhum ad será criado`);
+          }
+          for (const creativeName of validCreatives) {
             const creativeFile = adConfig.creativeFiles.find((f: any) => f.fileName === creativeName);
             const creativeUrl = creativeFile?.driveUrl || '';
 
