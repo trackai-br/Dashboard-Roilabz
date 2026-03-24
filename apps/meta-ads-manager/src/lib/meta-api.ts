@@ -626,13 +626,13 @@ class MetaAPIClient {
     };
     if (data.daily_budget) body.daily_budget = data.daily_budget;
     if (data.lifetime_budget) body.lifetime_budget = data.lifetime_budget;
-    if (data.targeting) body.targeting = JSON.stringify(data.targeting);
+    if (data.targeting) body.targeting = data.targeting;
     if (data.billing_event) body.billing_event = data.billing_event;
     if (data.bid_strategy) body.bid_strategy = data.bid_strategy;
     if (data.bid_amount) body.bid_amount = data.bid_amount;
     if (data.start_time) body.start_time = data.start_time;
     if (data.end_time) body.end_time = data.end_time;
-    if (data.promoted_object) body.promoted_object = JSON.stringify(data.promoted_object);
+    if (data.promoted_object) body.promoted_object = data.promoted_object;
 
     const result = await graphPost<{ id: string }>(
       `${accountId}/adsets`,
@@ -666,12 +666,12 @@ class MetaAPIClient {
       status: data.status,
     };
     if (data.creative_id) {
-      body.creative = JSON.stringify({ creative_id: data.creative_id });
+      body.creative = { creative_id: data.creative_id };
     } else if (data.creative) {
-      body.creative = JSON.stringify(data.creative);
+      body.creative = data.creative;
     }
-    if (data.adset_spec) body.adset_spec = JSON.stringify(data.adset_spec);
-    if (data.tracking_specs) body.tracking_specs = JSON.stringify(data.tracking_specs);
+    if (data.adset_spec) body.adset_spec = data.adset_spec;
+    if (data.tracking_specs) body.tracking_specs = data.tracking_specs;
 
     const result = await graphPost<{ id: string }>(
       `${accountId}/ads`,
