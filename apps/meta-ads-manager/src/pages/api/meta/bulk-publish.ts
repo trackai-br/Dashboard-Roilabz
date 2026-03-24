@@ -154,19 +154,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           const adsetSuffix = adsetType.adsetCount > 1 ? ` ${String(a + 1).padStart(2, '0')}` : '';
           const adsetName = `${adsetType.name}${adsetSuffix}`;
 
+          // Determinar bid_strategy: se requer bid_amount e nao tem, usar LOWEST_COST_WITHOUT_CAP
+          const needsBidAmount = ['LOWEST_COST_WITH_BID_CAP', 'COST_CAP'].includes(campaignConfig.bidStrategy);
+          const hasBidAmount = !!adsetType.bidCapValue;
+          const effectiveBidStrategy = (needsBidAmount && !hasBidAmount)
+            ? 'LOWEST_COST_WITHOUT_CAP'
+            : campaignConfig.bidStrategy;
+
+          if (needsBidAmount && !hasBidAmount) {
+            console.warn(`[bulk-publish] bid_strategy "${campaignConfig.bidStrategy}" requer bid_amount mas bidCapValue esta vazio — fallback para LOWEST_COST_WITHOUT_CAP`);
+          }
+
           const adsetBody: any = {
             name: adsetName,
             status: adsetType.adsetStatus,
             targeting: { geo_locations: { countries: adsetType.targetCountries } },
             billing_event: 'IMPRESSIONS',
-            bid_strategy: campaignConfig.bidStrategy,
+            bid_strategy: effectiveBidStrategy,
             start_time: adsetType.startDate,
           };
 
           if (campaignConfig.budgetType === 'ABO') {
             adsetBody.daily_budget = campaignConfig.budgetValue;
           }
-          if (adsetType.bidCapValue) {
+          if (hasBidAmount) {
             adsetBody.bid_amount = adsetType.bidCapValue;
           }
           if (adsetType.pixelId) {
