@@ -16,31 +16,27 @@ interface Campaign {
   start_time?: string;
   end_time?: string;
   metrics?: {
-    date_start: string;
-    date_stop: string;
     spend: string;
     impressions: string;
     clicks: string;
     cpc?: string;
     cpm?: string;
     ctr?: string;
-    inline_link_clicks?: string;
-    landing_page_views?: string;
-    cost_per_inline_link_click?: string;
-    cost_per_landing_page_view?: string;
-    actions?: Array<{ action_type: string; value: string }>;
+    conversions?: string;
+    roas?: string;
   };
+}
+
+interface SyncStatus {
+  meta_account_id: string;
+  sync_type: string;
+  last_synced_at: string | null;
+  last_sync_status: string;
 }
 
 export default function CampaignsPage() {
   const router = useRouter();
   const [selectedAccountId, setSelectedAccountId] = useState<string>('');
-  const [dateStart, setDateStart] = useState<string>(
-    new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-  );
-  const [dateStop, setDateStop] = useState<string>(
-    new Date().toISOString().split('T')[0]
-  );
 
   // Queries
   const { data: accounts, isLoading: accountsLoading } = useMetaAccounts();
@@ -50,12 +46,10 @@ export default function CampaignsPage() {
     isLoading: campaignsLoading,
     error: campaignsError,
   } = useQuery({
-    queryKey: ['campaigns', selectedAccountId, dateStart, dateStop],
+    queryKey: ['campaigns', selectedAccountId],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (selectedAccountId) params.append('accountId', selectedAccountId);
-      params.append('dateStart', dateStart);
-      params.append('dateStop', dateStop);
 
       const res = await authenticatedFetch(`/api/meta/campaigns?${params.toString()}`);
       if (!res.ok) throw new Error('Failed to fetch campaigns');
@@ -72,13 +66,17 @@ export default function CampaignsPage() {
   }, [accounts, selectedAccountId]);
 
   const campaigns = campaignsResponse?.campaigns || [];
+  const syncStatuses: SyncStatus[] = campaignsResponse?.syncStatus || [];
 
-  const getActionValue = (campaign: Campaign, actionType: string) => {
-    if (!campaign.metrics?.actions) return '0';
-    const action = campaign.metrics.actions.find(
-      (a) => a.action_type === actionType
-    );
-    return action?.value || '0';
+  // Find most recent sync for selected account
+  const lastSync = syncStatuses.find(
+    (s) => s.sync_type === 'insights' && s.meta_account_id === selectedAccountId
+  );
+
+  const formatSyncTime = (isoDate: string | null) => {
+    if (!isoDate) return 'Never';
+    const d = new Date(isoDate);
+    return d.toLocaleString();
   };
 
   return (
@@ -91,8 +89,8 @@ export default function CampaignsPage() {
       />
 
       <div className="p-6">
-        {/* Account Selector */}
-        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end">
+        {/* Account Selector + Sync Status */}
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
             <label
               htmlFor="account-select"
@@ -117,40 +115,23 @@ export default function CampaignsPage() {
             </select>
           </div>
 
-          {/* Date Range Picker */}
-          <div className="flex gap-4">
-            <div>
-              <label
-                htmlFor="date-start"
-                className="block text-sm font-medium mb-2"
-                style={{ color: 'var(--color-primary)' }}
-              >
-                Start Date
-              </label>
-              <input
-                id="date-start"
-                type="date"
-                value={dateStart}
-                onChange={(e) => setDateStart(e.target.value)}
-                className="input rounded-lg px-4 py-2"
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="date-stop"
-                className="block text-sm font-medium mb-2"
-                style={{ color: 'var(--color-primary)' }}
-              >
-                End Date
-              </label>
-              <input
-                id="date-stop"
-                type="date"
-                value={dateStop}
-                onChange={(e) => setDateStop(e.target.value)}
-                className="input rounded-lg px-4 py-2"
-              />
-            </div>
+          {/* Sync Status Indicator */}
+          <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--color-secondary)' }}>
+            <span
+              className="inline-block h-2 w-2 rounded-full"
+              style={{
+                backgroundColor:
+                  lastSync?.last_sync_status === 'success'
+                    ? 'var(--color-success)'
+                    : lastSync?.last_sync_status === 'running'
+                    ? 'var(--color-warning, #f59e0b)'
+                    : 'var(--color-secondary)',
+              }}
+            />
+            <span>
+              Last sync: {formatSyncTime(lastSync?.last_synced_at || null)}
+              {lastSync?.last_sync_status === 'running' && ' (syncing...)'}
+            </span>
           </div>
         </div>
 
@@ -189,10 +170,10 @@ export default function CampaignsPage() {
                   CPM
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium uppercase" style={{ color: 'var(--color-secondary)' }}>
-                  Link Clicks
+                  CTR
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium uppercase" style={{ color: 'var(--color-secondary)' }}>
-                  Landing Page Views
+                  Conversions
                 </th>
               </tr>
             </thead>
@@ -260,10 +241,10 @@ export default function CampaignsPage() {
                       ${(Number(campaign.metrics?.cpm || 0) / 100).toFixed(2)}
                     </td>
                     <td className="px-6 py-4 text-right text-sm font-mono" style={{ color: 'var(--color-primary)' }}>
-                      {Number(campaign.metrics?.inline_link_clicks || 0).toLocaleString()}
+                      {Number(campaign.metrics?.ctr || 0).toFixed(2)}%
                     </td>
                     <td className="px-6 py-4 text-right text-sm font-mono" style={{ color: 'var(--color-primary)' }}>
-                      {Number(campaign.metrics?.landing_page_views || 0).toLocaleString()}
+                      {Number(campaign.metrics?.conversions || 0).toLocaleString()}
                     </td>
                   </tr>
                 ))
@@ -277,8 +258,7 @@ export default function CampaignsPage() {
           <div className="mt-6 rounded-lg p-4" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--color-tertiary)', borderWidth: '1px' }}>
             <p className="text-sm" style={{ color: 'var(--color-primary)' }}>
               Showing <strong>{campaigns.length}</strong> campaign
-              {campaigns.length !== 1 ? 's' : ''} from{' '}
-              <strong>{dateStart}</strong> to <strong>{dateStop}</strong>
+              {campaigns.length !== 1 ? 's' : ''}
             </p>
           </div>
         )}

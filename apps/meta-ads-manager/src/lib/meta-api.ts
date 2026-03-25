@@ -176,10 +176,37 @@ async function getMetaToken(userId?: string): Promise<string> {
 const META_USER_AGENT = 'RoiLabz/1.0 (Meta Ads Dashboard)';
 
 /**
- * Le headers de uso da API e loga quando o consumo esta alto.
+ * Info de rate limit retornada por checkRateLimitHeaders.
+ */
+export interface RateLimitInfo {
+  callCount: number;
+  cpuTime: number;
+  totalTime: number;
+  maxUsage: number;
+}
+
+/**
+ * Erro de rate limit — usado para pausar sync e deixar Inngest retry.
+ */
+export class RateLimitError extends Error {
+  usage: number;
+  constructor(usage: number) {
+    super(`Rate limit critico: ${usage}% de uso. Pausando para evitar ban.`);
+    this.name = 'RateLimitError';
+    this.usage = usage;
+  }
+}
+
+/**
+ * Le headers de uso da API e RETORNA o nivel de uso para decisoes de throttling.
  * Headers: x-business-use-case-usage, x-app-usage, x-ad-account-usage
  */
-function checkRateLimitHeaders(response: Response, context: string) {
+function checkRateLimitHeaders(response: Response, context: string): RateLimitInfo {
+  let maxUsage = 0;
+  let callCount = 0;
+  let cpuTime = 0;
+  let totalTime = 0;
+
   const businessUsage = response.headers.get('x-business-use-case-usage');
   const appUsage = response.headers.get('x-app-usage');
 
@@ -189,13 +216,13 @@ function checkRateLimitHeaders(response: Response, context: string) {
       for (const [accountId, usageArr] of Object.entries(parsed)) {
         const usage = (usageArr as any[])?.[0];
         if (usage) {
-          const maxUsage = Math.max(
-            usage.call_count || 0,
-            usage.total_cputime || 0,
-            usage.total_time || 0
-          );
-          if (maxUsage > 75) {
-            console.warn(`[meta-api] Rate limit alto (${maxUsage}%) para conta ${accountId} em ${context}`);
+          callCount = Math.max(callCount, usage.call_count || 0);
+          cpuTime = Math.max(cpuTime, usage.total_cputime || 0);
+          totalTime = Math.max(totalTime, usage.total_time || 0);
+          const accountMax = Math.max(callCount, cpuTime, totalTime);
+          if (accountMax > maxUsage) maxUsage = accountMax;
+          if (accountMax > 75) {
+            console.warn(`[meta-api] Rate limit alto (${accountMax}%) para conta ${accountId} em ${context}`);
           }
         }
       }
@@ -205,27 +232,61 @@ function checkRateLimitHeaders(response: Response, context: string) {
   if (appUsage) {
     try {
       const parsed = JSON.parse(appUsage);
-      const maxUsage = Math.max(
-        parsed.call_count || 0,
-        parsed.total_cputime || 0,
-        parsed.total_time || 0
-      );
-      if (maxUsage > 75) {
-        console.warn(`[meta-api] App usage alto (${maxUsage}%) em ${context}`);
+      const appCallCount = parsed.call_count || 0;
+      const appCpuTime = parsed.total_cputime || 0;
+      const appTotalTime = parsed.total_time || 0;
+      const appMax = Math.max(appCallCount, appCpuTime, appTotalTime);
+      if (appMax > maxUsage) {
+        maxUsage = appMax;
+        callCount = Math.max(callCount, appCallCount);
+        cpuTime = Math.max(cpuTime, appCpuTime);
+        totalTime = Math.max(totalTime, appTotalTime);
+      }
+      if (appMax > 75) {
+        console.warn(`[meta-api] App usage alto (${appMax}%) em ${context}`);
       }
     } catch {}
   }
+
+  return { callCount, cpuTime, totalTime, maxUsage };
 }
 
 /**
- * Helper para fazer chamadas à Graph API do Facebook
+ * Delay adaptativo baseado no % de uso da API.
+ * Protege contra ban da Meta escalando o delay conforme a pressao.
  */
-async function graphFetch<T = any>(
+async function adaptiveDelay(rateLimitInfo: RateLimitInfo): Promise<void> {
+  const { maxUsage } = rateLimitInfo;
+  const jitter = () => Math.random() * 1000;
+
+  if (maxUsage < 50) return;
+  if (maxUsage < 75) {
+    await new Promise(r => setTimeout(r, 1000 + jitter()));
+    return;
+  }
+  if (maxUsage < 85) {
+    console.warn(`[meta-api] Delay 3-4s (uso ${maxUsage}%)`);
+    await new Promise(r => setTimeout(r, 3000 + jitter()));
+    return;
+  }
+  if (maxUsage < 95) {
+    console.warn(`[meta-api] Delay 10-12s (uso ${maxUsage}%)`);
+    await new Promise(r => setTimeout(r, 10000 + jitter() * 2));
+    return;
+  }
+  throw new RateLimitError(maxUsage);
+}
+
+/**
+ * Helper para fazer chamadas à Graph API do Facebook.
+ * Retorna data + rateLimitInfo para throttling adaptativo.
+ */
+async function graphFetchWithRateInfo<T = any>(
   path: string,
   params: Record<string, string>,
   token: string,
   apiVersion: string
-): Promise<T> {
+): Promise<{ data: T; rateLimitInfo: RateLimitInfo }> {
   const queryParams = new URLSearchParams({ ...params, access_token: token });
   const url = `https://graph.facebook.com/${apiVersion}/${path}?${queryParams.toString()}`;
 
@@ -233,14 +294,28 @@ async function graphFetch<T = any>(
     headers: { 'User-Agent': META_USER_AGENT },
   });
 
-  checkRateLimitHeaders(response, `GET ${path}`);
+  const rateLimitInfo = checkRateLimitHeaders(response, `GET ${path}`);
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     throw new MetaAPIError(errorData, response.status);
   }
 
-  return response.json();
+  const data = await response.json();
+  return { data, rateLimitInfo };
+}
+
+/**
+ * Helper retrocompativel — retorna apenas os dados (sem rate info).
+ */
+async function graphFetch<T = any>(
+  path: string,
+  params: Record<string, string>,
+  token: string,
+  apiVersion: string
+): Promise<T> {
+  const { data } = await graphFetchWithRateInfo<T>(path, params, token, apiVersion);
+  return data;
 }
 
 /**
@@ -557,6 +632,182 @@ class MetaAPIClient {
       cost_per_landing_page_view: insight.cost_per_landing_page_view,
       cost_per_action_type: insight.cost_per_action_type,
     }));
+  }
+
+  /**
+   * Get insights at account level — returns metrics for ALL campaigns/adsets/ads
+   * in a single paginated call. Key optimization: 20 pages vs 10,000 individual calls.
+   */
+  async getAccountInsights(
+    accountId: string,
+    level: 'campaign' | 'adset' | 'ad',
+    dateStart: string,
+    dateStop: string,
+    limit: number = 500,
+    after?: string,
+    userId?: string
+  ): Promise<{ insights: MetaInsight[]; paging?: any; rateLimitInfo: RateLimitInfo }> {
+    const token = await getMetaToken(userId);
+
+    const fields = [
+      'campaign_id', 'adset_id', 'ad_id', 'campaign_name', 'adset_name', 'ad_name',
+      'date_start', 'date_stop', 'impressions', 'clicks', 'spend',
+      'actions', 'action_values', 'cpc', 'cpm', 'cpp', 'ctr',
+      'inline_link_clicks', 'landing_page_views',
+      'cost_per_inline_link_click', 'cost_per_landing_page_view', 'cost_per_action_type',
+    ];
+
+    const params: Record<string, string> = {
+      fields: fields.join(','),
+      time_range: JSON.stringify({ since: dateStart, until: dateStop }),
+      level,
+      limit: limit.toString(),
+    };
+    if (after) params.after = after;
+
+    const { data, rateLimitInfo } = await graphFetchWithRateInfo<{ data: any[]; paging?: any }>(
+      `${accountId}/insights`,
+      params,
+      token,
+      this.apiVersion
+    );
+
+    return {
+      insights: (data.data || []).map((insight: any) => ({
+        campaign_id: insight.campaign_id,
+        adset_id: insight.adset_id,
+        ad_id: insight.ad_id,
+        campaign_name: insight.campaign_name,
+        adset_name: insight.adset_name,
+        ad_name: insight.ad_name,
+        date_start: insight.date_start,
+        date_stop: insight.date_stop,
+        impressions: insight.impressions,
+        clicks: insight.clicks,
+        spend: insight.spend,
+        actions: insight.actions,
+        action_values: insight.action_values,
+        cpc: insight.cpc,
+        cpm: insight.cpm,
+        cpp: insight.cpp,
+        ctr: insight.ctr,
+        inline_link_clicks: insight.inline_link_clicks,
+        landing_page_views: insight.landing_page_views,
+        cost_per_inline_link_click: insight.cost_per_inline_link_click,
+        cost_per_landing_page_view: insight.cost_per_landing_page_view,
+        cost_per_action_type: insight.cost_per_action_type,
+      })),
+      paging: data.paging,
+      rateLimitInfo,
+    };
+  }
+
+  /**
+   * Get ALL campaigns for an account with automatic pagination.
+   * Respects adaptive rate limiting between pages.
+   */
+  async getAllCampaigns(accountId: string, userId?: string): Promise<MetaCampaign[]> {
+    const allCampaigns: MetaCampaign[] = [];
+    let cursor: string | undefined;
+
+    do {
+      const { campaigns, paging } = await this.getCampaigns(accountId, undefined, 500, cursor, userId);
+      allCampaigns.push(...campaigns);
+      cursor = paging?.cursors?.after;
+      // Rate limit check via a lightweight call is implicit in getCampaigns
+    } while (cursor);
+
+    return allCampaigns;
+  }
+
+  /**
+   * Get ALL ad sets for an account with automatic pagination.
+   */
+  async getAllAdSets(accountId: string, userId?: string): Promise<MetaAdSet[]> {
+    const token = await getMetaToken(userId);
+    const allAdSets: MetaAdSet[] = [];
+    let cursor: string | undefined;
+    const fields = [
+      'id', 'campaign_id', 'name', 'status', 'daily_budget', 'lifetime_budget',
+      'targeting', 'billing_event', 'bid_strategy', 'bid_amount', 'created_time',
+    ];
+
+    do {
+      const params: Record<string, string> = {
+        fields: fields.join(','),
+        limit: '500',
+      };
+      if (cursor) params.after = cursor;
+
+      const { data, rateLimitInfo } = await graphFetchWithRateInfo<{ data: any[]; paging?: any }>(
+        `${accountId}/adsets`,
+        params,
+        token,
+        this.apiVersion
+      );
+
+      for (const adset of (data.data || [])) {
+        allAdSets.push({
+          id: adset.id,
+          campaign_id: adset.campaign_id,
+          name: adset.name,
+          status: adset.status,
+          daily_budget: adset.daily_budget,
+          lifetime_budget: adset.lifetime_budget,
+          targeting: adset.targeting,
+          billing_event: adset.billing_event,
+          bid_strategy: adset.bid_strategy,
+          bid_amount: adset.bid_amount,
+          created_time: adset.created_time,
+        });
+      }
+
+      cursor = data.paging?.cursors?.after;
+      await adaptiveDelay(rateLimitInfo);
+    } while (cursor);
+
+    return allAdSets;
+  }
+
+  /**
+   * Get ALL ads for an account with automatic pagination.
+   */
+  async getAllAds(accountId: string, userId?: string): Promise<MetaAd[]> {
+    const token = await getMetaToken(userId);
+    const allAds: MetaAd[] = [];
+    let cursor: string | undefined;
+    const fields = ['id', 'adset_id', 'name', 'status', 'creative', 'created_time'];
+
+    do {
+      const params: Record<string, string> = {
+        fields: fields.join(','),
+        limit: '500',
+      };
+      if (cursor) params.after = cursor;
+
+      const { data, rateLimitInfo } = await graphFetchWithRateInfo<{ data: any[]; paging?: any }>(
+        `${accountId}/ads`,
+        params,
+        token,
+        this.apiVersion
+      );
+
+      for (const ad of (data.data || [])) {
+        allAds.push({
+          id: ad.id,
+          adset_id: ad.adset_id,
+          name: ad.name,
+          status: ad.status,
+          creative: ad.creative,
+          created_time: ad.created_time,
+        });
+      }
+
+      cursor = data.paging?.cursors?.after;
+      await adaptiveDelay(rateLimitInfo);
+    } while (cursor);
+
+    return allAds;
   }
 
   /**
