@@ -199,6 +199,19 @@ export const syncMetaInsights = inngest.createFunction(
           `[sync-insights] Error for ${account.meta_account_id}:`,
           err instanceof Error ? err.message : err
         );
+        // Mark sync as failed so it doesn't stay "running" forever
+        try {
+          await db.from("meta_sync_status").upsert(
+            {
+              meta_account_id: account.id,
+              sync_type: "insights",
+              last_sync_status: "failed",
+              last_error: err instanceof Error ? err.message : String(err),
+              records_synced: 0,
+            } as any,
+            { onConflict: "meta_account_id,sync_type" }
+          );
+        } catch (_) { /* ignore update failure */ }
       }
     }
 

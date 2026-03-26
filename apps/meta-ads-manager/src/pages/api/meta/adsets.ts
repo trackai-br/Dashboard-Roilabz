@@ -56,8 +56,8 @@ async function handleGet(
       return res.status(404).json({ error: 'Campaign not found' });
     }
 
-    // Verify user has access by comparing meta_account_id (TEXT)
-    const hasAccess = userAccounts.some((acc) => acc.meta_account_id === campaign.meta_account_id);
+    // Verify user has access — campaign.meta_account_id is a UUID (FK to meta_accounts.id)
+    const hasAccess = userAccounts.some((acc: any) => acc.id === campaign.meta_account_id);
     if (!hasAccess) {
       return res.status(403).json({ error: 'Access denied' });
     }
