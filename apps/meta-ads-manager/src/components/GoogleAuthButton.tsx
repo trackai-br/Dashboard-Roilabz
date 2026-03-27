@@ -28,12 +28,13 @@ const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
       });
 
       if (error) throw error;
-      onSuccess?.();
+      // signInWithOAuth with redirect mode navigates the browser away.
+      // Do NOT call onSuccess here — the redirect handles navigation.
+      // onSuccess is only useful if we switch to popup mode in the future.
     } catch (error) {
+      setIsAuthLoading(false);
       const err = error instanceof Error ? error : new Error('Login failed');
       onError?.(err);
-    } finally {
-      setIsAuthLoading(false);
     }
   };
 

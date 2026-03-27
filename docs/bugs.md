@@ -1,10 +1,36 @@
 ---
 tipo: bugs
 projeto: Roi-Labz
-atualizado: 2026-03-23
+atualizado: 2026-03-27
 ---
 
 # Bugs
+
+## [BUG-008] Login nao autentica — vai direto para dashboard sem sessao
+- **Data:** 2026-03-27
+- **Contexto:** Ao clicar "Entrar com Google", o botao nao abria o fluxo OAuth do Google. Em vez disso, navegava direto para /dashboard sem autenticacao. Console mostrava `AuthRetryableFetchError` com 504.
+- **Detalhes:** Duas causas: (1) `GoogleAuthButton` chamava `onSuccess()` logo apos `signInWithOAuth` retornar, sem esperar o redirect acontecer. Como o redirect e assincrono (browser navega para Google), o `onSuccess` disparava antes e fazia `router.push('/dashboard')`. (2) `DashboardLayout` nao tinha protecao de rota — qualquer pessoa podia acessar /dashboard sem sessao ativa.
+- **Fix:** (1) Removido `onSuccess()` do fluxo OAuth — o redirect do Google cuida da navegacao. (2) Adicionado `useAuth()` no `DashboardLayout` com redirect para /login se nao autenticado + loading spinner durante verificacao.
+- **Tags:** [[auth]] [[OAuth]] [[Google]] [[Supabase]] [[route-protection]]
+
+## [BUG-005] Metricas nao exibidas na aba Campanhas (N+1 problem)
+- **Data:** 2026-03-25
+- **Contexto:** Endpoint /api/meta/campaigns fazia N+1 chamadas getInsights() a Meta API (1 por campanha). Com 10.000 campanhas, timeout/rate limit. O catch silencioso retornava metricas vazias.
+- **Detalhes:** Frontend tentava Number(undefined) / 100, exibindo NaN/0. Fix: refatorado endpoint para ler metricas do Supabase (populadas por sync Inngest em background). Zero chamadas Meta API no request path.
+- **Tags:** [[Meta-API]] [[N+1]] [[performance]] [[Supabase]]
+
+## [BUG-006] Drill-down de campanha para ad sets quebrado (migration 004 nao aplicada)
+- **Data:** 2026-03-25
+- **Contexto:** Tabelas meta_ad_sets e meta_ads NAO EXISTIAM no Supabase. Migration 004 existia no repo mas nunca foi aplicada. API routes retornavam erro de fetch.
+- **Detalhes:** Fix parcial: migration 004 precisa ser aplicada manualmente no Supabase SQL Editor. Alem disso, syncMetaAdAccounts agora popula essas tabelas via sync Inngest.
+- **Tags:** [[Supabase]] [[migration]] [[drill-down]]
+
+## [BUG-007] Inngest functions nao registradas no handler
+- **Data:** 2026-03-25
+- **Contexto:** bulkCreateCampaigns e checkAlertRules existiam como arquivos mas NAO estavam registradas em /api/inngest.ts. Nunca eram executadas.
+- **Detalhes:** Fix: adicionadas ao array de functions no serve(). Tambem adicionada syncMetaInsights (nova).
+- **Tags:** [[Inngest]] [[handler]] [[registration]]
+
 
 ## [BUG-001] createAdSet/createAd ignoravam campos criticos da Meta API
 - **Data:** 2026-03-23

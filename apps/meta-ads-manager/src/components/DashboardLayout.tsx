@@ -1,9 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { BottomNav } from './BottomNav';
+import { useAuth } from '@/hooks/useAuth';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -14,6 +16,8 @@ export function DashboardLayout({
   children,
   title,
 }: DashboardLayoutProps) {
+  const router = useRouter();
+  const { user, isLoading: authLoading } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -23,6 +27,23 @@ export function DashboardLayout({
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace('/login');
+    }
+  }, [authLoading, user, router]);
+
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen" style={{ backgroundColor: 'var(--bg-page)' }}>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: 'var(--color-brand)' }} />
+      </div>
+    );
+  }
+
+  if (!user) return null;
 
   return (
     <div className="flex h-screen overflow-hidden dark">
