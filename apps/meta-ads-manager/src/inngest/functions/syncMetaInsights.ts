@@ -44,8 +44,8 @@ function toDecimal(val: string | undefined): number | null {
  * vs 10,000 individual calls.
  */
 export const syncMetaInsights = inngest.createFunction(
-  { id: "sync-meta-insights", retries: 3 },
-  { cron: "*/30 * * * *" },
+  { id: "sync-meta-insights", retries: 1 },
+  { cron: "0 */6 * * *" },
   async ({ step }) => {
     const db = getSupabase();
 

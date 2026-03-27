@@ -15,8 +15,8 @@ function getSupabase() {
 }
 
 export const syncMetaAdAccounts = inngest.createFunction(
-  { id: "sync-meta-ad-accounts", retries: 3 },
-  { cron: "*/15 * * * *" },
+  { id: "sync-meta-ad-accounts", retries: 1 },
+  { cron: "0 */6 * * *" },
   async ({ event, step }) => {
     try {
       // Step 1: Fetch all ad accounts from Meta

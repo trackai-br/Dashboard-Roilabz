@@ -79,8 +79,8 @@ async function fetchGoogleAdsCampaignsForAccount(
 }
 
 export const syncGoogleAdsAccounts = inngest.createFunction(
-  { id: 'sync-google-ads-accounts', retries: 3 },
-  { cron: '*/15 * * * *' },
+  { id: 'sync-google-ads-accounts', retries: 1 },
+  { cron: '0 */12 * * *' },
   async ({ event, step }) => {
     try {
       // Get all users with Google OAuth connected

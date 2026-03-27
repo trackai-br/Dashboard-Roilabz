@@ -39,8 +39,8 @@ interface CampaignMetrics {
 }
 
 export const checkAlertRules = inngest.createFunction(
-  { id: 'check-alert-rules', retries: 2 },
-  { cron: '*/15 * * * *' },
+  { id: 'check-alert-rules', retries: 1 },
+  { cron: '0 */6 * * *' },
   async ({ event, step }) => {
     try {
       const supabaseClient = getSupabase();
