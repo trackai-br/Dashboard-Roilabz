@@ -36,7 +36,7 @@ export default async function handler(
       );
     }
 
-    const { data: userData, error: authError } = await supabase.auth.getUser(token);
+    const { data: userData, error: authError } = await supabaseAdmin!.auth.getUser(token);
     if (authError || !userData.user) {
       console.warn('[OAuth] Invalid or expired token');
       return res.redirect(
