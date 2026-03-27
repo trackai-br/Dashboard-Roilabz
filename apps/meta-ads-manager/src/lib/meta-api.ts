@@ -132,9 +132,8 @@ export interface MetaInsight {
   cpp?: string;
   ctr?: string;
   inline_link_clicks?: string;
-  landing_page_views?: string;
+  landing_page_view?: string;
   cost_per_inline_link_click?: string;
-  cost_per_landing_page_view?: string;
   cost_per_action_type?: Array<{
     action_type: string;
     value: string;
@@ -593,8 +592,8 @@ class MetaAPIClient {
       'campaign_id', 'adset_id', 'ad_id', 'campaign_name', 'adset_name', 'ad_name',
       'date_start', 'date_stop', 'impressions', 'clicks', 'spend',
       'actions', 'action_values', 'cpc', 'cpm', 'cpp', 'ctr',
-      'inline_link_clicks', 'landing_page_views',
-      'cost_per_inline_link_click', 'cost_per_landing_page_view', 'cost_per_action_type',
+      'inline_link_clicks', 'landing_page_view',
+      'cost_per_inline_link_click', 'cost_per_action_type',
     ];
 
     const data = await graphFetch<{ data: any[] }>(
@@ -627,9 +626,8 @@ class MetaAPIClient {
       cpp: insight.cpp,
       ctr: insight.ctr,
       inline_link_clicks: insight.inline_link_clicks,
-      landing_page_views: insight.landing_page_views,
+      landing_page_view: insight.landing_page_view,
       cost_per_inline_link_click: insight.cost_per_inline_link_click,
-      cost_per_landing_page_view: insight.cost_per_landing_page_view,
       cost_per_action_type: insight.cost_per_action_type,
     }));
   }
@@ -653,8 +651,8 @@ class MetaAPIClient {
       'campaign_id', 'adset_id', 'ad_id', 'campaign_name', 'adset_name', 'ad_name',
       'date_start', 'date_stop', 'impressions', 'clicks', 'spend',
       'actions', 'action_values', 'cpc', 'cpm', 'cpp', 'ctr',
-      'inline_link_clicks', 'landing_page_views',
-      'cost_per_inline_link_click', 'cost_per_landing_page_view', 'cost_per_action_type',
+      'inline_link_clicks', 'landing_page_view',
+      'cost_per_inline_link_click', 'cost_per_action_type',
     ];
 
     const params: Record<string, string> = {
@@ -692,9 +690,8 @@ class MetaAPIClient {
         cpp: insight.cpp,
         ctr: insight.ctr,
         inline_link_clicks: insight.inline_link_clicks,
-        landing_page_views: insight.landing_page_views,
+        landing_page_view: insight.landing_page_view,
         cost_per_inline_link_click: insight.cost_per_inline_link_click,
-        cost_per_landing_page_view: insight.cost_per_landing_page_view,
         cost_per_action_type: insight.cost_per_action_type,
       })),
       paging: data.paging,

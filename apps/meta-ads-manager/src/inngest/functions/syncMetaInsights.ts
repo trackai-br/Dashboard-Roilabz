@@ -144,7 +144,7 @@ export const syncMetaInsights = inngest.createFunction(
                 cpm_micros: ins.cpm ? spendToMicros(ins.cpm) : null,
                 ctr: toDecimal(ins.ctr),
                 inline_link_clicks: toInt(ins.inline_link_clicks),
-                landing_page_views: toInt(ins.landing_page_views),
+                landing_page_views: toInt(ins.landing_page_view),
                 actions: ins.actions || null,
                 action_values: ins.action_values || null,
                 conversions: extractConversions(ins.actions),
