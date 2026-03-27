@@ -1,16 +1,16 @@
 import { NextApiRequest } from "next";
-import { supabase } from "./supabase";
+import { supabaseAdmin } from "./supabase";
 
 /**
  * Extract and verify JWT token from request.
- * Supports Authorization header (Bearer token) for API calls.
+ * Uses supabaseAdmin (service_role) for server-side token validation.
  */
 export async function getUserFromRequest(req: NextApiRequest) {
   const authHeader = req.headers.authorization;
   if (authHeader?.startsWith("Bearer ")) {
     const token = authHeader.slice(7);
     try {
-      const { data, error } = await supabase.auth.getUser(token);
+      const { data, error } = await supabaseAdmin!.auth.getUser(token);
       if (!error && data.user) {
         return data.user;
       }
