@@ -860,6 +860,7 @@ class MetaAPIClient {
       start_time?: string;
       end_time?: string;
       promoted_object?: Record<string, any>;
+      optimization_goal?: string;
     },
     userId?: string
   ): Promise<{ id: string }> {
@@ -878,6 +879,7 @@ class MetaAPIClient {
     if (data.start_time) body.start_time = data.start_time;
     if (data.end_time) body.end_time = data.end_time;
     if (data.promoted_object) body.promoted_object = data.promoted_object;
+    if (data.optimization_goal) body.optimization_goal = data.optimization_goal;
 
     const result = await graphPost<{ id: string }>(
       `${accountId}/adsets`,

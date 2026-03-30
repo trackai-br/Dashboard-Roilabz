@@ -57,6 +57,25 @@ export function validateWizardState(state: WizardState): {
     errors.push({ field: 'bidStrategy', message: 'Estrategia de lance nao definida' });
   }
 
+  // Bid strategy requires bid_amount
+  if (['LOWEST_COST_WITH_BID_CAP', 'COST_CAP'].includes(cfg.bidStrategy)) {
+    const missingBidCap = state.adsetTypes.some((t) => !t.bidCapValue);
+    if (missingBidCap) {
+      errors.push({
+        field: 'bidCapValue',
+        message: `Estrategia "${cfg.bidStrategy}" exige valor de lance (bid cap) em todos os tipos de adset`,
+      });
+    }
+  }
+
+  // ROAS strategy not implemented
+  if (cfg.bidStrategy === 'LOWEST_COST_WITH_MIN_ROAS') {
+    warnings.push({
+      field: 'bidStrategy',
+      message: 'Estrategia ROAS minimo nao suportada — sera usado custo mais baixo automaticamente',
+    });
+  }
+
   // Tab 4: Adset Types
   if (state.adsetTypes.length === 0) {
     errors.push({ field: 'adsetTypes', message: 'Nenhum tipo de adset configurado' });
@@ -97,6 +116,17 @@ export function validateWizardState(state: WizardState): {
   }
 
   // --- Warnings (don't block) ---
+
+  // Video creatives warning
+  if (ad && ad.creativeFiles.length > 0) {
+    const videoFiles = ad.creativeFiles.filter((f) => f.type === 'video');
+    if (videoFiles.length > 0) {
+      warnings.push({
+        field: 'videoCreatives',
+        message: `${videoFiles.length} criativo(s) de video serao ignorados (upload de video nao implementado): ${videoFiles.map((f) => f.fileName).join(', ')}`,
+      });
+    }
+  }
 
   // Creative mismatch
   if (ad && ad.creativeFiles.length > 0) {

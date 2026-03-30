@@ -1,10 +1,40 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { DashboardLayout } from '@/components/DashboardLayout';
+
+// Mock next/router
+jest.mock('next/router', () => ({
+  useRouter: () => ({
+    replace: jest.fn(),
+    push: jest.fn(),
+    pathname: '/dashboard',
+    query: {},
+    asPath: '/dashboard',
+  }),
+}));
+
+// Mock useAuth — simulate authenticated user
+jest.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({
+    user: { id: 'test-user', email: 'test@test.com' },
+    isLoading: false,
+  }),
+}));
+
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { retry: false } },
+});
+
+function renderWithProviders(ui: React.ReactElement) {
+  return render(
+    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+  );
+}
 
 describe('DashboardLayout', () => {
   it('renders with children content', () => {
-    render(
+    renderWithProviders(
       <DashboardLayout>
         <div>Test Content</div>
       </DashboardLayout>
@@ -14,7 +44,7 @@ describe('DashboardLayout', () => {
   });
 
   it('renders with custom title', () => {
-    render(
+    renderWithProviders(
       <DashboardLayout title="Custom Title">
         <div>Test Content</div>
       </DashboardLayout>
@@ -24,7 +54,7 @@ describe('DashboardLayout', () => {
   });
 
   it('always applies dark mode (NEON system)', () => {
-    const { container } = render(
+    const { container } = renderWithProviders(
       <DashboardLayout>
         <div>Test Content</div>
       </DashboardLayout>
@@ -35,7 +65,7 @@ describe('DashboardLayout', () => {
   });
 
   it('renders Sidebar on desktop', () => {
-    const { container } = render(
+    const { container } = renderWithProviders(
       <DashboardLayout>
         <div>Test Content</div>
       </DashboardLayout>
@@ -46,7 +76,7 @@ describe('DashboardLayout', () => {
   });
 
   it('renders main content area', () => {
-    const { container } = render(
+    const { container } = renderWithProviders(
       <DashboardLayout>
         <div>Test Content</div>
       </DashboardLayout>

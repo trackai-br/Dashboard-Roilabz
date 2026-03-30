@@ -6,6 +6,36 @@ atualizado: 2026-03-27
 
 # Bugs
 
+## [BUG-013] createAdSet nao enviava optimization_goal para Meta API (erro 2490487)
+- **Data:** 2026-03-29
+- **Contexto:** Publicacao em massa falhava na criacao do AdSet com erro 100/2490487: "Valor ou restricoes de lance obrigatorios". Job `bdefc05b` em producao confirmou o erro.
+- **Detalhes:** Causa raiz: `bulk-publish.ts` setava `adsetBody.optimization_goal = 'OFFSITE_CONVERSIONS'` mas `createAdSet()` em `meta-api.ts` NAO incluia `optimization_goal` na interface nem no mapeamento de body. O campo era silenciosamente descartado. Meta exige optimization_goal junto com bid_strategy para campanhas de conversao. Fix: adicionado `optimization_goal` na interface e no body mapping de `createAdSet()`.
+- **Tags:** [[Meta-API]] [[bulk-publish]] [[optimization_goal]] [[bid-strategy]] [[createAdSet]]
+
+## [BUG-012] Supabase Nano sobrecarregado por Inngest retry death spiral
+- **Data:** 2026-03-27
+- **Contexto:** CPU 91%, Disk IO 100%, Memory 50% no Supabase Nano (Free). Todas as queries falhando com timeout, circuit breaker ativado ("Failed to retrieve database credentials").
+- **Detalhes:** Causa raiz: 4 Inngest cron jobs rodando a cada 15-30min com 3 retries cada, processando 109 contas Meta com 63k+ ads. Cada falha gerava retry, que falhava de novo, criando cascata exponencial de requests ao DB. Fix: reduzir frequencia de todos os crons (15min→6-12h) e retries (3→1). syncMetaAdAccounts: `*/15 * * * *` → `0 */6 * * *`. syncMetaInsights: `*/30 * * * *` → `0 */6 * * *`. checkAlertRules: `*/15 * * * *` → `0 */6 * * *`. syncGoogleAdsAccounts: `*/15 * * * *` → `0 */12 * * *`.
+- **Tags:** [[Supabase]] [[Inngest]] [[rate-limit]] [[infrastructure]] [[cron]]
+
+## [BUG-011] landing_page_views campo invalido na Meta API (erro #100)
+- **Data:** 2026-03-27
+- **Contexto:** syncMetaInsights falhava com erro 100 da Meta API. Campo `landing_page_views` (e `landing_page_view` no singular) NAO existe como campo direto em insights.
+- **Detalhes:** `landing_page_view` e um `action_type` dentro do array `actions`, nao um campo de nivel superior. Fix: removido de `MetaInsight` interface, removido dos arrays `fields` em `getInsights()` e `getAccountInsights()`, e extraido via `ins.actions?.find(a => a.action_type === 'landing_page_view')?.value` no syncMetaInsights.
+- **Tags:** [[Meta-API]] [[insights]] [[landing-page-view]] [[Inngest]]
+
+## [BUG-010] 401 Unauthorized em todos os endpoints API (auth.ts usava anon client)
+- **Data:** 2026-03-27
+- **Contexto:** Todos os endpoints protegidos retornavam 401. Conexao Meta OAuth falhava com "unauthorized".
+- **Detalhes:** Causa raiz centralizada: `getUserFromRequest()` em `auth.ts` usava o client `supabase` (anon key) para `getUser(token)`. O client anon NAO tem permissao para validar tokens server-side — precisa do `supabaseAdmin` (service_role key). Fix: trocado para `supabaseAdmin!.auth.getUser(token)`. Tambem corrigido em `/api/auth/meta.ts` que tinha o mesmo problema isoladamente.
+- **Tags:** [[auth]] [[Supabase]] [[supabaseAdmin]] [[401]] [[OAuth]]
+
+## [BUG-009] GoogleAuthButton chamava onSuccess antes do redirect OAuth
+- **Data:** 2026-03-27
+- **Contexto:** Botao "Entrar com Google" nao abria popup/redirect do Google. Ia direto para /dashboard.
+- **Detalhes:** `signInWithOAuth()` com `redirectTo` navega o browser para o Google. Mas o codigo chamava `onSuccess()` imediatamente apos o `await`, antes do redirect acontecer. O `onSuccess` fazia `router.push('/dashboard')`, competindo com o redirect. Fix: removido `onSuccess()` — o redirect do Google cuida da navegacao.
+- **Tags:** [[auth]] [[OAuth]] [[Google]] [[redirect]]
+
 ## [BUG-008] Login nao autentica — vai direto para dashboard sem sessao
 - **Data:** 2026-03-27
 - **Contexto:** Ao clicar "Entrar com Google", o botao nao abria o fluxo OAuth do Google. Em vez disso, navegava direto para /dashboard sem autenticacao. Console mostrava `AuthRetryableFetchError` com 504.

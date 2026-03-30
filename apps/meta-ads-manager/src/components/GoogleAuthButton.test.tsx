@@ -7,7 +7,7 @@ jest.mock('@supabase/supabase-js');
 describe('GoogleAuthButton', () => {
   test('renders login button', () => {
     render(<GoogleAuthButton />);
-    expect(screen.getByText('Sign in with Google')).toBeInTheDocument();
+    expect(screen.getByText('Entrar com Google')).toBeInTheDocument();
   });
 
   test('button has correct styling when not loading', () => {
@@ -24,6 +24,6 @@ describe('GoogleAuthButton', () => {
 
   test('shows loading text when loading', () => {
     render(<GoogleAuthButton isLoading={true} />);
-    expect(screen.getByText('Signing in...')).toBeInTheDocument();
+    expect(screen.getByText('Entrando...')).toBeInTheDocument();
   });
 });
