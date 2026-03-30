@@ -585,6 +585,14 @@ export const useWizardStore = create<WizardStore>()(
     }),
     {
       name: 'wizard-draft',
+      version: 2,
+      migrate: () => {
+        // v2: reset tudo — estrutura mudou (NamingTag, DistributionMode, AdConfig simplificado)
+        return {
+          ...initialState,
+          checklist: defaultChecklist.map(item => ({ ...item })),
+        } as any;
+      },
       partialize: (state) => ({
         mode: state.mode,
         batches: state.batches,
