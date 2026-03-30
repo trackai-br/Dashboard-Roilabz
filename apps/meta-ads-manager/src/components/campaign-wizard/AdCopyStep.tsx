@@ -1,6 +1,14 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useWizardStore, selectAdConfig, selectBatches } from '@/stores/wizard-store';
 import type { AdConfig } from '@/stores/wizard-store';
+
+const defaultAdConfig: AdConfig = {
+  destinationUrl: '',
+  primaryText: '',
+  headline: '',
+  description: '',
+  utmParams: {},
+};
 
 export default function AdCopyStep() {
   const adConfig = useWizardStore(selectAdConfig);
@@ -9,13 +17,7 @@ export default function AdCopyStep() {
 
   const [perLoteCopy, setPerLoteCopy] = useState(false);
 
-  const config: AdConfig = adConfig ?? {
-    destinationUrl: '',
-    primaryText: '',
-    headline: '',
-    description: '',
-    utmParams: {},
-  };
+  const config = useMemo<AdConfig>(() => adConfig ?? defaultAdConfig, [adConfig]);
 
   const update = useCallback((updates: Partial<AdConfig>) => {
     setAdConfig({ ...config, ...updates });

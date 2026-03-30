@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useCallback } from 'react';
 import { useWizardStore, selectBatches, selectActiveBatch } from '@/stores/wizard-store';
-import type { BatchCampaignConfig, NamingTag } from '@/stores/wizard-store';
+import type { BatchCampaignConfig } from '@/stores/wizard-store';
 
 const OBJECTIVES = [
   { value: 'OUTCOME_SALES', label: 'Vendas', icon: '🛒' },
@@ -31,19 +31,17 @@ export default function CampaignConfigStep() {
   const [draggedTag, setDraggedTag] = useState<string | null>(null);
 
   // Batch selecionado para configuracao (ativo ou primeiro)
-  const batch = activeBatch ?? batches[0];
-  if (!batch) return null;
-
-  const config = batch.campaignConfig;
+  const batch = activeBatch ?? batches[0] ?? null;
+  const config = batch?.campaignConfig ?? null;
 
   const updateConfig = useCallback((updates: Partial<BatchCampaignConfig>) => {
-    if (!batch) return;
+    if (!batch || !config) return;
     const newConfig = { ...config, ...updates };
     setBatchCampaignConfig(batch.id, newConfig);
   }, [batch, config, setBatchCampaignConfig]);
 
   const updateNaming = useCallback((field: 'levaNumber' | 'creativeLabel', value: string) => {
-    if (!batch) return;
+    if (!batch || !config) return;
     setBatchCampaignConfig(batch.id, {
       ...config,
       namingPattern: { ...config.namingPattern, [field]: value },
@@ -52,6 +50,7 @@ export default function CampaignConfigStep() {
 
   // Naming preview
   const namingPreview = useMemo(() => {
+    if (!batch || !config) return '';
     const now = new Date();
     const dateStr = `${String(now.getDate()).padStart(2, '0')}.${String(now.getMonth() + 1).padStart(2, '0')}`;
     const accountName = batch.accounts[0]?.accountName || 'Conta';
@@ -70,7 +69,10 @@ export default function CampaignConfigStep() {
         default: return '';
       }
     }).join(' ');
-  }, [config.namingTags, config.namingPattern, batch.accounts, batch.pages]);
+  }, [batch, config]);
+
+  // Early return after all hooks
+  if (!batch || !config) return null;
 
   const budgetDisplay = config.budgetValue / 100;
   const needsBidCapField = config.bidStrategy === 'LOWEST_COST_WITH_BID_CAP' || config.bidStrategy === 'COST_CAP';
