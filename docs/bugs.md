@@ -1,10 +1,16 @@
 ---
 tipo: bugs
 projeto: Roi-Labz
-atualizado: 2026-03-27
+atualizado: 2026-03-30
 ---
 
 # Bugs
+
+## [BUG-014] ESLint rules-of-hooks e useCallback deps instavel no wizard refatorado
+- **Data:** 2026-03-30
+- **Contexto:** Deploy Vercel falhou apos commit a3378ec (wizard etapas 3-6). Build local com `next build` tambem falhava.
+- **Detalhes:** 2 problemas: (1) CampaignConfigStep tinha `if (!batch) return null` ANTES de `useCallback`/`useMemo` — ESLint rules-of-hooks bloqueia hooks condicionais. Fix: mover early return para depois de todos os hooks, usar guards internos. (2) AdCopyStep criava `config` com `adConfig ?? {...}` — o operador `??` gera objeto novo a cada render, desestabilizando deps dos useCallback. Fix: envolver em `useMemo`.
+- **Tags:** [[ESLint]] [[rules-of-hooks]] [[useCallback]] [[useMemo]] [[Vercel]] [[build]]
 
 ## [BUG-013] createAdSet nao enviava optimization_goal para Meta API (erro 2490487)
 - **Data:** 2026-03-29
