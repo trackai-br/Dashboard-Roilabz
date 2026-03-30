@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { DashboardLayout } from '@/components/DashboardLayout';
-import { WizardProvider, useWizard } from '@/contexts/WizardContext';
-import ConfigPopup from '@/components/campaign-wizard/ConfigPopup';
+// ROLLBACK: descomentar as 2 linhas abaixo e comentar ConfigPopupV2 para voltar ao wizard antigo
+// import { WizardProvider, useWizard } from '@/contexts/WizardContext';
+// import ConfigPopup from '@/components/campaign-wizard/ConfigPopup';
+import ConfigPopupV2 from '@/components/campaign-wizard/ConfigPopupV2';
 import { authenticatedFetch } from '@/lib/api-client';
 
 interface Template {
@@ -302,7 +304,8 @@ export default function CampaignSetupPage() {
         )}
       </div>
 
-      {showPopup && (
+      {/* ROLLBACK: descomentar WizardProvider + PopupWithDraft para voltar ao wizard antigo */}
+      {/* {showPopup && (
         <WizardProvider>
           <PopupWithDraft
             draftState={hasDraft && !templateToLoad ? draftState : null}
@@ -312,27 +315,32 @@ export default function CampaignSetupPage() {
             onSaved={handleSaved}
           />
         </WizardProvider>
+      )} */}
+      {showPopup && (
+        <ConfigPopupV2
+          onClose={handlePopupClose}
+          onSaved={handleSaved}
+        />
       )}
     </DashboardLayout>
   );
 }
 
-function PopupWithDraft({ draftState, draftId, templateState, onClose, onSaved }: {
-  draftState: any;
-  draftId: string | null;
-  templateState: any;
-  onClose: () => void;
-  onSaved: () => void;
-}) {
-  const { dispatch } = useWizard();
-
-  useEffect(() => {
-    if (templateState) {
-      dispatch({ type: 'LOAD_DRAFT', payload: { state: templateState, draftId: '' } });
-    } else if (draftState && draftId) {
-      dispatch({ type: 'LOAD_DRAFT', payload: { state: draftState, draftId } });
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  return <ConfigPopup onClose={onClose} onSaved={onSaved} />;
-}
+// ROLLBACK: descomentar PopupWithDraft + import ConfigPopup para voltar ao wizard antigo
+// function PopupWithDraft({ draftState, draftId, templateState, onClose, onSaved }: {
+//   draftState: any;
+//   draftId: string | null;
+//   templateState: any;
+//   onClose: () => void;
+//   onSaved: () => void;
+// }) {
+//   const { dispatch } = useWizard();
+//   useEffect(() => {
+//     if (templateState) {
+//       dispatch({ type: 'LOAD_DRAFT', payload: { state: templateState, draftId: '' } });
+//     } else if (draftState && draftId) {
+//       dispatch({ type: 'LOAD_DRAFT', payload: { state: draftState, draftId } });
+//     }
+//   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+//   return <ConfigPopup onClose={onClose} onSaved={onSaved} />;
+// }
