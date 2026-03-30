@@ -1,10 +1,21 @@
 ---
 tipo: antipadroes
 projeto: Roi-Labz
-atualizado: 2026-03-23
+atualizado: 2026-03-25
 ---
 
 # Antipadroes
+
+## [2026-03-25] NUNCA fazer chamadas Meta API no request path para listar metricas
+- **Contexto:** Endpoint /api/meta/campaigns fazia N+1 calls a Meta API (1 getInsights por campanha). Com 10k campanhas = timeout + rate limit + metricas vazias.
+- **Detalhes:** Sempre usar Supabase como source of truth. Dados populados por sync Inngest em background. Frontend faz zero chamadas Meta API.
+- **Tags:** [[Meta-API]] [[N+1]] [[performance]] [[Supabase]]
+
+## [2026-03-25] NUNCA buscar insights per-campaign — usar account-level batch
+- **Contexto:** GET /{campaign_id}/insights faz 1 call por campanha. Para 10k campanhas = 10k calls = ban garantido.
+- **Detalhes:** Usar GET /{account_id}/insights?level=campaign&limit=500. Retorna tudo em ~20 paginas paginadas.
+- **Tags:** [[Meta-API]] [[insights]] [[batch]]
+
 
 ## [2026-03-23] NUNCA fazer JSON.stringify em campos antes de passar para graphPost
 - **Contexto:** `graphPost()` ja faz `JSON.stringify` no body inteiro. Pre-stringificar campos como `targeting`, `promoted_object`, `creative` causa double-encoding — a Meta recebe strings escapadas em vez de objetos.

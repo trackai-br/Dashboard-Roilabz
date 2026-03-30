@@ -1,10 +1,25 @@
 ---
 tipo: aprendizados
 projeto: Roi-Labz
-atualizado: 2026-03-23
+atualizado: 2026-03-25
 ---
 
 # Aprendizados
+
+## [2026-03-25] Meta API — account-level insights vs per-campaign
+- **Contexto:** Buscar metricas de 10k campanhas individualmente e inviavel (rate limit + timeout)
+- **Detalhes:**
+  - `GET /{account_id}/insights?level=campaign&limit=500` retorna TODAS as metricas em uma chamada paginada
+  - ~20 paginas para 10k campanhas vs 10.000 calls individuais (reducao de 500x)
+  - Header `x-business-use-case-usage` informa % de uso em tempo real — usar para adaptive delay
+  - Rate limit erros 17 (user), 32 (page), 4 (app) — tratar com exponential backoff + jitter
+- **Tags:** [[Meta-API]] [[insights]] [[rate-limit]] [[batch]]
+
+## [2026-03-25] Inngest — funcoes precisam ser registradas no handler
+- **Contexto:** bulkCreateCampaigns e checkAlertRules existiam como arquivos mas nunca executavam
+- **Detalhes:** O `serve()` do Inngest so executa funcoes explicitamente listadas no array `functions`. Criar o arquivo nao e suficiente — precisa importar e registrar em `/api/inngest.ts`.
+- **Tags:** [[Inngest]] [[handler]] [[registration]]
+
 
 ## [2026-03-23] Meta API v23.0 — campos de link_data no object_story_spec
 - **Contexto:** Tentativas de criar ads falhavam com erros variados

@@ -1,10 +1,20 @@
 ---
 tipo: seguranca
 projeto: Roi-Labz
-atualizado: 2026-03-23
+atualizado: 2026-03-25
 ---
 
 # Seguranca
+
+## [2026-03-25] Rate limiting adaptativo no sync pipeline
+- **Contexto:** Sync Inngest faz chamadas paginadas a Meta API em background. Sem controle, pode exceder rate limits e causar ban.
+- **Detalhes:**
+  - Adaptive delay baseado no header x-business-use-case-usage (0s a 12s + jitter)
+  - Throw RateLimitError em >=95% de uso — Inngest faz retry automatico com backoff
+  - Sync status marcado como "partial" quando rate limited (retoma no proximo ciclo)
+  - Account-level batch (20 paginas vs 10k calls) reduz exposicao ao rate limit
+- **Tags:** [[Meta-API]] [[rate-limit]] [[Inngest]] [[anti-ban]]
+
 
 ## [2026-03-23] Medidas anti-bloqueio Meta API implementadas
 - **Contexto:** Meta pode bloquear apps que fazem chamadas com padrao de bot

@@ -1,10 +1,73 @@
 ---
 tipo: checkpoints
 projeto: Roi-Labz
-atualizado: 2026-03-27
+atualizado: 2026-03-30
 ---
 
 # Checkpoints
+
+## [2026-03-30 04:00] — Wizard Refactoring PROMPT 2/3 + 3/3: Etapas 3-6 completas
+- **O que mudou:**
+  - Store Zustand expandido: DistributionMode, NamingTag, PublishBatchResult/PublishCampaignResult, actions de naming tags e publishing
+  - AdConfig simplificado (removido creativeFormat/driveLink/creativeFiles — movidos para creative pool)
+  - BatchCampaignConfig ganhou campo namingTags para sistema de tags arrastavel
+  - 4 novos componentes criados: CreativePoolStep, CampaignConfigStep, AdCopyStep, PreviewPublishStep
+  - ConfigPopupV2 atualizado: placeholders substituidos, steps renomeados
+  - 45 testes do store passando (corrigidos para novo AdConfig/BatchCampaignConfig)
+  - TypeScript: zero erros (tsc --noEmit limpo)
+- **Arquivos criados:**
+  - `src/components/campaign-wizard/CreativePoolStep.tsx`
+  - `src/components/campaign-wizard/CampaignConfigStep.tsx`
+  - `src/components/campaign-wizard/AdCopyStep.tsx`
+  - `src/components/campaign-wizard/PreviewPublishStep.tsx`
+- **Arquivos alterados:**
+  - `src/stores/wizard-store.ts` (novos tipos, actions, selectors)
+  - `src/__tests__/wizard-store.test.ts` (corrigido mockAdConfig e namingTags)
+  - `src/components/campaign-wizard/ConfigPopupV2.tsx` (imports + steps reais)
+  - `docs/progresso.md` (entrada PROMPT 2/3 + 3/3)
+- **Testes passando:** 45/45 (wizard-store)
+- **Estado do projeto:** Parcial — etapas 0-6 implementadas, faltam integracao e polish
+- **Proximo passo se a sessao acabar aqui:**
+  1. Conectar ConfigPopupV2 na pagina campaigns/setup (trocar ConfigPopup → ConfigPopupV2)
+  2. Implementar pages selector e adset types dentro do BatchCard (Etapa 2)
+  3. Testes de componentes (unitarios + integracao)
+  4. Validacao Zod por batch
+  5. UI polish (animacoes, responsive, micro-interacoes)
+
+## [2026-03-30 02:00] — Wizard Refactoring PROMPT 1/3: Store + Componentes base (Etapas 0 e 1)
+- **O que mudou:**
+  - Zustand v5 instalado e store criado com sistema de lotes (batches)
+  - 45 testes unitarios para o store (todos passando)
+  - 3 componentes base criados: ModeSelector, BatchCard, ChecklistSidebar
+  - ConfigPopupV2 criado com 6 etapas (substitui ConfigPopup de 7 etapas)
+  - Etapa 0 (ModeSelector): 3 modos (quick/advanced/add_adsets) implementados
+  - Etapa 1 (Batch Engineering): BatchCards com accounts, volume, calculo real-time
+  - ChecklistSidebar: 10 items com progress bar, visivel em todas as etapas apos modo
+  - TypeScript: zero erros (tsc --noEmit limpo)
+- **Arquivos criados:**
+  - `src/stores/wizard-store.ts` (507 LOC — store Zustand completo)
+  - `src/__tests__/wizard-store.test.ts` (45 testes)
+  - `src/components/campaign-wizard/ModeSelector.tsx`
+  - `src/components/campaign-wizard/BatchCard.tsx`
+  - `src/components/campaign-wizard/ChecklistSidebar.tsx`
+  - `src/components/campaign-wizard/ConfigPopupV2.tsx`
+- **Arquivos alterados:**
+  - `package.json` (adicionado zustand ^5.0.12)
+  - `docs/decisoes.md` (decisao Zustand)
+  - `docs/progresso.md` (plano de execucao)
+  - `docs/testes.md` (registro de 45 testes)
+- **Testes passando:** 191/195 (4 falhas pre-existentes em rls.test.js e KPICard)
+- **Estado do projeto:** Parcial — store + componentes base prontos, faltam:
+  - Conectar ConfigPopupV2 ao ponto de entrada (campaigns/setup)
+  - Implementar secoes de campaign config e adset types dentro do BatchCard
+  - PROMPT 2/3: Pool de criativos + nomenclatura com tags
+  - PROMPT 3/3: UI polish
+- **Proximo passo se a sessao acabar aqui:**
+  1. Conectar ConfigPopupV2 na pagina campaigns/setup (trocar ConfigPopup → ConfigPopupV2)
+  2. Implementar campaign config por batch (reutilizar logica do Tab3Campaign)
+  3. Implementar adset types por batch (reutilizar logica do Tab4Adsets)
+  4. Implementar pages selector dentro do BatchCard
+  5. Conectar bulk-publish com formato batch → distribution
 
 ## [2026-03-27 23:00] — Estabilizacao critica: auth + insights + Supabase overload (5 commits pushed)
 - **O que mudou:**

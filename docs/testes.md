@@ -1,10 +1,25 @@
 ---
 tipo: testes
 projeto: Roi-Labz
-atualizado: 2026-03-23
+atualizado: 2026-03-30
 ---
 
 # Testes
+
+## [2026-03-30] Wizard Store (Zustand) — 45 testes unitarios (atualizado PROMPT 2/3)
+- **O que foi testado:** Store Zustand completo: mode selection (5 testes), batch CRUD (8 testes), accounts/pages toggle (5 testes), campaign config (2 testes), adset types (3 testes), creative pool (5 testes), ad config (3 testes), navigation (3 testes), template (1 teste), draft (1 teste), checklist (3 testes), selectors (5 testes), reset (1 teste)
+- **Resultado:** 45/45 passando (0.783s)
+- **Arquivo:** `src/__tests__/wizard-store.test.ts`
+- **Cobertura:** Actions, selectors derivados (selectIsBatchValid, selectChecklistProgress), auto-criacao de batch no setMode, independencia de estado entre batches
+- **Alteracoes PROMPT 2/3:** mockAdConfig atualizado (removido creativeFormat/driveLink/creativeFiles), namingTags adicionado aos objetos BatchCampaignConfig, import NamingTag adicionado
+- **Tags:** [[Zustand]] [[wizard]] [[testes-unitarios]]
+
+## [2026-03-25] Build validation — Insights Pipeline
+- **O que foi testado:** `npm run build` apos todas as mudancas do pipeline
+- **Resultado:** Build OK — todas as rotas compilam sem erros TypeScript
+- **Arquivos validados:** meta-api.ts, syncMetaAdAccounts.ts, syncMetaInsights.ts, campaigns.ts, insights.ts, inngest.ts, campaigns/index.tsx
+- **Pendente:** Teste funcional em producao apos aplicar migrations 004 + 010
+
 
 ## [2026-03-23] Testes automatizados — drive-utils
 - **O que foi testado:** extractFolderId com 30 cenarios (URLs validas, invalidas, edge cases)
