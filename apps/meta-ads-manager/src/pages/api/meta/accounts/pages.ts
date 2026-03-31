@@ -2,6 +2,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { requireAuth } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabase';
+import { metaAPI } from '@/lib/meta-api';
 
 export default async function handler(
   req: NextApiRequest,
@@ -44,20 +45,40 @@ export default async function handler(
       return res.status(404).json({ error: 'Account not found' });
     }
 
-    // Fetch pages for this account
+    // Try DB first
     const { data: pages, error: pagesError } = await supabaseAdmin
       .from('meta_pages')
       .select('page_id, page_name')
       .eq('meta_account_id', account.id);
 
-    if (pagesError) {
-      console.error('[pages] Error fetching pages:', pagesError);
-      return res.status(500).json({ error: 'Failed to fetch pages' });
+    if (!pagesError && pages && pages.length > 0) {
+      return res.status(200).json({
+        pages: pages.map((p: any) => ({ id: p.page_id, name: p.page_name })),
+        count: pages.length,
+        source: 'db',
+      });
+    }
+
+    // Fallback: fetch directly from Meta API and cache in DB
+    console.log(`[pages] DB empty for account ${accountId}, fetching from Meta API`);
+    const metaPages = await metaAPI.getPages(accountId, user.id);
+
+    if (metaPages && metaPages.length > 0) {
+      const pagesToSync = metaPages.map((page: any) => ({
+        meta_account_id: account.id,
+        page_id: page.id,
+        page_name: page.name,
+      }));
+      await supabaseAdmin
+        .from('meta_pages')
+        .upsert(pagesToSync, { onConflict: 'meta_account_id,page_id' })
+        .select();
     }
 
     return res.status(200).json({
-      pages: (pages || []).map((p: any) => ({ id: p.page_id, name: p.page_name })),
-      count: pages?.length || 0,
+      pages: (metaPages || []).map((p: any) => ({ id: p.id, name: p.name })),
+      count: metaPages?.length || 0,
+      source: 'meta_api',
     });
   } catch (error) {
     console.error('[pages] Unhandled error:', error);
