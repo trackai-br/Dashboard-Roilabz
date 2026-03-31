@@ -533,25 +533,65 @@ class MetaAPIClient {
   }
 
   /**
-   * Get conversion pixels for an ad account
+   * Get conversion pixels for an ad account.
+   * Strategy: try ad account level first, then fallback to business-level owned_pixels
+   * (most pixels are created at business level and won't appear via account endpoint).
    */
   async getPixels(accountId: string, userId?: string): Promise<MetaPixel[]> {
     const token = await getMetaToken(userId);
     console.log(`[Meta API] Fetching pixels for account: ${accountId}`);
 
+    // Try 1: account-level adspixels
     const data = await graphFetch<{ data: any[] }>(
       `${accountId}/adspixels`,
       { fields: 'id,name,last_fired_time', limit: '100' },
       token,
       this.apiVersion
     );
-    console.log(`[Meta API] Pixels fetched: ${data.data?.length || 0}`);
 
-    return (data.data || []).map((pixel: any) => ({
-      id: pixel.id,
-      name: pixel.name,
-      last_fired_time: pixel.last_fired_time,
-    }));
+    if (data.data && data.data.length > 0) {
+      console.log(`[Meta API] Pixels fetched (account level): ${data.data.length}`);
+      return data.data.map((pixel: any) => ({
+        id: pixel.id,
+        name: pixel.name,
+        last_fired_time: pixel.last_fired_time,
+      }));
+    }
+
+    // Try 2: business-level owned_pixels (pixels created via Business Manager)
+    console.log(`[Meta API] No account-level pixels, trying business-level`);
+    try {
+      const bizData = await graphFetch<{ data: any[] }>(
+        'me/businesses',
+        { fields: 'id,name', limit: '10' },
+        token,
+        this.apiVersion
+      );
+
+      const businesses = bizData.data || [];
+      for (const biz of businesses) {
+        const pixelData = await graphFetch<{ data: any[] }>(
+          `${biz.id}/owned_pixels`,
+          { fields: 'id,name,last_fired_time', limit: '100' },
+          token,
+          this.apiVersion
+        );
+
+        if (pixelData.data && pixelData.data.length > 0) {
+          console.log(`[Meta API] Pixels fetched (business ${biz.id}): ${pixelData.data.length}`);
+          return pixelData.data.map((pixel: any) => ({
+            id: pixel.id,
+            name: pixel.name,
+            last_fired_time: pixel.last_fired_time,
+          }));
+        }
+      }
+    } catch (bizError) {
+      console.warn(`[Meta API] Business-level pixel fetch failed:`, bizError);
+    }
+
+    console.log(`[Meta API] Pixels fetched: 0 (all strategies exhausted)`);
+    return [];
   }
 
   /**
