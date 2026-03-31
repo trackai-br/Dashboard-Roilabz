@@ -30,46 +30,39 @@ export default async function handler(
     }
 
     // Look up account UUID from meta_account_id
-    const { data: account, error: accountError } = await supabaseAdmin
+    const { data: account } = await supabaseAdmin
       .from('meta_accounts')
       .select('id')
       .eq('meta_account_id', accountId)
       .maybeSingle();
 
-    if (accountError) {
-      console.error('[pixels] Error looking up account:', accountError);
-      return res.status(500).json({ error: 'Failed to look up account' });
-    }
+    // Try DB first (only if account exists in DB)
+    if (account) {
+      const { data: pixels, error: pixelsError } = await supabaseAdmin
+        .from('meta_pixels')
+        .select('pixel_id, pixel_name, last_fired_time')
+        .eq('meta_account_id', account.id);
 
-    if (!account) {
-      return res.status(404).json({ error: 'Account not found' });
-    }
-
-    // Try DB first
-    const { data: pixels, error: pixelsError } = await supabaseAdmin
-      .from('meta_pixels')
-      .select('pixel_id, pixel_name, last_fired_time')
-      .eq('meta_account_id', account.id);
-
-    if (!pixelsError && pixels && pixels.length > 0) {
-      return res.status(200).json({
-        pixels: pixels.map((p: any) => ({ id: p.pixel_id, name: p.pixel_name, last_fired_time: p.last_fired_time })),
-        count: pixels.length,
-        source: 'database',
-      });
+      if (!pixelsError && pixels && pixels.length > 0) {
+        return res.status(200).json({
+          pixels: pixels.map((p: any) => ({ id: p.pixel_id, name: p.pixel_name, last_fired_time: p.last_fired_time })),
+          count: pixels.length,
+          source: 'database',
+        });
+      }
     }
 
     // Fallback: fetch from Meta API (account-level + Business Manager)
-    console.log(`[pixels] DB empty for ${accountId}, falling back to Meta API`);
+    console.log(`[pixels] DB empty/no account for ${accountId}, falling back to Meta API`);
     const apiPixels = await metaAPI.getPixels(accountId, user.id);
 
-    // Cache in DB for future requests
-    if (apiPixels.length > 0) {
+    // Cache in DB for future requests (only if account exists)
+    if (apiPixels.length > 0 && account) {
       const rows = apiPixels.map((p) => ({
         meta_account_id: account.id,
         pixel_id: p.id,
         pixel_name: p.name,
-        last_fired_time: p.last_fired_time ? new Date(p.last_fired_time * 1000).toISOString() : null,
+        last_fired_time: p.last_fired_time || null,
       }));
       await supabaseAdmin
         .from('meta_pixels')
