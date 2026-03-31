@@ -67,9 +67,13 @@ export default async function handler(
         meta_account_id: account.id,
         pixel_id: pixel.id,
         pixel_name: pixel.name,
-        last_fired_time: pixel.last_fired_time
-          ? new Date(pixel.last_fired_time * 1000).toISOString()
-          : null,
+        last_fired_time: (() => {
+          if (!pixel.last_fired_time) return null;
+          try {
+            const d = new Date(Number(pixel.last_fired_time) * 1000);
+            return isNaN(d.getTime()) ? null : d.toISOString();
+          } catch { return null; }
+        })(),
       }));
       await supabaseAdmin
         .from('meta_pixels')
