@@ -533,8 +533,7 @@ class MetaAPIClient {
   }
 
   /**
-   * Get conversion pixels for an ad account.
-   * Uses {accountId}/adspixels — pixels must be synced via sync-all first.
+   * Get conversion pixels for an ad account
    */
   async getPixels(accountId: string, userId?: string): Promise<MetaPixel[]> {
     const token = await getMetaToken(userId);

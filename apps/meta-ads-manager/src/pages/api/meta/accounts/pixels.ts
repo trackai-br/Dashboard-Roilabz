@@ -2,7 +2,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { requireAuth } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabase';
-import { metaAPI } from '@/lib/meta-api';
 
 export default async function handler(
   req: NextApiRequest,
@@ -45,50 +44,21 @@ export default async function handler(
       return res.status(404).json({ error: 'Account not found' });
     }
 
-    // Try DB first
+    // Fetch pixels for this account
     const { data: pixels, error: pixelsError } = await supabaseAdmin
       .from('meta_pixels')
       .select('pixel_id, pixel_name, last_fired_time')
       .eq('meta_account_id', account.id);
 
-    if (!pixelsError && pixels && pixels.length > 0) {
-      return res.status(200).json({
-        pixels: pixels.map((p: any) => ({ id: p.pixel_id, name: p.pixel_name, last_fired_time: p.last_fired_time })),
-        count: pixels.length,
-      });
+    if (pixelsError) {
+      console.error('[pixels] Error fetching pixels:', pixelsError);
+      return res.status(500).json({ error: 'Failed to fetch pixels' });
     }
 
-    // Fallback: fetch from Meta API (account-level) and cache
-    console.log(`[pixels] DB empty for account ${accountId}, fetching from Meta API`);
-    const metaPixels = await metaAPI.getPixels(accountId, user.id);
-
-    if (metaPixels && metaPixels.length > 0) {
-      const pixelsToSync = metaPixels.map((pixel: any) => ({
-        meta_account_id: account.id,
-        pixel_id: pixel.id,
-        pixel_name: pixel.name,
-        last_fired_time: (() => {
-          if (!pixel.last_fired_time) return null;
-          try {
-            const d = new Date(Number(pixel.last_fired_time) * 1000);
-            return isNaN(d.getTime()) ? null : d.toISOString();
-          } catch { return null; }
-        })(),
-      }));
-      await supabaseAdmin
-        .from('meta_pixels')
-        .upsert(pixelsToSync, { onConflict: 'meta_account_id,pixel_id' })
-        .select();
-
-      return res.status(200).json({
-        pixels: metaPixels.map((p: any) => ({ id: p.id, name: p.name, last_fired_time: p.last_fired_time })),
-        count: metaPixels.length,
-      });
-    }
-
-    // No pixels found at account level — return empty
-    // User should run sync-all which uses the same getPixels per account
-    return res.status(200).json({ pixels: [], count: 0 });
+    return res.status(200).json({
+      pixels: (pixels || []).map((p: any) => ({ id: p.pixel_id, name: p.pixel_name, last_fired_time: p.last_fired_time })),
+      count: pixels?.length || 0,
+    });
   } catch (error) {
     console.error('[pixels] Unhandled error:', error);
     return res.status(500).json({
