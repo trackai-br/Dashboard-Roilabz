@@ -6,6 +6,28 @@ atualizado: 2026-03-30
 
 # Bugs
 
+## [BUG-015] React error #185 — Maximum update depth exceeded em producao
+- **Data:** 2026-03-30
+- **Contexto:** Erro em produção (minified) no browser. Stack trace aponta para `main-4b423ec82b590a3f.js` e `framework-64ad27b21261a9ce.js`. Pagina afetada: provavelmente `/campaigns/setup`.
+- **Detalhes:** `setup.tsx` tinha `useEffect` com `showPopup` no dependency array. Cada vez que o popup fechava, o effect re-buscava drafts/templates, cujos `setState` podiam re-triggerar renders que afetavam `showPopup`. Fix: trocar deps para `[]` (mount-only) e mover re-fetch de draft para dentro de `handlePopupClose`.
+- **Status:** FIX APLICADO — aguardando deploy para confirmar
+- **Tags:** [[React]] [[useEffect]] [[error-185]] [[infinite-loop]] [[setup.tsx]]
+
+## [BUG-016] bulk-publish — 8 problemas identificados no fluxo de publicacao
+- **Data:** 2026-03-30
+- **Contexto:** Auditoria proativa do fluxo de publicacao em massa (bulk-publish + retry-publish + PreviewPublishStep).
+- **Detalhes:**
+  1. **CRITICO — Race condition duplica results:** Rate limit retry empurra result de sucesso, MAS o codigo apos o try-catch TAMBEM empurra. Resultado: campanhas duplicadas no array de results.
+  2. **CRITICO — Retry so recria campanha:** Rate limit retry chama `createCampaign` mas NAO cria adsets/ads. Campanha fica vazia mas marcada como sucesso.
+  3. **ALTO — AdSet sem end_time:** `start_time` e enviado mas `end_time` nao. Meta API pode rejeitar ou criar duracao inesperada.
+  4. **ALTO — optimization_goal so com pixel:** Sem pixelId, nenhum optimization_goal e enviado. Meta API exige este campo em TODOS os adsets.
+  5. **ALTO — isPublishing trava no erro:** Se `handlePublish` joga excecao antes de `setIsPublishing(false)`, botao fica desabilitado permanentemente.
+  6. **MEDIO — retry-publish inconsistente:** Logica duplicada com bulk-publish mas com campos diferentes. Retry pode falhar onde bulk funcionou.
+  7. **MEDIO — Resultado duplicado em falha:** Retry failure empurra result na linha 351 E na linha 362 (guard com find nao previne sempre).
+  8. **MEDIO — Retry sem budget CBO:** Retry de campanha nao inclui `daily_budget` para CBO. Meta rejeita adsets sem budget.
+- **Status:** IDENTIFICADO — fixes pendentes
+- **Tags:** [[bulk-publish]] [[retry-publish]] [[Meta-API]] [[race-condition]] [[optimization_goal]] [[PreviewPublishStep]]
+
 ## [BUG-014] ESLint rules-of-hooks e useCallback deps instavel no wizard refatorado
 - **Data:** 2026-03-30
 - **Contexto:** Deploy Vercel falhou apos commit a3378ec (wizard etapas 3-6). Build local com `next build` tambem falhava.

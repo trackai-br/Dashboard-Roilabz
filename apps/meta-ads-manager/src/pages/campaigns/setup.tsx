@@ -65,7 +65,8 @@ export default function CampaignSetupPage() {
     };
     checkDraft();
     fetchTemplates();
-  }, [showPopup]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSync = async () => {
     setSyncing(true);
@@ -142,9 +143,23 @@ export default function CampaignSetupPage() {
     }
   };
 
-  const handlePopupClose = () => {
+  const handlePopupClose = async () => {
     setShowPopup(false);
     setTemplateToLoad(null);
+    // Re-fetch draft status after closing (user may have saved a draft)
+    try {
+      const res = await authenticatedFetch('/api/drafts/current');
+      if (res.ok) {
+        const data = await res.json();
+        setHasDraft(true);
+        setDraftState(data.state);
+        setDraftId(data.id);
+      } else {
+        setHasDraft(false);
+      }
+    } catch {
+      setHasDraft(false);
+    }
   };
 
   const handleSaved = () => {
