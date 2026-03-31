@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useWizardStore, selectIsBatchValid } from '@/stores/wizard-store';
 import type { BatchConfig, BatchAccountEntry, BatchPageEntry } from '@/stores/wizard-store';
 import { useMetaAccounts } from '@/hooks/useMetaAccounts';
@@ -10,7 +10,9 @@ interface BatchCardProps {
 
 export default function BatchCard({ batch, index }: BatchCardProps) {
   const isActive = useWizardStore((s) => s.activeBatchId === batch.id);
-  const isValid = useWizardStore(selectIsBatchValid(batch.id));
+  // Memoize selector to prevent new reference each render (causes infinite re-render loop)
+  const batchValidSelector = useMemo(() => selectIsBatchValid(batch.id), [batch.id]);
+  const isValid = useWizardStore(batchValidSelector);
   const setActiveBatch = useWizardStore((s) => s.setActiveBatch);
   const updateBatch = useWizardStore((s) => s.updateBatch);
   const removeBatch = useWizardStore((s) => s.removeBatch);
