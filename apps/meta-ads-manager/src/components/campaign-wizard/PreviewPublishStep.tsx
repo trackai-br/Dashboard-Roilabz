@@ -62,60 +62,62 @@ export default function PreviewPublishStep({ onSaved }: PreviewPublishStepProps)
     if (isPublishing) return;
     setIsPublishing(true);
 
-    // Initialize publish state
-    const initialState: PublishBatchResult[] = batches.map((b) => ({
-      batchId: b.id,
-      batchName: b.name,
-      status: 'pending',
-      results: [],
-      completedCampaigns: 0,
-      totalCampaigns: b.totalCampaigns,
-    }));
-    setPublishState(initialState);
+    try {
+      // Initialize publish state
+      const initialState: PublishBatchResult[] = batches.map((b) => ({
+        batchId: b.id,
+        batchName: b.name,
+        status: 'pending',
+        results: [],
+        completedCampaigns: 0,
+        totalCampaigns: b.totalCampaigns,
+      }));
+      setPublishState(initialState);
 
-    // Iterate batches sequentially
-    for (const batch of batches) {
-      updatePublishBatch(batch.id, { status: 'publishing' });
+      // Iterate batches sequentially
+      for (const batch of batches) {
+        updatePublishBatch(batch.id, { status: 'publishing' });
 
-      try {
-        // Build distribution map for this batch
-        const distribution = buildDistributionMap(batch);
+        try {
+          // Build distribution map for this batch
+          const distribution = buildDistributionMap(batch);
 
-        const res = await authenticatedFetch('/api/meta/bulk-publish', {
-          method: 'POST',
-          body: JSON.stringify({
-            distribution,
-            campaignConfig: batch.campaignConfig,
-            adsetTypes: batch.adsetTypes,
-            adConfig,
-          }),
-        });
+          const res = await authenticatedFetch('/api/meta/bulk-publish', {
+            method: 'POST',
+            body: JSON.stringify({
+              distribution,
+              campaignConfig: batch.campaignConfig,
+              adsetTypes: batch.adsetTypes,
+              adConfig,
+            }),
+          });
 
-        if (!res.ok) {
-          const errData = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            updatePublishBatch(batch.id, {
+              status: 'failed',
+              results: [{ campaignIndex: 0, status: 'failed', error: errData.error || 'Erro HTTP' }],
+            });
+            continue;
+          }
+
+          const data = await res.json();
+          updatePublishBatch(batch.id, {
+            status: 'completed',
+            results: data.results || [],
+            completedCampaigns: data.completedCampaigns || 0,
+            jobId: data.jobId,
+          });
+        } catch (err: any) {
           updatePublishBatch(batch.id, {
             status: 'failed',
-            results: [{ campaignIndex: 0, status: 'failed', error: errData.error || 'Erro HTTP' }],
+            results: [{ campaignIndex: 0, status: 'failed', error: err.message }],
           });
-          continue;
         }
-
-        const data = await res.json();
-        updatePublishBatch(batch.id, {
-          status: 'completed',
-          results: data.results || [],
-          completedCampaigns: data.completedCampaigns || 0,
-          jobId: data.jobId,
-        });
-      } catch (err: any) {
-        updatePublishBatch(batch.id, {
-          status: 'failed',
-          results: [{ campaignIndex: 0, status: 'failed', error: err.message }],
-        });
       }
+    } finally {
+      setIsPublishing(false);
     }
-
-    setIsPublishing(false);
   }, [batches, adConfig, isPublishing, setIsPublishing, setPublishState, updatePublishBatch]);
 
   // Retry a single batch

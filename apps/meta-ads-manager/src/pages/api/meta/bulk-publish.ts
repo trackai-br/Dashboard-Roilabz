@@ -27,6 +27,19 @@ function uniqueSuffix() {
   return Math.random().toString(16).slice(2, 6);
 }
 
+/** Mapeia objective de campanha para optimization_goal de adset (quando nao tem pixel) */
+function getOptimizationGoalForObjective(objective: string): string {
+  const map: Record<string, string> = {
+    OUTCOME_TRAFFIC: 'LINK_CLICKS',
+    OUTCOME_AWARENESS: 'REACH',
+    OUTCOME_ENGAGEMENT: 'POST_ENGAGEMENT',
+    OUTCOME_LEADS: 'LEAD_GENERATION',
+    OUTCOME_APP_PROMOTION: 'APP_INSTALLS',
+    OUTCOME_SALES: 'OFFSITE_CONVERSIONS',
+  };
+  return map[objective] || 'LINK_CLICKS';
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
@@ -109,7 +122,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const cpNum = String(entry.campaignIndex + 1).padStart(2, '0');
     const campaignName = `[${dateStr}][${accountName}][CP ${cpNum}][LEVA ${campaignConfig.namingPattern.levaNumber}][${entry.pageName}] ${campaignConfig.namingPattern.creativeLabel} #${uniqueSuffix()}`;
 
-    try {
+    // --- Helper: create full campaign + adsets + ads ---
+    const createFullCampaign = async () => {
       // 1. Create Campaign
       const campaignBody: any = {
         name: campaignName,
@@ -165,6 +179,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             start_time: adsetType.startDate,
           };
 
+          // end_time: enviar se existir
+          if (adsetType.endDate) {
+            adsetBody.end_time = adsetType.endDate;
+          }
+
+          // optimization_goal: SEMPRE enviar (obrigatório na Meta API)
+          if (adsetType.pixelId) {
+            adsetBody.optimization_goal = 'OFFSITE_CONVERSIONS';
+            adsetBody.promoted_object = {
+              pixel_id: adsetType.pixelId,
+              custom_event_type: adsetType.conversionEvent,
+            };
+          } else {
+            adsetBody.optimization_goal = getOptimizationGoalForObjective(campaignConfig.objective);
+          }
+
           // bid_strategy: so enviar quando NAO for o default E tiver os campos obrigatorios
           // Meta usa "custo mais baixo" automaticamente quando bid_strategy esta ausente
           const bidStrategy = campaignConfig.bidStrategy;
@@ -186,13 +216,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
           if (campaignConfig.budgetType === 'ABO') {
             adsetBody.daily_budget = campaignConfig.budgetValue;
-          }
-          if (adsetType.pixelId) {
-            adsetBody.promoted_object = {
-              pixel_id: adsetType.pixelId,
-              custom_event_type: adsetType.conversionEvent,
-            };
-            adsetBody.optimization_goal = 'OFFSITE_CONVERSIONS';
           }
 
           console.log(`[bulk-publish] createAdSet payload:`, JSON.stringify(adsetBody, null, 2));
@@ -310,6 +333,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
       }
 
+      return metaCampaignId;
+    };
+
+    // --- Execute with retry on rate limit ---
+    try {
+      const metaCampaignId = await createFullCampaign();
       results.push({
         campaignIndex: entry.campaignIndex,
         status: 'success',
@@ -332,22 +361,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           await delay(backoffJitter);
 
           try {
-            const retryResult = await metaAPI.createCampaign(metaAccountId, {
-              name: campaignName,
-              objective: campaignConfig.objective,
-              status: campaignConfig.campaignStatus,
-              special_ad_categories: [],
-            }, user.id);
+            // Retry cria campanha + adsets + ads completo (nao so campanha)
+            const retryMetaCampaignId = await createFullCampaign();
             results.push({
               campaignIndex: entry.campaignIndex,
               status: 'success',
-              meta_campaign_id: retryResult.id,
+              meta_campaign_id: retryMetaCampaignId,
               campaignName,
             });
             retrySuccess = true;
             break;
           } catch (retryErr: any) {
+            console.error(`[bulk-publish] Retry ${attempt + 1} falhou:`, retryErr.message);
             if (attempt === 2) {
+              // Ultimo attempt — registrar falha (unico push, sem duplicata)
               results.push({
                 campaignIndex: entry.campaignIndex,
                 status: 'failed',
@@ -355,10 +382,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 errorDetails: retryErr instanceof MetaAPIError ? retryErr.toJSON() : undefined,
                 campaignName,
               });
+              retrySuccess = true; // Marca para pular o fallback push abaixo
             }
           }
         }
-        if (!retrySuccess && !results.find(r => r.campaignIndex === entry.campaignIndex)) {
+        // Fallback: se nenhum attempt conseguiu registrar resultado (nao deveria acontecer)
+        if (!retrySuccess) {
           results.push({
             campaignIndex: entry.campaignIndex,
             status: 'failed',

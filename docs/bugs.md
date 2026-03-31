@@ -25,7 +25,7 @@ atualizado: 2026-03-30
   6. **MEDIO — retry-publish inconsistente:** Logica duplicada com bulk-publish mas com campos diferentes. Retry pode falhar onde bulk funcionou.
   7. **MEDIO — Resultado duplicado em falha:** Retry failure empurra result na linha 351 E na linha 362 (guard com find nao previne sempre).
   8. **MEDIO — Retry sem budget CBO:** Retry de campanha nao inclui `daily_budget` para CBO. Meta rejeita adsets sem budget.
-- **Status:** IDENTIFICADO — fixes pendentes
+- **Status:** FIX APLICADO — createFullCampaign() encapsula fluxo completo, retry recria tudo, optimization_goal sempre enviado, isPublishing com try/finally
 - **Tags:** [[bulk-publish]] [[retry-publish]] [[Meta-API]] [[race-condition]] [[optimization_goal]] [[PreviewPublishStep]]
 
 ## [BUG-014] ESLint rules-of-hooks e useCallback deps instavel no wizard refatorado
