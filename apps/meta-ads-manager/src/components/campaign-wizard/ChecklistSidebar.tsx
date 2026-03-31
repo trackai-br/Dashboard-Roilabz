@@ -1,9 +1,16 @@
 import React from 'react';
-import { useWizardStore, selectChecklist, selectChecklistProgress } from '@/stores/wizard-store';
+import { useWizardStore, selectChecklist } from '@/stores/wizard-store';
+import { useShallow } from 'zustand/react/shallow';
 
 export default function ChecklistSidebar() {
   const checklist = useWizardStore(selectChecklist);
-  const progress = useWizardStore(selectChecklistProgress);
+  const progress = useWizardStore(
+    useShallow((s) => {
+      const total = s.checklist.length;
+      const done = s.checklist.filter(item => item.isComplete).length;
+      return { total, done, percent: total > 0 ? Math.round((done / total) * 100) : 0 };
+    })
+  );
 
   return (
     <div
