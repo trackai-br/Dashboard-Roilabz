@@ -356,11 +356,19 @@ export const useWizardStore = create<WizardStore>()(
         };
       }),
 
-      updateBatch: (batchId, updates) => set((s) => ({
-        batches: s.batches.map(b =>
+      updateBatch: (batchId, updates) => set((s) => {
+        const newBatches = s.batches.map(b =>
           b.id === batchId ? { ...b, ...updates } : b
-        ),
-      })),
+        );
+        // Mark volume checklist when campaigns or adsets per campaign are set
+        const hasVolume = newBatches.some(b => b.totalCampaigns > 0 && b.adsetsPerCampaign > 0);
+        return {
+          batches: newBatches,
+          checklist: s.checklist.map(item =>
+            item.id === 'volume' ? { ...item, isComplete: hasVolume } : item
+          ),
+        };
+      }),
 
       duplicateBatch: (batchId) => set((s) => {
         const source = s.batches.find(b => b.id === batchId);
@@ -381,8 +389,8 @@ export const useWizardStore = create<WizardStore>()(
       setActiveBatch: (batchId) => set({ activeBatchId: batchId }),
 
       // Batch accounts/pages
-      toggleBatchAccount: (batchId, account) => set((s) => ({
-        batches: s.batches.map(b => {
+      toggleBatchAccount: (batchId, account) => set((s) => {
+        const newBatches = s.batches.map(b => {
           if (b.id !== batchId) return b;
           const exists = b.accounts.some(a => a.accountId === account.accountId);
           return {
@@ -391,16 +399,19 @@ export const useWizardStore = create<WizardStore>()(
               ? b.accounts.filter(a => a.accountId !== account.accountId)
               : [...b.accounts, account],
           };
-        }),
-        checklist: s.checklist.map(item =>
-          item.id === 'accounts'
-            ? { ...item, isComplete: s.batches.some(b => b.accounts.length > 0) }
-            : item
-        ),
-      })),
+        });
+        return {
+          batches: newBatches,
+          checklist: s.checklist.map(item =>
+            item.id === 'accounts'
+              ? { ...item, isComplete: newBatches.some(b => b.accounts.length > 0) }
+              : item
+          ),
+        };
+      }),
 
-      toggleBatchPage: (batchId, page) => set((s) => ({
-        batches: s.batches.map(b => {
+      toggleBatchPage: (batchId, page) => set((s) => {
+        const newBatches = s.batches.map(b => {
           if (b.id !== batchId) return b;
           const exists = b.pages.some(p => p.pageId === page.pageId);
           return {
@@ -409,35 +420,57 @@ export const useWizardStore = create<WizardStore>()(
               ? b.pages.filter(p => p.pageId !== page.pageId)
               : [...b.pages, page],
           };
-        }),
-        checklist: s.checklist.map(item =>
-          item.id === 'pages'
-            ? { ...item, isComplete: s.batches.some(b => b.pages.length > 0) }
-            : item
-        ),
-      })),
+        });
+        return {
+          batches: newBatches,
+          checklist: s.checklist.map(item =>
+            item.id === 'pages'
+              ? { ...item, isComplete: newBatches.some(b => b.pages.length > 0) }
+              : item
+          ),
+        };
+      }),
 
       // Batch campaign config
-      setBatchCampaignConfig: (batchId, config) => set((s) => ({
-        batches: s.batches.map(b =>
+      setBatchCampaignConfig: (batchId, config) => set((s) => {
+        const newBatches = s.batches.map(b =>
           b.id === batchId ? { ...b, campaignConfig: config } : b
-        ),
-      })),
+        );
+        const hasCampaignConfig = newBatches.some(b => b.campaignConfig.budgetValue > 0 && b.campaignConfig.objective);
+        return {
+          batches: newBatches,
+          checklist: s.checklist.map(item =>
+            item.id === 'campaign' ? { ...item, isComplete: hasCampaignConfig } : item
+          ),
+        };
+      }),
 
       // Batch adset types
-      addBatchAdsetType: (batchId, adsetType) => set((s) => ({
-        batches: s.batches.map(b =>
+      addBatchAdsetType: (batchId, adsetType) => set((s) => {
+        const newBatches = s.batches.map(b =>
           b.id === batchId ? { ...b, adsetTypes: [...b.adsetTypes, adsetType] } : b
-        ),
-      })),
+        );
+        return {
+          batches: newBatches,
+          checklist: s.checklist.map(item =>
+            item.id === 'adsets' ? { ...item, isComplete: newBatches.some(b => b.adsetTypes.length > 0) } : item
+          ),
+        };
+      }),
 
-      removeBatchAdsetType: (batchId, adsetTypeId) => set((s) => ({
-        batches: s.batches.map(b =>
+      removeBatchAdsetType: (batchId, adsetTypeId) => set((s) => {
+        const newBatches = s.batches.map(b =>
           b.id === batchId
             ? { ...b, adsetTypes: b.adsetTypes.filter(t => t.id !== adsetTypeId) }
             : b
-        ),
-      })),
+        );
+        return {
+          batches: newBatches,
+          checklist: s.checklist.map(item =>
+            item.id === 'adsets' ? { ...item, isComplete: newBatches.some(b => b.adsetTypes.length > 0) } : item
+          ),
+        };
+      }),
 
       updateBatchAdsetType: (batchId, adsetTypeId, updates) => set((s) => ({
         batches: s.batches.map(b =>

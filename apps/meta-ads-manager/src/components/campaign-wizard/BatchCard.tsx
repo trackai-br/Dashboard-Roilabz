@@ -1,16 +1,32 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import { useWizardStore, selectIsBatchValid } from '@/stores/wizard-store';
-import type { BatchConfig, BatchAccountEntry, BatchPageEntry } from '@/stores/wizard-store';
+import type { BatchConfig, BatchAccountEntry, BatchPageEntry, BatchAdsetType } from '@/stores/wizard-store';
 import { useMetaAccounts } from '@/hooks/useMetaAccounts';
+import { useMetaPages } from '@/hooks/useMetaPages';
+import { useMetaPixels } from '@/hooks/useMetaPixels';
 
 interface BatchCardProps {
   batch: BatchConfig;
   index: number;
 }
 
+const CONVERSION_EVENTS = [
+  { value: 'PURCHASE', label: 'Compra' },
+  { value: 'LEAD', label: 'Lead' },
+  { value: 'ADD_TO_CART', label: 'Adicionar ao carrinho' },
+  { value: 'INITIATE_CHECKOUT', label: 'Iniciar checkout' },
+  { value: 'VIEW_CONTENT', label: 'Visualizar conteudo' },
+  { value: 'COMPLETE_REGISTRATION', label: 'Registro completo' },
+];
+
+const CONVERSION_LOCATIONS = [
+  { value: 'WEBSITE', label: 'Website' },
+  { value: 'APP', label: 'App' },
+  { value: 'MESSAGING', label: 'Mensagens' },
+];
+
 export default function BatchCard({ batch, index }: BatchCardProps) {
   const isActive = useWizardStore((s) => s.activeBatchId === batch.id);
-  // Memoize selector to prevent new reference each render (causes infinite re-render loop)
   const batchValidSelector = useMemo(() => selectIsBatchValid(batch.id), [batch.id]);
   const isValid = useWizardStore(batchValidSelector);
   const setActiveBatch = useWizardStore((s) => s.setActiveBatch);
@@ -19,10 +35,21 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
   const duplicateBatch = useWizardStore((s) => s.duplicateBatch);
   const toggleBatchAccount = useWizardStore((s) => s.toggleBatchAccount);
   const toggleBatchPage = useWizardStore((s) => s.toggleBatchPage);
-  const setBatchCampaignConfig = useWizardStore((s) => s.setBatchCampaignConfig);
+  const addBatchAdsetType = useWizardStore((s) => s.addBatchAdsetType);
+  const removeBatchAdsetType = useWizardStore((s) => s.removeBatchAdsetType);
+  const updateBatchAdsetType = useWizardStore((s) => s.updateBatchAdsetType);
   const batchCount = useWizardStore((s) => s.batches.length);
 
+  const [showAdsetForm, setShowAdsetForm] = useState(false);
+
   const { data: allAccounts } = useMetaAccounts();
+
+  // Fetch pages for all selected accounts
+  const firstAccountId = batch.accounts[0]?.accountId;
+  const { data: pagesForAccount } = useMetaPages(firstAccountId);
+
+  // Fetch pixels for first account
+  const { data: pixelsForAccount } = useMetaPixels(firstAccountId);
 
   const handleToggleExpand = () => {
     updateBatch(batch.id, { isExpanded: !batch.isExpanded });
@@ -37,9 +64,31 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
     toggleBatchAccount(batch.id, account);
   };
 
+  const handlePageToggle = (page: BatchPageEntry) => {
+    toggleBatchPage(batch.id, page);
+  };
+
   const handleVolumeChange = (field: 'adsetsPerCampaign' | 'totalCampaigns', value: number) => {
     updateBatch(batch.id, { [field]: value });
   };
+
+  const handleAddAdsetType = useCallback(() => {
+    const newAdset: BatchAdsetType = {
+      id: `adset-${Date.now()}`,
+      name: `Conjunto ${batch.adsetTypes.length + 1}`,
+      adsetCount: 1,
+      campaignsCount: batch.totalCampaigns,
+      creativesInAdset: [],
+      conversionLocation: 'WEBSITE',
+      pixelId: pixelsForAccount?.[0]?.id || '',
+      conversionEvent: 'PURCHASE',
+      startDate: new Date().toISOString().split('T')[0],
+      targetCountries: ['BR'],
+      adsetStatus: 'PAUSED',
+    };
+    addBatchAdsetType(batch.id, newAdset);
+    setShowAdsetForm(false);
+  }, [batch.id, batch.adsetTypes.length, batch.totalCampaigns, pixelsForAccount, addBatchAdsetType]);
 
   const summary = [
     `${batch.accounts.length} conta${batch.accounts.length !== 1 ? 's' : ''}`,
@@ -191,6 +240,55 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
             </div>
           </div>
 
+          {/* Pages selector */}
+          {batch.accounts.length > 0 && (
+            <div>
+              <label
+                className="block text-xs font-medium mb-2"
+                style={{
+                  color: 'var(--color-secondary)',
+                  fontFamily: "'Space Grotesk', system-ui, sans-serif",
+                }}
+              >
+                Paginas Facebook
+              </label>
+              {pagesForAccount && pagesForAccount.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {pagesForAccount.map((page: any) => {
+                    const isSelected = batch.pages.some(p => p.pageId === page.id);
+                    return (
+                      <button
+                        key={page.id}
+                        onClick={() => handlePageToggle({
+                          pageId: page.id,
+                          pageName: page.name || 'Sem nome',
+                          accountId: firstAccountId,
+                        })}
+                        className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150"
+                        style={{
+                          backgroundColor: isSelected ? 'rgba(0, 240, 255, 0.1)' : 'rgba(255, 255, 255, 0.03)',
+                          border: isSelected ? '1px solid rgba(0, 240, 255, 0.4)' : '1px solid rgba(57, 255, 20, 0.1)',
+                          color: isSelected ? '#00f0ff' : 'var(--color-secondary)',
+                        }}
+                      >
+                        {page.name || page.id}
+                        {isSelected && (
+                          <svg width="12" height="12" className="inline ml-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-xs" style={{ color: 'var(--color-tertiary)' }}>
+                  {batch.accounts.length > 0 ? 'Carregando paginas...' : 'Selecione uma conta primeiro'}
+                </p>
+              )}
+            </div>
+          )}
+
           {/* Volume */}
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -264,25 +362,214 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
             </span>
           </div>
 
-          {/* Campaign Config Summary */}
+          {/* Adset Types */}
           <div>
-            <label
-              className="block text-xs font-medium mb-1"
-              style={{ color: 'var(--color-secondary)', fontFamily: "'Space Grotesk', system-ui, sans-serif" }}
-            >
+            <div className="flex items-center justify-between mb-2">
+              <label
+                className="block text-xs font-medium"
+                style={{
+                  color: 'var(--color-secondary)',
+                  fontFamily: "'Space Grotesk', system-ui, sans-serif",
+                }}
+              >
+                Tipos de Conjunto (Ad Sets)
+              </label>
+              <button
+                onClick={handleAddAdsetType}
+                className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-all"
+                style={{
+                  backgroundColor: 'rgba(57, 255, 20, 0.1)',
+                  border: '1px solid rgba(57, 255, 20, 0.3)',
+                  color: 'var(--neon-green)',
+                }}
+              >
+                <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+                Adicionar
+              </button>
+            </div>
+
+            {batch.adsetTypes.length === 0 && (
+              <div
+                className="p-3 rounded-lg text-center"
+                style={{
+                  backgroundColor: 'rgba(255, 183, 3, 0.08)',
+                  border: '1px dashed rgba(255, 183, 3, 0.3)',
+                }}
+              >
+                <p className="text-xs" style={{ color: 'var(--color-warning)' }}>
+                  Nenhum conjunto configurado. Clique em &quot;Adicionar&quot; para criar.
+                </p>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              {batch.adsetTypes.map((adset) => (
+                <div
+                  key={adset.id}
+                  className="p-3 rounded-lg space-y-3"
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+                    border: '1px solid rgba(57, 255, 20, 0.1)',
+                  }}
+                >
+                  {/* Adset header */}
+                  <div className="flex items-center justify-between">
+                    <input
+                      type="text"
+                      value={adset.name}
+                      onChange={(e) => updateBatchAdsetType(batch.id, adset.id, { name: e.target.value })}
+                      className="bg-transparent border-none outline-none text-xs font-semibold"
+                      style={{ color: 'var(--color-primary)' }}
+                    />
+                    <button
+                      onClick={() => removeBatchAdsetType(batch.id, adset.id)}
+                      className="p-1 rounded hover:bg-red-500/10 transition-colors"
+                      style={{ color: 'var(--color-danger)' }}
+                    >
+                      <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  {/* Adset config grid */}
+                  <div className="grid grid-cols-2 gap-2">
+                    {/* Pixel */}
+                    <div>
+                      <label className="block text-[10px] mb-1" style={{ color: 'var(--color-tertiary)' }}>Pixel</label>
+                      <select
+                        value={adset.pixelId}
+                        onChange={(e) => updateBatchAdsetType(batch.id, adset.id, { pixelId: e.target.value })}
+                        className="w-full px-2 py-1.5 rounded text-xs outline-none"
+                        style={{
+                          backgroundColor: 'rgba(255,255,255,0.05)',
+                          border: '1px solid rgba(57, 255, 20, 0.15)',
+                          color: 'var(--color-primary)',
+                        }}
+                      >
+                        <option value="">Sem pixel</option>
+                        {(pixelsForAccount || []).map((px: any) => (
+                          <option key={px.id} value={px.id}>{px.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Conversion Event */}
+                    <div>
+                      <label className="block text-[10px] mb-1" style={{ color: 'var(--color-tertiary)' }}>Evento de Conversao</label>
+                      <select
+                        value={adset.conversionEvent}
+                        onChange={(e) => updateBatchAdsetType(batch.id, adset.id, { conversionEvent: e.target.value })}
+                        className="w-full px-2 py-1.5 rounded text-xs outline-none"
+                        style={{
+                          backgroundColor: 'rgba(255,255,255,0.05)',
+                          border: '1px solid rgba(57, 255, 20, 0.15)',
+                          color: 'var(--color-primary)',
+                        }}
+                      >
+                        {CONVERSION_EVENTS.map((ev) => (
+                          <option key={ev.value} value={ev.value}>{ev.label}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Conversion Location */}
+                    <div>
+                      <label className="block text-[10px] mb-1" style={{ color: 'var(--color-tertiary)' }}>Local de Conversao</label>
+                      <select
+                        value={adset.conversionLocation}
+                        onChange={(e) => updateBatchAdsetType(batch.id, adset.id, { conversionLocation: e.target.value })}
+                        className="w-full px-2 py-1.5 rounded text-xs outline-none"
+                        style={{
+                          backgroundColor: 'rgba(255,255,255,0.05)',
+                          border: '1px solid rgba(57, 255, 20, 0.15)',
+                          color: 'var(--color-primary)',
+                        }}
+                      >
+                        {CONVERSION_LOCATIONS.map((loc) => (
+                          <option key={loc.value} value={loc.value}>{loc.label}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Target Countries */}
+                    <div>
+                      <label className="block text-[10px] mb-1" style={{ color: 'var(--color-tertiary)' }}>Paises</label>
+                      <input
+                        type="text"
+                        value={adset.targetCountries.join(', ')}
+                        onChange={(e) => updateBatchAdsetType(batch.id, adset.id, {
+                          targetCountries: e.target.value.split(',').map(c => c.trim().toUpperCase()).filter(Boolean),
+                        })}
+                        placeholder="BR, US"
+                        className="w-full px-2 py-1.5 rounded text-xs outline-none"
+                        style={{
+                          backgroundColor: 'rgba(255,255,255,0.05)',
+                          border: '1px solid rgba(57, 255, 20, 0.15)',
+                          color: 'var(--color-primary)',
+                        }}
+                      />
+                    </div>
+
+                    {/* Status */}
+                    <div>
+                      <label className="block text-[10px] mb-1" style={{ color: 'var(--color-tertiary)' }}>Status</label>
+                      <div className="flex gap-1">
+                        {(['PAUSED', 'ACTIVE'] as const).map((status) => (
+                          <button
+                            key={status}
+                            onClick={() => updateBatchAdsetType(batch.id, adset.id, { adsetStatus: status })}
+                            className="flex-1 px-2 py-1 rounded text-[10px] font-medium transition-all"
+                            style={{
+                              backgroundColor: adset.adsetStatus === status ? 'rgba(57, 255, 20, 0.1)' : 'rgba(255,255,255,0.03)',
+                              border: adset.adsetStatus === status ? '1px solid rgba(57, 255, 20, 0.4)' : '1px solid rgba(255,255,255,0.08)',
+                              color: adset.adsetStatus === status ? 'var(--neon-green)' : 'var(--color-tertiary)',
+                            }}
+                          >
+                            {status === 'PAUSED' ? 'Pausado' : 'Ativo'}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Start Date */}
+                    <div>
+                      <label className="block text-[10px] mb-1" style={{ color: 'var(--color-tertiary)' }}>Data de Inicio</label>
+                      <input
+                        type="date"
+                        value={adset.startDate}
+                        onChange={(e) => updateBatchAdsetType(batch.id, adset.id, { startDate: e.target.value })}
+                        className="w-full px-2 py-1.5 rounded text-xs outline-none"
+                        style={{
+                          backgroundColor: 'rgba(255,255,255,0.05)',
+                          border: '1px solid rgba(57, 255, 20, 0.15)',
+                          color: 'var(--color-primary)',
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Campaign Config Summary */}
+          <div
+            className="px-3 py-2 rounded-lg"
+            style={{
+              backgroundColor: 'rgba(57, 255, 20, 0.03)',
+              border: '1px solid rgba(57, 255, 20, 0.08)',
+            }}
+          >
+            <span className="text-xs" style={{ color: 'var(--color-tertiary)' }}>
               Objetivo: {batch.campaignConfig.objective.replace('OUTCOME_', '')}
               {' · '}
               Budget: {batch.campaignConfig.budgetType}
               {batch.campaignConfig.budgetValue > 0 && ` R$ ${(batch.campaignConfig.budgetValue / 100).toFixed(2)}`}
               {' · '}
               Status: {batch.campaignConfig.campaignStatus}
-            </label>
-          </div>
-
-          {/* Adset types count */}
-          <div className="flex items-center justify-between">
-            <span className="text-xs" style={{ color: 'var(--color-tertiary)' }}>
-              {batch.adsetTypes.length} tipo{batch.adsetTypes.length !== 1 ? 's' : ''} de adset configurado{batch.adsetTypes.length !== 1 ? 's' : ''}
             </span>
           </div>
         </div>

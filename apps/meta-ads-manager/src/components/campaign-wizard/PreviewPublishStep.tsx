@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useEffect } from 'react';
 import { useWizardStore, selectBatches, selectCreativePool, selectAdConfig } from '@/stores/wizard-store';
 import type { PublishBatchResult, BatchConfig } from '@/stores/wizard-store';
 import { authenticatedFetch } from '@/lib/api-client';
@@ -28,6 +28,12 @@ export default function PreviewPublishStep({ onSaved }: PreviewPublishStepProps)
   const setIsPublishing = useWizardStore((s) => s.setIsPublishing);
   const setTemplateName = useWizardStore((s) => s.setTemplateName);
   const templateName = useWizardStore((s) => s.templateName);
+  const updateChecklistItem = useWizardStore((s) => s.updateChecklistItem);
+
+  // Mark review as complete when this step is visited
+  useEffect(() => {
+    updateChecklistItem('review', true);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // KPIs
   const totalCampaigns = batches.reduce((s, b) => s + b.totalCampaigns, 0);
