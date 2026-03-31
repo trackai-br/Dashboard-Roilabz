@@ -1,8 +1,37 @@
 ---
 tipo: checkpoints
 projeto: Roi-Labz
-atualizado: 2026-03-30
+atualizado: 2026-03-31
 ---
+
+# Checkpoints
+
+## [2026-03-31 00:00] — Execucao de 4 pendencias: pixels v2, ConfigPopupV2, testes, SQL
+- **O que mudou:**
+  - getPixels() reimplementado com fallback Business Manager + deduplicacao + parseLastFiredTime seguro
+  - Endpoint /api/meta/accounts/pixels com fallback API + cache automatico no DB
+  - ConfigPopupV2 recebe draftState/draftId/templateState e carrega no Zustand store
+  - Codigo comentado V1 removido de setup.tsx
+  - 28 novos testes de componentes (ModeSelector, ChecklistSidebar, ConfigPopupV2)
+  - migrations/APPLY_PENDING.sql consolidado (004 + 010 + search_path fix)
+- **Arquivos criados:**
+  - `src/__tests__/ModeSelector.test.tsx`
+  - `src/__tests__/ChecklistSidebar.test.tsx`
+  - `src/__tests__/ConfigPopupV2.test.tsx`
+  - `migrations/APPLY_PENDING.sql`
+- **Arquivos alterados:**
+  - `src/lib/meta-api.ts` (getPixels + parseLastFiredTime)
+  - `src/pages/api/meta/accounts/pixels.ts` (fallback API + cache)
+  - `src/components/campaign-wizard/ConfigPopupV2.tsx` (draft/template props + loading)
+  - `src/pages/campaigns/setup.tsx` (passa props, remove codigo V1 comentado)
+  - `docs/bugs.md`, `docs/progresso.md`, `docs/checkpoints.md`
+- **Testes passando:** 219/223 (4 falhas pre-existentes: KPICard + rls)
+- **Estado do projeto:** Funcional — pendente deploy + aplicar SQL
+- **Proximo passo se a sessao acabar aqui:**
+  1. Aplicar `migrations/APPLY_PENDING.sql` no Supabase SQL Editor
+  2. Deploy (git push) para testar em producao
+  3. Testar pixels no wizard apos deploy
+  4. Testar "Editar Rascunho" e "Usar Template" com ConfigPopupV2
 
 # Checkpoints
 

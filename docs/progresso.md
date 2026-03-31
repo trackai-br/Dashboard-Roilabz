@@ -1,10 +1,24 @@
 ---
 tipo: progresso
 projeto: Roi-Labz
-atualizado: 2026-03-30
+atualizado: 2026-03-31
 ---
 
 # Progresso
+
+## [2026-03-31] Execucao de pendencias — pixels v2, ConfigPopupV2, testes, SQL
+- **Plano:** Resolver 4 pendencias acumuladas: (1) fix pixels Business Manager v2, (2) draft/template loading no ConfigPopupV2, (3) testes de componentes wizard, (4) SQL consolidado das migrations.
+- **Abordagem:** Framework "Pensar Antes de Agir" — 4 agentes de pesquisa em paralelo para analise, seguido de execucao sequencial por prioridade.
+- **Resultado:** COMPLETO
+  - Fix pixels v2: getPixels() com fallback robusto (account → Business Manager), deduplicacao por Map, parseLastFiredTime() seguro. Endpoint /api/meta/accounts/pixels com fallback para API + cache automatico.
+  - ConfigPopupV2: props draftState/draftId/templateState adicionados, useEffect no mount carrega no Zustand store. Codigo comentado do V1 removido de setup.tsx.
+  - Testes: 28 novos testes (ModeSelector: 6, ChecklistSidebar: 6, ConfigPopupV2: 16). Total: 219 passando.
+  - SQL: migrations/APPLY_PENDING.sql consolidado (004 + 010 + 15 ALTER FUNCTION search_path). Idempotente com IF NOT EXISTS.
+- **Descoberta:** Migrations 004, 010 e search_path fix JA estavam aplicadas no banco (verificado via psql). DB tem 125 contas, 76.683 ad_sets, 86.120 ads, 253 pixels. Docs estavam desatualizados.
+- **O que falta:**
+  - Testar pixels em producao apos deploy
+  - Testar draft/template loading apos deploy
+  - Testes de BatchCard (depende de mocks mais complexos: useQuery, authenticatedFetch)
 
 ## [2026-03-30] Refactoring Wizard — PROMPT 2/3 + 3/3: Criativos, Campanha, Copy, Preview
 - **Plano:** Implementar Etapas 3-6 do wizard refatorado: (3) Pool de criativos com Drive integration + 4 modos de distribuicao, (4) Campanha + nomenclatura com sistema de naming tags arrastavel, (5) Copy do anuncio simplificado (URL, texto, headline, descricao, UTMs), (6) Preview + publicacao por lote com KPI cards, retry por batch, e save template pos-publicacao.

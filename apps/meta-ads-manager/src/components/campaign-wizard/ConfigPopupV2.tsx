@@ -32,9 +32,12 @@ const STEPS = [
 interface ConfigPopupV2Props {
   onClose: () => void;
   onSaved?: () => void;
+  draftState?: any;
+  draftId?: string | null;
+  templateState?: any;
 }
 
-export default function ConfigPopupV2({ onClose, onSaved }: ConfigPopupV2Props) {
+export default function ConfigPopupV2({ onClose, onSaved, draftState, draftId, templateState }: ConfigPopupV2Props) {
   const currentStep = useWizardStore(selectCurrentStep);
   const completedSteps = useWizardStore(selectCompletedSteps);
   const mode = useWizardStore(selectMode);
@@ -42,8 +45,21 @@ export default function ConfigPopupV2({ onClose, onSaved }: ConfigPopupV2Props) 
   const setStep = useWizardStore((s) => s.setStep);
   const markStepComplete = useWizardStore((s) => s.markStepComplete);
   const addBatch = useWizardStore((s) => s.addBatch);
+  const loadDraft = useWizardStore((s) => s.loadDraft);
+  const reset = useWizardStore((s) => s.reset);
 
   const [showConfirmClose, setShowConfirmClose] = useState(false);
+
+  // Load draft or template into Zustand store on mount
+  React.useEffect(() => {
+    if (templateState) {
+      reset();
+      loadDraft(templateState, '');
+    } else if (draftState && draftId) {
+      loadDraft(draftState, draftId);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleClose = () => setShowConfirmClose(true);
   const confirmClose = () => { setShowConfirmClose(false); onClose(); };

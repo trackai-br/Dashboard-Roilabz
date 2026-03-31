@@ -1,8 +1,28 @@
 ---
 tipo: bugs
 projeto: Roi-Labz
-atualizado: 2026-03-30
+atualizado: 2026-03-31
 ---
+
+## [BUG-017 v2] Pixels — reimplementação robusta com fallback Business Manager
+- **Data:** 2026-03-31
+- **Contexto:** Fix anterior (v1) foi revertido por bugs de implementação (crash em last_fired_time inválido, falta de deduplicação). Reimplementado com abordagem limpa.
+- **Detalhes:** Nova implementação em 3 camadas:
+  1. **`getPixels()` em meta-api.ts**: account-level primeiro (`{accountId}/adspixels`), fallback para `me/businesses` → `{bizId}/owned_pixels` se account retorna 0. Deduplicação por Map. `parseLastFiredTime()` trata unix, ISO string e valores inválidos sem crash.
+  2. **Endpoint `/api/meta/accounts/pixels`**: DB primeiro, fallback para Meta API se DB vazio. Cache automático via upsert no `meta_pixels`.
+  3. **Diferenças da v1**: deduplicação por ID, parse seguro de timestamps, try-catch por business (não bloqueia se um falhar), log por estratégia.
+- **Status:** CORRIGIDO (v2)
+- **Tags:** [[Meta-API]] [[pixels]] [[Business-Manager]] [[wizard]] [[owned_pixels]]
+
+## [BUG-017] Pixels não aparecem no wizard — adspixels retorna vazio para pixels de Business Manager (REVERTIDO)
+- **Data:** 2026-03-31
+- **Contexto:** No wizard de criação de campanhas, o seletor de pixels mostrava lista vazia. Log de produção confirmava `[Meta API] Pixels fetched: 0` repetidamente.
+- **Detalhes:** Causa raiz em 2 camadas:
+  1. **Endpoint `/api/meta/accounts/pixels`** só consultava o DB (`meta_pixels`), que estava vazio porque `sync-all` nunca foi executado. Fix: fallback para Meta API quando DB vazio, com cache automático.
+  2. **`getPixels()` em `meta-api.ts`** usava `{accountId}/adspixels` — endpoint de nível de ad account. A maioria dos pixels são criados no nível do **Business Manager** e não aparecem nesse endpoint. Fix: estratégia em 2 tentativas — account-level primeiro, depois `me/businesses` → `{bizId}/owned_pixels`.
+  3. **Mesmo problema em pages:** endpoint `/api/meta/accounts/pages` também só consultava DB vazio. Fix: fallback para `me/accounts` via Meta API.
+- **Status:** CORRIGIDO — 3 commits (2b92879, 9cd870a)
+- **Tags:** [[Meta-API]] [[pixels]] [[Business-Manager]] [[wizard]] [[adspixels]] [[owned_pixels]]
 
 # Bugs
 
@@ -10,7 +30,12 @@ atualizado: 2026-03-30
 - **Data:** 2026-03-30
 - **Contexto:** Erro em produção (minified) no browser. Stack trace aponta para `main-4b423ec82b590a3f.js` e `framework-64ad27b21261a9ce.js`. Pagina afetada: provavelmente `/campaigns/setup`.
 - **Detalhes:** `setup.tsx` tinha `useEffect` com `showPopup` no dependency array. Cada vez que o popup fechava, o effect re-buscava drafts/templates, cujos `setState` podiam re-triggerar renders que afetavam `showPopup`. Fix: trocar deps para `[]` (mount-only) e mover re-fetch de draft para dentro de `handlePopupClose`.
-- **Status:** FIX APLICADO — aguardando deploy para confirmar
+- **Status:** RESOLVIDO — causa real era selectChecklistProgress + selectIsBatchValid (ver abaixo)
+- **Root cause:** 2 selectors Zustand retornavam novas referencias a cada render:
+  - `selectChecklistProgress` retornava `{ total, done, percent }` novo → Zustand comparava por `===` → sempre diferente → re-render infinito. Fix: `useShallow` no ChecklistSidebar.
+  - `selectIsBatchValid(batchId)` é factory function que criava novo selector a cada render do BatchCard. Fix: `useMemo` no BatchCard.
+  - O loop acontecia ao clicar qualquer modo porque `ChecklistSidebar` renderiza em `currentStep > 0`.
+- **Commits:** b2a2455 (setup.tsx), 65af0dd (BatchCard), b026906 (ChecklistSidebar — fix definitivo)
 - **Tags:** [[React]] [[useEffect]] [[error-185]] [[infinite-loop]] [[setup.tsx]]
 
 ## [BUG-016] bulk-publish — 8 problemas identificados no fluxo de publicacao

@@ -1,10 +1,21 @@
 ---
 tipo: testes
 projeto: Roi-Labz
-atualizado: 2026-03-30
+atualizado: 2026-03-31
 ---
 
 # Testes
+
+## [2026-03-31] Testes de componentes wizard — ModeSelector, ChecklistSidebar, ConfigPopupV2
+- **Data:** 2026-03-31
+- **Contexto:** Wizard refatorado tinha zero testes de componentes UI. Store Zustand ja tinha 45 testes.
+- **Detalhes:**
+  - `ModeSelector.test.tsx` (6 testes): renderiza 3 modos, badge "Recomendado", selecao atualiza store e avanca step
+  - `ChecklistSidebar.test.tsx` (6 testes): renderiza items do store, progresso 0%, atualiza com items completos, "Pronto para publicar" em 100%
+  - `ConfigPopupV2.test.tsx` (16 testes): header, 6 tabs, step counter, close dialog, draft/template loading, renderiza componente correto por step (mocks de child components)
+  - Infraestrutura: testes usam Zustand store diretamente (reset no beforeEach), sem necessidade de providers. Child components mockados com jest.mock().
+- **Resultado:** 28/28 passando. Total suite: 219/223 (4 falhas pre-existentes em KPICard e rls)
+- **Tags:** [[testes]] [[wizard]] [[componentes]] [[Zustand]] [[jest]]
 
 ## [2026-03-30] Wizard Store (Zustand) — 45 testes unitarios (atualizado PROMPT 2/3)
 - **O que foi testado:** Store Zustand completo: mode selection (5 testes), batch CRUD (8 testes), accounts/pages toggle (5 testes), campaign config (2 testes), adset types (3 testes), creative pool (5 testes), ad config (3 testes), navigation (3 testes), template (1 teste), draft (1 teste), checklist (3 testes), selectors (5 testes), reset (1 teste)

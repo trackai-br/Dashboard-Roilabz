@@ -533,25 +533,87 @@ class MetaAPIClient {
   }
 
   /**
-   * Get conversion pixels for an ad account
+   * Parse last_fired_time safely — Meta returns inconsistent formats (unix timestamp, ISO string, or garbage)
+   */
+  private parseLastFiredTime(raw: any): number | undefined {
+    if (raw == null) return undefined;
+    if (typeof raw === 'number' && raw > 0) return raw;
+    if (typeof raw === 'string') {
+      const asNum = Number(raw);
+      if (!isNaN(asNum) && asNum > 0) return asNum;
+      const asDate = new Date(raw).getTime();
+      if (!isNaN(asDate) && asDate > 0) return Math.floor(asDate / 1000);
+    }
+    return undefined;
+  }
+
+  /**
+   * Get conversion pixels for an ad account.
+   * Strategy: account-level adspixels first, then Business Manager owned_pixels as fallback.
+   * Deduplicates by pixel ID.
    */
   async getPixels(accountId: string, userId?: string): Promise<MetaPixel[]> {
     const token = await getMetaToken(userId);
-    console.log(`[Meta API] Fetching pixels for account: ${accountId}`);
+    const pixelMap = new Map<string, MetaPixel>();
 
-    const data = await graphFetch<{ data: any[] }>(
-      `${accountId}/adspixels`,
-      { fields: 'id,name,last_fired_time', limit: '100' },
-      token,
-      this.apiVersion
-    );
-    console.log(`[Meta API] Pixels fetched: ${data.data?.length || 0}`);
+    // Strategy 1: Account-level adspixels
+    try {
+      const data = await graphFetch<{ data: any[] }>(
+        `${accountId}/adspixels`,
+        { fields: 'id,name,last_fired_time', limit: '100' },
+        token,
+        this.apiVersion
+      );
+      for (const pixel of data.data || []) {
+        pixelMap.set(pixel.id, {
+          id: pixel.id,
+          name: pixel.name,
+          last_fired_time: this.parseLastFiredTime(pixel.last_fired_time),
+        });
+      }
+      console.log(`[Meta API] Account-level pixels: ${pixelMap.size}`);
+    } catch (err) {
+      console.warn(`[Meta API] Account adspixels failed for ${accountId}:`, err instanceof Error ? err.message : err);
+    }
 
-    return (data.data || []).map((pixel: any) => ({
-      id: pixel.id,
-      name: pixel.name,
-      last_fired_time: pixel.last_fired_time,
-    }));
+    // Strategy 2: Business Manager owned_pixels (only if account-level returned 0)
+    if (pixelMap.size === 0) {
+      try {
+        const bizData = await graphFetch<{ data: any[] }>(
+          'me/businesses',
+          { fields: 'id,name', limit: '10' },
+          token,
+          this.apiVersion
+        );
+        for (const biz of bizData.data || []) {
+          try {
+            const pixelData = await graphFetch<{ data: any[] }>(
+              `${biz.id}/owned_pixels`,
+              { fields: 'id,name,last_fired_time', limit: '100' },
+              token,
+              this.apiVersion
+            );
+            for (const pixel of pixelData.data || []) {
+              if (!pixelMap.has(pixel.id)) {
+                pixelMap.set(pixel.id, {
+                  id: pixel.id,
+                  name: pixel.name,
+                  last_fired_time: this.parseLastFiredTime(pixel.last_fired_time),
+                });
+              }
+            }
+          } catch (bizPixelErr) {
+            console.warn(`[Meta API] owned_pixels failed for biz ${biz.id}:`, bizPixelErr instanceof Error ? bizPixelErr.message : bizPixelErr);
+          }
+        }
+        console.log(`[Meta API] Business Manager pixels: ${pixelMap.size}`);
+      } catch (bizErr) {
+        console.warn(`[Meta API] me/businesses failed:`, bizErr instanceof Error ? bizErr.message : bizErr);
+      }
+    }
+
+    console.log(`[Meta API] Total pixels for ${accountId}: ${pixelMap.size}`);
+    return Array.from(pixelMap.values());
   }
 
   /**
