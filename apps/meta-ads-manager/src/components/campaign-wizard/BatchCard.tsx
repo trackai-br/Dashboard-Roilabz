@@ -1,9 +1,10 @@
 import React, { useMemo, useState, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useWizardStore, selectIsBatchValid } from '@/stores/wizard-store';
 import type { BatchConfig, BatchAccountEntry, BatchPageEntry, BatchAdsetType } from '@/stores/wizard-store';
 import { useMetaAccounts } from '@/hooks/useMetaAccounts';
 import { useMetaPages } from '@/hooks/useMetaPages';
-import { useMetaPixels } from '@/hooks/useMetaPixels';
+import { authenticatedFetch } from '@/lib/api-client';
 
 interface BatchCardProps {
   batch: BatchConfig;
@@ -44,12 +45,31 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
 
   const { data: allAccounts } = useMetaAccounts();
 
-  // Fetch pages for all selected accounts
+  // Fetch pages for first selected account
   const firstAccountId = batch.accounts[0]?.accountId;
   const { data: pagesForAccount } = useMetaPages(firstAccountId);
 
-  // Fetch pixels for first account
-  const { data: pixelsForAccount } = useMetaPixels(firstAccountId);
+  // Fetch pixels for ALL selected accounts (same pattern as v1 Tab4Adsets)
+  const selectedAccountIds = useMemo(() => batch.accounts.map(a => a.accountId), [batch.accounts]);
+  const { data: pixelsForAccount } = useQuery({
+    queryKey: ['wizard-pixels', selectedAccountIds],
+    queryFn: async () => {
+      const pixels: Array<{ id: string; name: string }> = [];
+      for (const accountId of selectedAccountIds) {
+        try {
+          const res = await authenticatedFetch(`/api/meta/accounts/pixels?accountId=${accountId}`);
+          if (!res.ok) continue;
+          const data = await res.json();
+          for (const p of data.pixels || []) {
+            if (!pixels.some((x) => x.id === p.id)) pixels.push(p);
+          }
+        } catch { /* skip failed accounts */ }
+      }
+      return pixels;
+    },
+    enabled: selectedAccountIds.length > 0,
+    staleTime: 0,
+  });
 
   const handleToggleExpand = () => {
     updateBatch(batch.id, { isExpanded: !batch.isExpanded });

@@ -534,102 +534,25 @@ class MetaAPIClient {
 
   /**
    * Get conversion pixels for an ad account.
-   * Strategy: try ad account level first, then collect from ALL businesses with pagination.
+   * Uses {accountId}/adspixels — pixels must be synced via sync-all first.
    */
   async getPixels(accountId: string, userId?: string): Promise<MetaPixel[]> {
     const token = await getMetaToken(userId);
     console.log(`[Meta API] Fetching pixels for account: ${accountId}`);
 
-    // Try 1: account-level adspixels (with pagination)
-    const accountPixels = await this.fetchAllPages(
+    const data = await graphFetch<{ data: any[] }>(
       `${accountId}/adspixels`,
-      { fields: 'id,name,last_fired_time' },
-      token
+      { fields: 'id,name,last_fired_time', limit: '100' },
+      token,
+      this.apiVersion
     );
+    console.log(`[Meta API] Pixels fetched: ${data.data?.length || 0}`);
 
-    if (accountPixels.length > 0) {
-      console.log(`[Meta API] Pixels fetched (account level): ${accountPixels.length}`);
-      return accountPixels.map((pixel: any) => ({
-        id: pixel.id,
-        name: pixel.name,
-        last_fired_time: pixel.last_fired_time,
-      }));
-    }
-
-    // Try 2: collect from ALL businesses (not just the first)
-    console.log(`[Meta API] No account-level pixels, trying all businesses`);
-    const allPixels: MetaPixel[] = [];
-    const seenIds = new Set<string>();
-
-    try {
-      const bizData = await graphFetch<{ data: any[] }>(
-        'me/businesses',
-        { fields: 'id,name', limit: '50' },
-        token,
-        this.apiVersion
-      );
-
-      for (const biz of (bizData.data || [])) {
-        try {
-          const bizPixels = await this.fetchAllPages(
-            `${biz.id}/owned_pixels`,
-            { fields: 'id,name,last_fired_time' },
-            token
-          );
-          for (const pixel of bizPixels) {
-            if (!seenIds.has(pixel.id)) {
-              seenIds.add(pixel.id);
-              allPixels.push({ id: pixel.id, name: pixel.name, last_fired_time: pixel.last_fired_time });
-            }
-          }
-          if (bizPixels.length > 0) {
-            console.log(`[Meta API] Pixels from business ${biz.name || biz.id}: ${bizPixels.length}`);
-          }
-        } catch (bizPixelError) {
-          console.warn(`[Meta API] Failed to fetch pixels from business ${biz.id}:`, bizPixelError);
-        }
-      }
-    } catch (bizError) {
-      console.warn(`[Meta API] Business-level pixel fetch failed:`, bizError);
-    }
-
-    console.log(`[Meta API] Total pixels fetched: ${allPixels.length}`);
-    return allPixels;
-  }
-
-  /**
-   * Paginate through all results of a Graph API endpoint.
-   */
-  private async fetchAllPages(
-    path: string,
-    params: Record<string, string>,
-    token: string,
-    maxPages: number = 10
-  ): Promise<any[]> {
-    const all: any[] = [];
-    let after: string | undefined;
-
-    for (let page = 0; page < maxPages; page++) {
-      const queryParams: Record<string, string> = { ...params, limit: '100' };
-      if (after) queryParams.after = after;
-
-      const data = await graphFetch<{ data: any[]; paging?: { cursors?: { after?: string }; next?: string } }>(
-        path,
-        queryParams,
-        token,
-        this.apiVersion
-      );
-
-      if (data.data) {
-        all.push(...data.data);
-      }
-
-      // Check for next page
-      if (!data.paging?.next || !data.paging?.cursors?.after) break;
-      after = data.paging.cursors.after;
-    }
-
-    return all;
+    return (data.data || []).map((pixel: any) => ({
+      id: pixel.id,
+      name: pixel.name,
+      last_fired_time: pixel.last_fired_time,
+    }));
   }
 
   /**

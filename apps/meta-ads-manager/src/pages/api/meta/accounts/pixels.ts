@@ -55,16 +55,14 @@ export default async function handler(
       return res.status(200).json({
         pixels: pixels.map((p: any) => ({ id: p.pixel_id, name: p.pixel_name, last_fired_time: p.last_fired_time })),
         count: pixels.length,
-        source: 'db',
       });
     }
 
-    // Fallback: fetch directly from Meta API and cache in DB
+    // Fallback: fetch from Meta API (account-level) and cache
     console.log(`[pixels] DB empty for account ${accountId}, fetching from Meta API`);
     const metaPixels = await metaAPI.getPixels(accountId, user.id);
 
     if (metaPixels && metaPixels.length > 0) {
-      // Cache in DB for next time
       const pixelsToSync = metaPixels.map((pixel: any) => ({
         meta_account_id: account.id,
         pixel_id: pixel.id,
@@ -77,13 +75,16 @@ export default async function handler(
         .from('meta_pixels')
         .upsert(pixelsToSync, { onConflict: 'meta_account_id,pixel_id' })
         .select();
+
+      return res.status(200).json({
+        pixels: metaPixels.map((p: any) => ({ id: p.id, name: p.name, last_fired_time: p.last_fired_time })),
+        count: metaPixels.length,
+      });
     }
 
-    return res.status(200).json({
-      pixels: (metaPixels || []).map((p: any) => ({ id: p.id, name: p.name, last_fired_time: p.last_fired_time })),
-      count: metaPixels?.length || 0,
-      source: 'meta_api',
-    });
+    // No pixels found at account level — return empty
+    // User should run sync-all which uses the same getPixels per account
+    return res.status(200).json({ pixels: [], count: 0 });
   } catch (error) {
     console.error('[pixels] Unhandled error:', error);
     return res.status(500).json({
