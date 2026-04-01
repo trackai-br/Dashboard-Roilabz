@@ -6,6 +6,14 @@ atualizado: 2026-04-01
 
 # Progresso
 
+## [2026-04-01] Fix BUG-2490487-V2: OFFSITE_CONVERSIONS sem bid constraints (TDD)
+- **Plano:** Corrigir erro 2490487 que persistia após fix anterior: LOWEST_COST_WITHOUT_CAP + pixel → OFFSITE_CONVERSIONS sem bid_amount → Meta rejeita.
+- **Abordagem:** Ajustar `buildAdsetPayloadExtras` em `meta-ad-rules.ts` para que `OFFSITE_CONVERSIONS` + `promoted_object` só sejam usados quando bidStrategy é BID_CAP ou COST_CAP (constraints explícitas fornecidas). Para LOWEST_COST_WITHOUT_CAP, sempre usar o objetivo mapeado (LINK_CLICKS para OUTCOME_SALES), independente de pixel.
+- **Resultado:** COMPLETO — 4 testes RED → GREEN, 344/344 suite completa, TypeScript limpo.
+  - `meta-ad-rules.ts`: `needsConversionOptimization = pixelId && (BID_CAP || COST_CAP)` controla OFFSITE_CONVERSIONS
+  - `meta-ad-rules.test.ts`: 10 testes atualizados/adicionados para BR-020 com nova regra + regressão BUG-2490487-V2
+- **O que falta:** Deploy + teste em produção com Volume Mais Alto + pixel
+
 ## [2026-04-01] Fix bugs críticos bulk-publish: distribuição + optimization_goal (TDD)
 - **Plano:**
   1. Identificar causa raiz de 2 bugs produção: distribuição 24 campanhas (deveria ser 6) + erro 2490487 (OFFSITE_CONVERSIONS sem pixel)

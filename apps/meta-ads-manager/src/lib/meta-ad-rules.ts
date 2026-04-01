@@ -7,7 +7,9 @@
  * BR-017: OUTCOME_ENGAGEMENT sem pixel → POST_ENGAGEMENT
  * BR-018: OUTCOME_LEADS sem pixel → LEAD_GENERATION
  * BR-019: OUTCOME_APP_PROMOTION sem pixel → APP_INSTALLS
- * BR-020: qualquer objetivo COM pixel → OFFSITE_CONVERSIONS + promoted_object completo
+ * BR-020: pixel + BID_CAP/COST_CAP → OFFSITE_CONVERSIONS + promoted_object completo
+ *         pixel + LOWEST_COST_WITHOUT_CAP → objetivo mapeado (sem OFFSITE_CONVERSIONS)
+ *         Meta API v23.0 rejeita OFFSITE_CONVERSIONS sem bid constraints (bid_amount) → erro 2490487
  * BR-021: objetivo desconhecido sem pixel → LINK_CLICKS (fallback seguro)
  * BR-022: LOWEST_COST_WITHOUT_CAP → bid_strategy ausente no payload
  * BR-023: LOWEST_COST_WITH_BID_CAP + bidCapValue → bid_strategy + bid_amount
@@ -62,16 +64,21 @@ export interface AdsetPayloadExtras {
 export function buildAdsetPayloadExtras(input: BuildAdsetExtrasInput): AdsetPayloadExtras {
   const { objective, pixelId, conversionEvent, bidStrategy, bidCapValue, budgetType, budgetValue } = input;
 
+  // BR-020: OFFSITE_CONVERSIONS + promoted_object apenas quando bidStrategy fornece
+  // bid constraints explícitas (BID_CAP ou COST_CAP). Para LOWEST_COST_WITHOUT_CAP,
+  // mesmo com pixel, Meta API v23.0 rejeita OFFSITE_CONVERSIONS sem bid_amount → erro 2490487.
+  const needsConversionOptimization =
+    !!pixelId && (bidStrategy === 'LOWEST_COST_WITH_BID_CAP' || bidStrategy === 'COST_CAP');
+
   const result: AdsetPayloadExtras = {
-    optimization_goal: pixelId
+    optimization_goal: needsConversionOptimization
       ? 'OFFSITE_CONVERSIONS'
       : getOptimizationGoalForObjective(objective),
   };
 
-  // BR-020: com pixel → promoted_object completo
-  if (pixelId && conversionEvent) {
+  if (needsConversionOptimization && conversionEvent) {
     result.promoted_object = {
-      pixel_id: pixelId,
+      pixel_id: pixelId as string,
       custom_event_type: conversionEvent,
     };
   }
