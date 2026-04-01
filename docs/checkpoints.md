@@ -1,10 +1,27 @@
 ---
 tipo: checkpoints
 projeto: Roi-Labz
-atualizado: 2026-03-31
+atualizado: 2026-04-01
 ---
 
 # Checkpoints
+
+## [2026-04-01] — Débitos técnicos de publicação: bug retry + logs + tipos TS
+- **O que mudou:**
+  - retry-publish.ts: fix BUG-018 — `optimization_goal` agora sempre enviado, com fallback por objective quando sem pixel
+  - bulk-publish.ts: remoção de 20+ console.log com payloads em produção. Mantidos apenas console.error
+  - src/types/database.ts: adicionados tipos `publish_jobs`, `meta_insights`, `meta_sync_status`. Insert do publish_job sem `as any`
+- **Arquivos alterados:**
+  - `src/pages/api/meta/retry-publish.ts`
+  - `src/pages/api/meta/bulk-publish.ts`
+  - `src/types/database.ts`
+  - `docs/bugs.md`, `docs/progresso.md`, `docs/checkpoints.md`
+- **Testes passando:** 268/268 ✅
+- **Estado do projeto:** Funcionando — pronto para deploy
+- **Próximo passo se a sessão acabar aqui:**
+  1. `git push origin main` para deploy Vercel
+  2. Testar publicação real com e sem pixel em produção
+  3. Verificar logs do Vercel: sem payloads verbose, apenas erros
 
 ## [2026-03-31 00:00] — Execucao de 4 pendencias: pixels v2, ConfigPopupV2, testes, SQL
 - **O que mudou:**

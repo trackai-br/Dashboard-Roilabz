@@ -650,6 +650,132 @@ export type Database = {
         };
         Relationships: [];
       };
+      publish_jobs: {
+        Row: {
+          id: string;
+          user_id: string;
+          status: 'pending' | 'running' | 'completed' | 'partial' | 'failed';
+          total_campaigns: number;
+          completed_campaigns: number;
+          results: Json;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          status?: 'pending' | 'running' | 'completed' | 'partial' | 'failed';
+          total_campaigns?: number;
+          completed_campaigns?: number;
+          results?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          status?: 'pending' | 'running' | 'completed' | 'partial' | 'failed';
+          total_campaigns?: number;
+          completed_campaigns?: number;
+          results?: Json;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      meta_insights: {
+        Row: {
+          id: string;
+          meta_account_id: string;
+          object_id: string;
+          object_type: 'campaign' | 'adset' | 'ad';
+          date_start: string;
+          date_stop: string;
+          impressions: number;
+          clicks: number;
+          spend_micros: number;
+          cpc_micros: number | null;
+          cpm_micros: number | null;
+          ctr: number | null;
+          inline_link_clicks: number;
+          landing_page_views: number;
+          actions: Json | null;
+          action_values: Json | null;
+          conversions: number;
+          roas: number | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          meta_account_id: string;
+          object_id: string;
+          object_type: 'campaign' | 'adset' | 'ad';
+          date_start: string;
+          date_stop: string;
+          impressions?: number;
+          clicks?: number;
+          spend_micros?: number;
+          cpc_micros?: number | null;
+          cpm_micros?: number | null;
+          ctr?: number | null;
+          inline_link_clicks?: number;
+          landing_page_views?: number;
+          actions?: Json | null;
+          action_values?: Json | null;
+          conversions?: number;
+          roas?: number | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          impressions?: number;
+          clicks?: number;
+          spend_micros?: number;
+          cpc_micros?: number | null;
+          cpm_micros?: number | null;
+          ctr?: number | null;
+          inline_link_clicks?: number;
+          landing_page_views?: number;
+          actions?: Json | null;
+          action_values?: Json | null;
+          conversions?: number;
+          roas?: number | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      meta_sync_status: {
+        Row: {
+          id: string;
+          meta_account_id: string;
+          sync_type: 'campaigns' | 'adsets' | 'ads' | 'insights';
+          last_synced_at: string | null;
+          last_sync_status: 'pending' | 'running' | 'success' | 'partial' | 'failed';
+          last_error: string | null;
+          records_synced: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          meta_account_id: string;
+          sync_type: 'campaigns' | 'adsets' | 'ads' | 'insights';
+          last_synced_at?: string | null;
+          last_sync_status?: 'pending' | 'running' | 'success' | 'partial' | 'failed';
+          last_error?: string | null;
+          records_synced?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          last_synced_at?: string | null;
+          last_sync_status?: 'pending' | 'running' | 'success' | 'partial' | 'failed';
+          last_error?: string | null;
+          records_synced?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {};
     Functions: {};

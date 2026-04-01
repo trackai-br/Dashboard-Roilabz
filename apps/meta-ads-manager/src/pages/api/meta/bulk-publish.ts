@@ -79,11 +79,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     .from('publish_jobs')
     .insert({
       user_id: user.id,
-      status: 'running',
+      status: 'running' as const,
       total_campaigns: distribution.length,
       completed_campaigns: 0,
       results: [],
-    } as any)
+    })
     .select()
     .single();
 
@@ -91,7 +91,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(500).json({ error: 'Failed to create publish job' });
   }
 
-  const jobId = (job as any).id;
+  const jobId = job.id;
 
   // Process campaigns SYNCHRONOUSLY (Vercel kills functions after response)
   const results: any[] = [];
@@ -135,11 +135,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         campaignBody.daily_budget = campaignConfig.budgetValue;
       }
 
-      console.log(`[bulk-publish] === CAMPANHA ${i} ===`);
-      console.log(`[bulk-publish] createCampaign payload:`, JSON.stringify(campaignBody));
       const campaignResult = await metaAPI.createCampaign(metaAccountId, campaignBody, user.id);
       const metaCampaignId = campaignResult.id;
-      console.log(`[bulk-publish] Campanha criada: ${metaCampaignId}`);
       await humanDelay();
 
       // Store campaign in DB
@@ -201,27 +198,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           const hasBidAmount = !!adsetType.bidCapValue;
 
           if (bidStrategy === 'LOWEST_COST_WITHOUT_CAP') {
-            // Nao enviar — Meta defaults para custo mais baixo
-            console.log(`[bulk-publish] bid_strategy: omitido (LOWEST_COST_WITHOUT_CAP = default Meta)`);
+            // Não enviar — Meta defaults para custo mais baixo
           } else if (['LOWEST_COST_WITH_BID_CAP', 'COST_CAP'].includes(bidStrategy) && hasBidAmount) {
             adsetBody.bid_strategy = bidStrategy;
             adsetBody.bid_amount = adsetType.bidCapValue;
-            console.log(`[bulk-publish] bid_strategy: ${bidStrategy}, bid_amount: ${adsetType.bidCapValue}`);
-          } else if (bidStrategy === 'LOWEST_COST_WITH_MIN_ROAS') {
-            // ROAS minimo precisa de roas_average_floor — nao implementado, omitir
-            console.warn(`[bulk-publish] bid_strategy ROAS minimo sem roas_average_floor — omitindo bid_strategy`);
-          } else {
-            console.warn(`[bulk-publish] bid_strategy "${bidStrategy}" sem bid_amount — omitindo bid_strategy`);
           }
+          // LOWEST_COST_WITH_MIN_ROAS requer roas_average_floor — não implementado, omite bid_strategy
 
           if (campaignConfig.budgetType === 'ABO') {
             adsetBody.daily_budget = campaignConfig.budgetValue;
           }
 
-          console.log(`[bulk-publish] createAdSet payload:`, JSON.stringify(adsetBody, null, 2));
           const adsetResult = await metaAPI.createAdSet(metaAccountId, metaCampaignId, adsetBody, user.id);
           const metaAdsetId = adsetResult.id;
-          console.log(`[bulk-publish] AdSet criado: ${metaAdsetId}`);
           await humanDelay();
 
           // Store adset in DB
@@ -241,18 +230,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
           // 3. Create Ads (1 per creative in adset type)
           const validCreatives = adsetType.creativesInAdset.filter(Boolean);
-          console.log(`[bulk-publish] creativesInAdset (${validCreatives.length}):`, JSON.stringify(adsetType.creativesInAdset));
-          if (validCreatives.length === 0) {
-            console.warn(`[bulk-publish] WARNING: Nenhum criativo no adset "${adsetName}" — nenhum ad será criado`);
-          }
           for (const creativeName of validCreatives) {
             const creativeFile = adConfig.creativeFiles.find((f: any) => f.fileName === creativeName);
             const rawUrl = creativeFile?.driveUrl || '';
 
-            if (!rawUrl) {
-              console.warn(`[bulk-publish] WARNING: No driveUrl for creative "${creativeName}" — skipping ad (no media)`);
-              continue;
-            }
+            if (!rawUrl) continue;
 
             // Convert Google Drive download URL to direct serve URL (no redirect)
             let creativeUrl = rawUrl;
@@ -260,15 +242,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             if (driveIdMatch) {
               creativeUrl = `https://lh3.googleusercontent.com/d/${driveIdMatch[1]}=s0`;
             }
-            console.log(`[bulk-publish] Ad creative URL: ${creativeUrl} (file: ${creativeName})`);
 
-            const isVideo = creativeFile?.type === 'video';
-            if (isVideo) {
-              console.warn(`[bulk-publish] Creative "${creativeName}" is a video — video upload not yet implemented, skipping`);
-              continue;
-            }
+            // Video upload não implementado — pular
+            if (creativeFile?.type === 'video') continue;
 
-            // Build URL tags from UTM params
+            // Append UTM params diretamente na URL (url_tags não funciona para inline ads com object_story_spec)
             let urlTags = '';
             if (adConfig.utmParams) {
               const params = new URLSearchParams();
@@ -277,15 +255,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               }
               urlTags = params.toString();
             }
-            console.log(`[bulk-publish] utmParams:`, JSON.stringify(adConfig.utmParams), `-> urlTags: "${urlTags}"`);
 
-            // Append UTM params diretamente na URL (url_tags NAO funciona para inline ads com object_story_spec)
             let finalLink = adConfig.destinationUrl;
             if (urlTags) {
               const separator = adConfig.destinationUrl.includes('?') ? '&' : '?';
               finalLink = `${adConfig.destinationUrl}${separator}${urlTags}`;
             }
-            console.log(`[bulk-publish] finalLink (com UTM): ${finalLink}`);
 
             const adBody: any = {
               name: adsetName,
@@ -313,9 +288,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               adBody.tracking_specs = [{ 'action.type': ['offsite_conversion'], fb_pixel: [adsetType.pixelId] }];
             }
 
-            console.log(`[bulk-publish] createAd payload:`, JSON.stringify(adBody, null, 2));
             const adResult = await metaAPI.createAd(metaAccountId, metaAdsetId, adBody, user.id);
-            console.log(`[bulk-publish] Ad criado: ${adResult.id}`);
             await humanDelay();
 
             if (storedAccount) {
@@ -346,7 +319,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         campaignName,
       });
     } catch (err: any) {
-      console.error(`[bulk-publish] ERRO na campanha ${i}:`, err instanceof MetaAPIError ? JSON.stringify(err.toJSON(), null, 2) : err.message);
+      console.error(`[bulk-publish] Erro campanha ${i} (conta ${entry.accountId}):`, err instanceof MetaAPIError ? err.toJSON() : err.message);
       const isRateLimit = err instanceof MetaAPIError
         ? (err.code === 17 || err.code === 32 || err.code === 4)
         : err.message?.includes('rate limit');
@@ -357,7 +330,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         for (let attempt = 0; attempt < 3; attempt++) {
           const backoffBase = 2000 * Math.pow(2, attempt);
           const backoffJitter = backoffBase + Math.random() * 1000;
-          console.log(`[bulk-publish] Rate limit — retry ${attempt + 1}/3 em ${Math.round(backoffJitter)}ms`);
           await delay(backoffJitter);
 
           try {
@@ -372,7 +344,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             retrySuccess = true;
             break;
           } catch (retryErr: any) {
-            console.error(`[bulk-publish] Retry ${attempt + 1} falhou:`, retryErr.message);
+            console.error(`[bulk-publish] Rate limit retry ${attempt + 1}/3 falhou:`, retryErr.message);
             if (attempt === 2) {
               // Ultimo attempt — registrar falha (unico push, sem duplicata)
               results.push({

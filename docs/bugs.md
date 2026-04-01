@@ -1,8 +1,15 @@
 ---
 tipo: bugs
 projeto: Roi-Labz
-atualizado: 2026-03-31
+atualizado: 2026-04-01
 ---
+
+## [BUG-018] retry-publish.ts sem optimization_goal fallback quando sem pixel
+- **Data:** 2026-04-01
+- **Contexto:** bulk-publish.ts tinha `getOptimizationGoalForObjective()` que mapeia o objective da campanha para um optimization_goal válido quando não há pixel. retry-publish.ts NÃO tinha esse fallback — só enviava `optimization_goal` dentro do bloco `if (adsetType.pixelId)`.
+- **Detalhes:** Sem optimization_goal, Meta API retorna erro 2490487 ("Valor ou restrições de lance obrigatórios"). Qualquer retry de campanha sem pixel falharia com esse erro, mesmo que o bulk original tivesse funcionado.
+- **Status:** CORRIGIDO — `getOptimizationGoalForObjective()` adicionada ao retry-publish.ts com mesma lógica do bulk-publish.
+- **Tags:** [[bulk-publish]] [[retry-publish]] [[Meta-API]] [[optimization_goal]]
 
 ## [BUG-017 v2] Pixels — reimplementação robusta com fallback Business Manager
 - **Data:** 2026-03-31

@@ -1,10 +1,24 @@
 ---
 tipo: progresso
 projeto: Roi-Labz
-atualizado: 2026-03-31
+atualizado: 2026-04-01
 ---
 
 # Progresso
+
+## [2026-04-01] Débitos técnicos de publicação — retry-publish bug + limpeza de logs
+- **Plano:**
+  1. Fix BUG no retry-publish.ts: adicionar `getOptimizationGoalForObjective()` e fallback quando não há pixel (igual ao bulk-publish). Sem isso, retry falha com erro 2490487.
+  2. Remover debug logs do bulk-publish.ts: 25+ console.log com payloads completos em produção. Manter apenas console.error para erros reais e console.warn para criativos pulados.
+  3. TypeScript: adicionar interfaces para tabelas sem tipos (publish_jobs, meta_ads_campaigns) para eliminar `as any` nos inserts.
+- **Abordagem escolhida:** Fix cirúrgico por arquivo — retry-publish primeiro (bug crítico), depois bulk-publish (limpeza), depois TypeScript (qualidade).
+- **Probabilidade de sucesso:** Alta — mudanças isoladas, testes existentes cobrem o store/wizard, build local valida o TypeScript.
+- **Resultado:** COMPLETO
+  - retry-publish.ts: `getOptimizationGoalForObjective()` adicionado com fallback correto. Sem pixel → goal mapeado por objective (igual ao bulk-publish).
+  - bulk-publish.ts: 20+ console.log removidos. Mantidos apenas console.error para erros reais e rate limit retries. Dados sensíveis não mais expostos nos logs do Vercel.
+  - database.ts: tipos `publish_jobs`, `meta_insights`, `meta_sync_status` adicionados. Insert do publish_job sem `as any`.
+  - 268/268 testes ✅ | build limpo ✅
+- **O que falta:** Deploy em produção + testar publicação real
 
 ## [2026-03-31] Integração Zod no PreviewPublishStep
 - **Plano:** Integrar validateAllBatches no PreviewPublishStep para bloquear publicação quando há erros de validação nos lotes.

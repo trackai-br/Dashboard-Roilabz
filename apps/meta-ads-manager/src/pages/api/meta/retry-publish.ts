@@ -7,6 +7,19 @@ import { metaAPI } from '@/lib/meta-api';
 const DELAY_MIN_MS = 800;
 const DELAY_MAX_MS = 2000;
 
+/** Mapeia objective de campanha para optimization_goal de adset (quando não tem pixel) */
+function getOptimizationGoalForObjective(objective: string): string {
+  const map: Record<string, string> = {
+    OUTCOME_TRAFFIC: 'LINK_CLICKS',
+    OUTCOME_AWARENESS: 'REACH',
+    OUTCOME_ENGAGEMENT: 'POST_ENGAGEMENT',
+    OUTCOME_LEADS: 'LEAD_GENERATION',
+    OUTCOME_APP_PROMOTION: 'APP_INSTALLS',
+    OUTCOME_SALES: 'OFFSITE_CONVERSIONS',
+  };
+  return map[objective] || 'LINK_CLICKS';
+}
+
 function humanDelay() {
   const jitter = DELAY_MIN_MS + Math.random() * (DELAY_MAX_MS - DELAY_MIN_MS);
   return new Promise((resolve) => setTimeout(resolve, Math.round(jitter)));
@@ -118,12 +131,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (campaignConfig.budgetType === 'ABO') {
           adsetBody.daily_budget = campaignConfig.budgetValue;
         }
+        // optimization_goal: SEMPRE enviar (obrigatório na Meta API)
         if (adsetType.pixelId) {
+          adsetBody.optimization_goal = 'OFFSITE_CONVERSIONS';
           adsetBody.promoted_object = {
             pixel_id: adsetType.pixelId,
             custom_event_type: adsetType.conversionEvent,
           };
-          adsetBody.optimization_goal = 'OFFSITE_CONVERSIONS';
+        } else {
+          adsetBody.optimization_goal = getOptimizationGoalForObjective(campaignConfig.objective);
         }
 
         const adsetResult = await metaAPI.createAdSet(metaAccountId, metaCampaignId, adsetBody, user.id);
