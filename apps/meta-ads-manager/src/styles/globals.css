@@ -3,58 +3,66 @@
 @tailwind utilities;
 
 /* ============================================================
-   ROILABZ DESIGN SYSTEM — "Retool meets Linear"
-   Dark-first. Data-dense. Precise.
+   ROILABZ DESIGN SYSTEM — Apple-inspired, dark-first
+   Modern · Agile · Premium
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
+/* ============================================================
+   DARK MODE (default)
+   ============================================================ */
 :root {
   /* --- Backgrounds ----------------------------------------- */
-  --color-bg-base:         #0a0a0f;   /* page background */
-  --color-bg-surface:      #151822;   /* cards, panels */
-  --color-bg-surface-hover:#1a1f2e;   /* card hover */
-  --color-bg-input:        #1e2436;   /* inputs, selects */
-  --color-bg-sidebar:      #0f1117;   /* sidebar */
-  --color-bg-popover:      #1a1f2e;   /* dropdowns, tooltips */
-  --color-bg-row-hover:    #242b3d;   /* table row hover */
+  --color-bg-base:          #09090b;   /* zinc-950 — page background */
+  --color-bg-surface:       #18181b;   /* zinc-900 — cards, panels */
+  --color-bg-surface-hover: #27272a;   /* zinc-800 — card hover */
+  --color-bg-input:         #27272a;   /* zinc-800 — inputs, selects */
+  --color-bg-sidebar:       #09090b;   /* sidebar */
+  --color-bg-popover:       #18181b;   /* dropdowns, tooltips */
+  --color-bg-row-hover:     #1f1f23;   /* table row hover */
 
   /* --- Text ------------------------------------------------- */
-  --color-text-primary:    #f0f0f5;   /* headings, primary content */
-  --color-text-secondary:  #8b8fa3;   /* labels, placeholders */
-  --color-text-tertiary:   #565b6e;   /* captions, hints */
-  --color-text-disabled:   #4a4d60;   /* disabled state text */
+  --color-text-primary:     #fafafa;   /* zinc-50 — headings */
+  --color-text-secondary:   #a1a1aa;   /* zinc-400 — labels */
+  --color-text-tertiary:    #8b8b94;   /* above zinc-500 — 4.6:1 on dark bg */
+  --color-text-disabled:    #52525b;   /* zinc-600 — disabled */
 
-  /* --- Accent ----------------------------------------------- */
-  --color-accent:          #39ff14;   /* neon green — highlights, badges */
-  --color-accent-dim:      #2cc611;
-  --color-accent-bright:   #4fff24;
-  --color-accent-dark:     #1a7a06;   /* dark green — button primary bg */
+  /* --- Accent (Green) --------------------------------------- */
+  --color-accent:           #16a34a;   /* green-700 — primary green */
+  --color-accent-dim:       #15803d;   /* green-800 — dimmer */
+  --color-accent-bright:    #22c55e;   /* green-500 — highlights */
+  --color-accent-dark:      #16a34a;   /* button primary bg */
 
   /* --- Semantic --------------------------------------------- */
-  --color-success:         #39ff14;
-  --color-warning:         #ffb800;
-  --color-danger:          #ff2d78;
-  --color-info:            #00d4ff;
+  --color-success:          #22c55e;   /* green-500 */
+  --color-success-bg:       rgba(34, 197, 94, 0.08);
+  --color-warning:          #eab308;   /* yellow-500 */
+  --color-warning-bg:       rgba(234, 179, 8, 0.08);
+  --color-danger:           #ef4444;   /* red-500 */
+  --color-danger-bg:        rgba(239, 68, 68, 0.08);
+  --color-info:             #3b82f6;   /* blue-500 */
 
   /* --- Borders ---------------------------------------------- */
-  --color-border:          #1e2436;   /* default border */
-  --color-border-subtle:   rgba(255, 255, 255, 0.05);
-  --color-border-hover:    rgba(255, 255, 255, 0.12);
-  --color-border-focus:    rgba(57, 255, 20, 0.3);
-  --color-border-accent:   rgba(57, 255, 20, 0.25);
+  --color-border:           #27272a;   /* zinc-800 */
+  --color-border-subtle:    rgba(255, 255, 255, 0.06);
+  --color-border-hover:     rgba(255, 255, 255, 0.12);
+  --color-border-focus:     rgba(22, 163, 74, 0.5);
+  --color-border-accent:    rgba(22, 163, 74, 0.35);
 
   /* --- Shadows ---------------------------------------------- */
-  --shadow-sm:      0 1px 2px rgba(0, 0, 0, 0.2);
-  --shadow-card:    0 1px 3px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.03);
-  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-elevated:0 8px 24px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  --shadow-sm:       0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-card:     0 1px 3px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  --shadow-card-hover: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --shadow-elevated: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  --shadow-focus:    0 0 0 3px rgba(22, 163, 74, 0.25);
 
   /* --- Radii ------------------------------------------------- */
-  --radius-sm:  4px;
-  --radius-md:  6px;
-  --radius-lg:  8px;
-  --radius-pill: 20px;
+  --radius-sm:   6px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --radius-xl:   16px;
+  --radius-pill: 100px;
 
   /* --- Spacing (8px base) ----------------------------------- */
   --space-xs:  4px;
@@ -65,8 +73,8 @@
   --space-2xl: 48px;
 
   /* --- Typography ------------------------------------------- */
-  --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-mono: 'IBM Plex Mono', 'Fira Code', monospace;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', 'SF Mono', monospace;
 
   /* --- Transitions ------------------------------------------ */
   --transition-fast: 120ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -74,14 +82,14 @@
   --transition-slow: 300ms cubic-bezier(0.16, 1, 0.3, 1);
 
   /* ============================================================
-     LEGACY ALIASES — removed after all components are migrated
+     LEGACY ALIASES — backwards compat
      ============================================================ */
   --neon-green:          var(--color-accent);
   --neon-green-dim:      var(--color-accent-dim);
   --neon-green-bright:   var(--color-accent-bright);
   --neon-cyan:           #00f0ff;
-  --neon-magenta:        #ff2d78;
-  --neon-amber:          #ffb800;
+  --neon-magenta:        var(--color-danger);
+  --neon-amber:          var(--color-warning);
   --neon-purple:         #a100f2;
 
   --bg-deepest:          var(--color-bg-base);
@@ -92,6 +100,8 @@
   --bg-input:            var(--color-bg-input);
   --bg-row-hover:        var(--color-bg-row-hover);
   --bg-popover:          var(--color-bg-popover);
+  --bg-tertiary:         var(--color-bg-input);
+  --bg-table-header:     var(--color-bg-sidebar);
 
   --color-primary:       var(--color-text-primary);
   --color-secondary:     var(--color-text-secondary);
@@ -106,12 +116,59 @@
   --border-focus:        var(--color-border-focus);
   --border-active:       var(--color-border-accent);
 
-  --shadow-neon:         0 0 20px rgba(57, 255, 20, 0.15);
-  --shadow-neon-subtle:  0 0 0 3px rgba(57, 255, 20, 0.08);
+  --shadow-neon:         0 0 16px rgba(22, 163, 74, 0.2);
+  --shadow-neon-subtle:  0 0 0 3px rgba(22, 163, 74, 0.1);
 }
 
-.dark {
-  --color-bg-base: #0a0a0f;
+/* ============================================================
+   LIGHT MODE
+   ============================================================ */
+[data-theme="light"] {
+  --color-bg-base:          #ffffff;
+  --color-bg-surface:       #f4f4f5;   /* zinc-100 */
+  --color-bg-surface-hover: #e4e4e7;   /* zinc-200 */
+  --color-bg-input:         #ffffff;
+  --color-bg-sidebar:       #fafafa;
+  --color-bg-popover:       #ffffff;
+  --color-bg-row-hover:     #f4f4f5;
+
+  --color-text-primary:     #09090b;   /* zinc-950 */
+  --color-text-secondary:   #52525b;   /* zinc-600 */
+  --color-text-tertiary:    #71717a;   /* zinc-500 */
+  --color-text-disabled:    #a1a1aa;   /* zinc-400 */
+
+  --color-accent:           #16a34a;
+  --color-accent-dim:       #15803d;
+  --color-accent-bright:    #22c55e;
+  --color-accent-dark:      #16a34a;
+
+  --color-success:          #16a34a;
+  --color-success-bg:       rgba(22, 163, 74, 0.08);
+  --color-warning:          #ca8a04;   /* yellow-600 — legível no claro */
+  --color-warning-bg:       rgba(202, 138, 4, 0.08);
+  --color-danger:           #dc2626;   /* red-600 — legível no claro */
+  --color-danger-bg:        rgba(220, 38, 38, 0.08);
+  --color-info:             #2563eb;
+
+  --color-border:           #e4e4e7;   /* zinc-200 */
+  --color-border-subtle:    rgba(0, 0, 0, 0.06);
+  --color-border-hover:     rgba(0, 0, 0, 0.12);
+  --color-border-focus:     rgba(22, 163, 74, 0.5);
+  --color-border-accent:    rgba(22, 163, 74, 0.35);
+
+  --shadow-sm:       0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-card:     0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  --shadow-card-hover: 0 4px 16px rgba(0, 0, 0, 0.1);
+  --shadow-elevated: 0 8px 32px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+
+/* Respect system reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 @layer base {
@@ -133,13 +190,14 @@
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.011em;
   }
 
   h1 {
     font-family: var(--font-sans);
     font-size: 1.75rem;
     line-height: 1.2;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.03em;
     margin-bottom: var(--space-md);
     font-weight: 700;
     color: var(--color-text-primary);
@@ -149,7 +207,7 @@
     font-family: var(--font-sans);
     font-size: 1.375rem;
     line-height: 1.25;
-    letter-spacing: -0.015em;
+    letter-spacing: -0.025em;
     margin-bottom: var(--space-md);
     font-weight: 600;
     color: var(--color-text-primary);
@@ -159,7 +217,7 @@
     font-family: var(--font-sans);
     font-size: 1.125rem;
     line-height: 1.3;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
     margin-bottom: var(--space-sm);
     font-weight: 600;
     color: var(--color-text-primary);
@@ -169,7 +227,7 @@
     font-family: var(--font-sans);
     font-size: 0.6875rem;
     font-weight: 600;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
     margin-bottom: var(--space-sm);
     color: var(--color-text-tertiary);
@@ -182,10 +240,11 @@
 
 @layer components {
   /* ============================================================
-     BUTTONS — 3-level hierarchy
-     Primary: dark green bg, white text (NEVER neon green as bg)
-     Secondary: border, transparent bg
+     BUTTONS
+     Primary: green bg, white text
+     Secondary: border only
      Ghost: no border, muted text
+     Danger: red bg
      ============================================================ */
 
   .btn-primary {
@@ -200,19 +259,21 @@
     font-family: var(--font-sans);
     font-weight: 600;
     font-size: 13px;
-    letter-spacing: 0.01em;
+    letter-spacing: -0.01em;
     border: none;
     cursor: pointer;
     transition: all var(--transition-fast);
     white-space: nowrap;
+    user-select: none;
   }
 
   .btn-primary:hover {
-    filter: brightness(1.15);
-    box-shadow: 0 0 12px rgba(26, 122, 6, 0.35);
+    background-color: var(--color-accent);
+    filter: brightness(1.1);
   }
 
   .btn-primary:active {
+    transform: scale(0.97);
     filter: brightness(0.95);
   }
 
@@ -220,7 +281,6 @@
     opacity: 0.4;
     cursor: not-allowed;
     filter: none;
-    box-shadow: none;
   }
 
   .btn-secondary {
@@ -231,7 +291,7 @@
     padding: 8px 16px;
     border-radius: var(--radius-md);
     background-color: transparent;
-    border: 1px solid var(--color-border-hover);
+    border: 1px solid var(--color-border);
     color: var(--color-text-primary);
     font-family: var(--font-sans);
     font-weight: 500;
@@ -239,11 +299,16 @@
     cursor: pointer;
     transition: all var(--transition-fast);
     white-space: nowrap;
+    user-select: none;
   }
 
   .btn-secondary:hover {
     background-color: var(--color-bg-surface-hover);
-    border-color: var(--color-border-accent);
+    border-color: var(--color-border-hover);
+  }
+
+  .btn-secondary:active {
+    transform: scale(0.97);
   }
 
   .btn-secondary:disabled {
@@ -267,6 +332,7 @@
     cursor: pointer;
     transition: all var(--transition-fast);
     white-space: nowrap;
+    user-select: none;
   }
 
   .btn-ghost:hover {
@@ -274,12 +340,16 @@
     color: var(--color-text-primary);
   }
 
+  .btn-ghost:active {
+    transform: scale(0.97);
+  }
+
   .btn-ghost:disabled {
     opacity: 0.4;
     cursor: not-allowed;
   }
 
-  /* Legacy alias — will be removed after Etapa 2 migration */
+  /* Legacy alias */
   .btn-brand {
     display: inline-flex;
     align-items: center;
@@ -292,15 +362,14 @@
     font-family: var(--font-sans);
     font-weight: 600;
     font-size: 13px;
-    letter-spacing: 0.01em;
+    letter-spacing: -0.01em;
     border: none;
     cursor: pointer;
     transition: all var(--transition-fast);
   }
 
   .btn-brand:hover {
-    filter: brightness(1.15);
-    box-shadow: 0 0 12px rgba(26, 122, 6, 0.35);
+    filter: brightness(1.1);
   }
 
   .btn-brand:active {
@@ -311,10 +380,8 @@
     opacity: 0.4;
     cursor: not-allowed;
     filter: none;
-    box-shadow: none;
   }
 
-  /* Danger button */
   .btn-danger {
     display: inline-flex;
     align-items: center;
@@ -330,10 +397,22 @@
     font-size: 13px;
     cursor: pointer;
     transition: all var(--transition-fast);
+    white-space: nowrap;
+    user-select: none;
   }
 
   .btn-danger:hover {
     filter: brightness(1.1);
+  }
+
+  .btn-danger:active {
+    transform: scale(0.97);
+    filter: brightness(0.95);
+  }
+
+  .btn-danger:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
   }
 
   /* ============================================================
@@ -364,6 +443,7 @@
     color: var(--color-text-primary);
     font-family: var(--font-sans);
     font-size: 13px;
+    letter-spacing: -0.011em;
     transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
     width: 100%;
   }
@@ -375,14 +455,13 @@
   .input:focus {
     outline: none;
     border-color: var(--color-border-focus);
-    box-shadow: 0 0 0 3px rgba(57, 255, 20, 0.08);
+    box-shadow: var(--shadow-focus);
   }
 
   .input::placeholder {
     color: var(--color-text-tertiary);
   }
 
-  /* Compact inputs — forms inside cards */
   .input-sm {
     padding: 5px 9px;
     border-radius: var(--radius-sm);
@@ -393,7 +472,6 @@
     font-size: 12px;
     transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
     width: 100%;
-    cursor: text;
   }
 
   .input-sm:hover {
@@ -403,7 +481,7 @@
   .input-sm:focus {
     outline: none;
     border-color: var(--color-border-focus);
-    box-shadow: 0 0 0 2px rgba(57, 255, 20, 0.08);
+    box-shadow: var(--shadow-focus);
   }
 
   .input-sm::placeholder {
@@ -419,11 +497,11 @@
     gap: 5px;
     padding: 2px 8px;
     border-radius: var(--radius-pill);
-    background: rgba(57, 255, 20, 0.08);
-    color: var(--color-accent);
+    background: rgba(22, 163, 74, 0.1);
+    color: var(--color-accent-bright);
     font-size: 11px;
     font-weight: 600;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.02em;
     font-family: var(--font-sans);
   }
 
@@ -433,11 +511,11 @@
     gap: 5px;
     padding: 2px 8px;
     border-radius: var(--radius-pill);
-    background: rgba(255, 184, 0, 0.1);
+    background: rgba(234, 179, 8, 0.1);
     color: var(--color-warning);
     font-size: 11px;
     font-weight: 600;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.02em;
     font-family: var(--font-sans);
   }
 
@@ -447,11 +525,11 @@
     gap: 5px;
     padding: 2px 8px;
     border-radius: var(--radius-pill);
-    background: rgba(255, 45, 120, 0.1);
+    background: rgba(239, 68, 68, 0.1);
     color: var(--color-danger);
     font-size: 11px;
     font-weight: 600;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.02em;
     font-family: var(--font-sans);
   }
 
@@ -461,11 +539,11 @@
     gap: 5px;
     padding: 2px 8px;
     border-radius: var(--radius-pill);
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.05);
     color: var(--color-text-tertiary);
     font-size: 11px;
     font-weight: 600;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.02em;
     font-family: var(--font-sans);
   }
 
@@ -476,7 +554,7 @@
     font-size: 10px;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.07em;
+    letter-spacing: 0.06em;
     color: var(--color-text-tertiary);
     font-family: var(--font-sans);
   }

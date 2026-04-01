@@ -175,13 +175,13 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
     <div
       className="rounded-xl border transition-all duration-200"
       style={{
-        backgroundColor: isActive ? 'rgba(57, 255, 20, 0.03)' : 'rgba(255, 255, 255, 0.02)',
+        backgroundColor: isActive ? 'rgba(22, 163, 74, 0.03)' : 'rgba(255, 255, 255, 0.02)',
         borderColor: isActive
-          ? 'rgba(57, 255, 20, 0.3)'
+          ? 'rgba(22, 163, 74, 0.35)'
           : isValid
-          ? 'rgba(0, 255, 136, 0.2)'
-          : 'rgba(57, 255, 20, 0.1)',
-        boxShadow: isActive ? '0 0 12px rgba(57, 255, 20, 0.1)' : 'none',
+          ? 'rgba(22, 163, 74, 0.2)'
+          : 'var(--color-border)',
+        boxShadow: 'none',
       }}
     >
       {/* Header — always visible */}
@@ -225,7 +225,7 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
           className="text-[10px] font-medium px-2 py-0.5 rounded-full flex-shrink-0"
           style={{
             backgroundColor: isValid
-              ? 'rgba(0, 255, 136, 0.15)'
+              ? 'rgba(34, 197, 94, 0.15)'
               : 'rgba(255, 183, 3, 0.15)',
             color: isValid ? 'var(--color-success)' : 'var(--color-warning)',
             fontFamily: "var(--font-sans)",
@@ -272,7 +272,7 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
 
       {/* Expanded content */}
       {batch.isExpanded && (
-        <div className="px-4 pb-4 space-y-4" style={{ borderTop: '1px solid rgba(57, 255, 20, 0.05)' }}>
+        <div className="px-4 pb-4 space-y-4" style={{ borderTop: '1px solid var(--color-border)' }}>
           {/* Accounts selector */}
           <div className="pt-4">
             <label
@@ -297,8 +297,8 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
                     })}
                     className="px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer focus:outline-none"
                     style={{
-                      backgroundColor: isSelected ? 'rgba(57, 255, 20, 0.08)' : 'rgba(255, 255, 255, 0.03)',
-                      border: isSelected ? '1px solid rgba(57, 255, 20, 0.35)' : '1px solid var(--color-border-subtle)',
+                      backgroundColor: isSelected ? 'rgba(22, 163, 74, 0.08)' : 'rgba(255, 255, 255, 0.03)',
+                      border: isSelected ? '1px solid rgba(22, 163, 74, 0.35)' : '1px solid var(--color-border)',
                       color: isSelected ? 'var(--color-accent)' : 'var(--color-text-secondary)',
                       transition: 'all 150ms cubic-bezier(0.16, 1, 0.3, 1)',
                     }}
@@ -341,9 +341,9 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
                         })}
                         className="px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer focus:outline-none"
                         style={{
-                          backgroundColor: isSelected ? 'rgba(0, 212, 255, 0.08)' : 'rgba(255, 255, 255, 0.03)',
-                          border: isSelected ? '1px solid rgba(0, 212, 255, 0.35)' : '1px solid var(--color-border-subtle)',
-                          color: isSelected ? 'var(--color-info)' : 'var(--color-text-secondary)',
+                          backgroundColor: isSelected ? 'rgba(22, 163, 74, 0.08)' : 'rgba(255, 255, 255, 0.03)',
+                          border: isSelected ? '1px solid rgba(22, 163, 74, 0.35)' : '1px solid var(--color-border)',
+                          color: isSelected ? 'var(--color-accent-bright)' : 'var(--color-text-secondary)',
                           transition: 'all 150ms cubic-bezier(0.16, 1, 0.3, 1)',
                         }}
                       >
@@ -406,8 +406,8 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
           <div
             className="flex items-center gap-3 px-3 py-2 rounded-lg"
             style={{
-              backgroundColor: 'rgba(57, 255, 20, 0.05)',
-              border: '1px solid rgba(57, 255, 20, 0.1)',
+              backgroundColor: 'rgba(22, 163, 74, 0.06)',
+              border: '1px solid rgba(22, 163, 74, 0.1)',
             }}
           >
             <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
@@ -444,8 +444,8 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
                 onClick={handleAddAdsetType}
                 className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium cursor-pointer focus:outline-none"
                 style={{
-                  backgroundColor: 'rgba(57, 255, 20, 0.08)',
-                  border: '1px solid rgba(57, 255, 20, 0.25)',
+                  backgroundColor: 'rgba(22, 163, 74, 0.08)',
+                  border: '1px solid rgba(22, 163, 74, 0.25)',
                   color: 'var(--color-accent)',
                   transition: 'all 150ms cubic-bezier(0.16, 1, 0.3, 1)',
                 }}
@@ -461,8 +461,8 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
               <div
                 className="p-3 rounded-lg text-center"
                 style={{
-                  backgroundColor: 'rgba(255, 183, 3, 0.08)',
-                  border: '1px dashed rgba(255, 183, 3, 0.3)',
+                  backgroundColor: 'var(--color-warning-bg)',
+                  border: '1px dashed rgba(234,179,8,0.3)',
                 }}
               >
                 <p className="text-xs" style={{ color: 'var(--color-warning)' }}>
@@ -478,7 +478,7 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
                   className="p-3 rounded-lg space-y-3"
                   style={{
                     backgroundColor: 'rgba(255, 255, 255, 0.02)',
-                    border: '1px solid rgba(57, 255, 20, 0.1)',
+                    border: '1px solid rgba(22, 163, 74, 0.1)',
                   }}
                 >
                   {/* Adset header */}
@@ -574,8 +574,8 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
                             onClick={() => updateBatchAdsetType(batch.id, adset.id, { adsetStatus: status })}
                             className="flex-1 px-2 py-1 rounded-lg text-[10px] font-medium cursor-pointer focus:outline-none"
                             style={{
-                              backgroundColor: adset.adsetStatus === status ? 'rgba(57, 255, 20, 0.1)' : 'rgba(255,255,255,0.03)',
-                              border: adset.adsetStatus === status ? '1px solid rgba(57, 255, 20, 0.4)' : '1px solid rgba(255,255,255,0.08)',
+                              backgroundColor: adset.adsetStatus === status ? 'rgba(22, 163, 74, 0.1)' : 'rgba(255,255,255,0.03)',
+                              border: adset.adsetStatus === status ? '1px solid rgba(22, 163, 74, 0.4)' : '1px solid var(--color-border)',
                               color: adset.adsetStatus === status ? 'var(--color-accent)' : 'var(--color-text-tertiary)',
                             }}
                           >
@@ -623,8 +623,8 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
                       onClick={() => updateCampaignConfig({ objective: obj.value })}
                       className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-[10px] font-medium cursor-pointer focus:outline-none"
                       style={{
-                        backgroundColor: isObj ? 'rgba(57, 255, 20, 0.1)' : 'rgba(255,255,255,0.03)',
-                        border: isObj ? '1px solid rgba(57, 255, 20, 0.35)' : '1px solid var(--color-border-subtle)',
+                        backgroundColor: isObj ? 'rgba(22, 163, 74, 0.1)' : 'rgba(255,255,255,0.03)',
+                        border: isObj ? '1px solid rgba(22, 163, 74, 0.35)' : '1px solid var(--color-border)',
                         color: isObj ? 'var(--color-accent)' : 'var(--color-text-secondary)',
                         transition: 'all 150ms cubic-bezier(0.16, 1, 0.3, 1)',
                       }}
@@ -648,8 +648,8 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
                       onClick={() => updateCampaignConfig({ budgetType: bt })}
                       className="flex-1 px-2 py-1 rounded-lg text-[10px] font-medium cursor-pointer focus:outline-none"
                       style={{
-                        backgroundColor: batch.campaignConfig.budgetType === bt ? 'rgba(57, 255, 20, 0.1)' : 'rgba(255,255,255,0.03)',
-                        border: batch.campaignConfig.budgetType === bt ? '1px solid rgba(57, 255, 20, 0.4)' : '1px solid rgba(255,255,255,0.08)',
+                        backgroundColor: batch.campaignConfig.budgetType === bt ? 'rgba(22, 163, 74, 0.1)' : 'rgba(255,255,255,0.03)',
+                        border: batch.campaignConfig.budgetType === bt ? '1px solid rgba(22, 163, 74, 0.4)' : '1px solid var(--color-border)',
                         color: batch.campaignConfig.budgetType === bt ? 'var(--color-accent)' : 'var(--color-text-tertiary)',
                       }}
                     >
@@ -699,8 +699,8 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
                       onClick={() => updateCampaignConfig({ campaignStatus: status })}
                       className="flex-1 px-2 py-1 rounded-lg text-[10px] font-medium cursor-pointer focus:outline-none"
                       style={{
-                        backgroundColor: batch.campaignConfig.campaignStatus === status ? 'rgba(57, 255, 20, 0.1)' : 'rgba(255,255,255,0.03)',
-                        border: batch.campaignConfig.campaignStatus === status ? '1px solid rgba(57, 255, 20, 0.4)' : '1px solid rgba(255,255,255,0.08)',
+                        backgroundColor: batch.campaignConfig.campaignStatus === status ? 'rgba(22, 163, 74, 0.1)' : 'rgba(255,255,255,0.03)',
+                        border: batch.campaignConfig.campaignStatus === status ? '1px solid rgba(22, 163, 74, 0.4)' : '1px solid var(--color-border)',
                         color: batch.campaignConfig.campaignStatus === status ? 'var(--color-accent)' : 'var(--color-text-tertiary)',
                       }}
                     >
@@ -723,7 +723,7 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
                   className="w-full px-2 py-1.5 rounded text-xs outline-none"
                   style={{
                     backgroundColor: 'rgba(255,255,255,0.05)',
-                    border: '1px solid rgba(57, 255, 20, 0.15)',
+                    border: '1px solid rgba(22, 163, 74, 0.15)',
                     color: 'var(--color-text-primary)',
                   }}
                 />
@@ -738,7 +738,7 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
                   className="w-full px-2 py-1.5 rounded text-xs outline-none"
                   style={{
                     backgroundColor: 'rgba(255,255,255,0.05)',
-                    border: '1px solid rgba(57, 255, 20, 0.15)',
+                    border: '1px solid rgba(22, 163, 74, 0.15)',
                     color: 'var(--color-text-primary)',
                   }}
                 />
@@ -749,10 +749,10 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
             {(batch.campaignConfig.namingPattern.levaNumber || batch.campaignConfig.namingPattern.creativeLabel) && (
               <div
                 className="px-3 py-2 rounded-lg"
-                style={{ backgroundColor: 'rgba(0, 240, 255, 0.05)', border: '1px solid rgba(0, 240, 255, 0.15)' }}
+                style={{ backgroundColor: 'var(--color-bg-input)', border: '1px solid var(--color-border)' }}
               >
                 <span className="text-[10px]" style={{ color: 'var(--color-text-tertiary)' }}>Preview: </span>
-                <span className="text-[10px] font-mono" style={{ color: '#00f0ff' }}>
+                <span className="text-[10px] font-mono" style={{ color: 'var(--color-accent-bright)' }}>
                   [DATA][CONTA][CP 01][LEVA {batch.campaignConfig.namingPattern.levaNumber || '??'}][PAGINA] {batch.campaignConfig.namingPattern.creativeLabel || '??'}
                 </span>
               </div>

@@ -58,9 +58,9 @@ export default function Tab1Accounts() {
         className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium mb-4"
         style={{
           backgroundColor: state.selectedAccountIds.length > 0
-            ? 'rgba(57, 255, 20, 0.1)'
+            ? 'rgba(22, 163, 74, 0.1)'
             : 'rgba(112, 112, 128, 0.1)',
-          border: `1px solid ${state.selectedAccountIds.length > 0 ? 'rgba(57, 255, 20, 0.3)' : 'rgba(112, 112, 128, 0.3)'}`,
+          border: `1px solid ${state.selectedAccountIds.length > 0 ? 'rgba(22, 163, 74, 0.3)' : 'rgba(112, 112, 128, 0.3)'}`,
           color: state.selectedAccountIds.length > 0 ? 'var(--color-accent)' : 'var(--color-text-tertiary)',
           fontFamily: "var(--font-sans)",
         }}
@@ -77,9 +77,9 @@ export default function Tab1Accounts() {
               onClick={() => toggleAccount(account.meta_account_id)}
               className="p-4 rounded-lg border text-left transition-all duration-150"
               style={{
-                backgroundColor: isSelected ? 'rgba(57, 255, 20, 0.06)' : 'rgba(255, 255, 255, 0.02)',
-                borderColor: isSelected ? 'rgba(57, 255, 20, 0.5)' : 'var(--color-border)',
-                boxShadow: isSelected ? '0 0 12px rgba(57, 255, 20, 0.15)' : 'none',
+                backgroundColor: isSelected ? 'rgba(22, 163, 74, 0.06)' : 'rgba(255, 255, 255, 0.02)',
+                borderColor: isSelected ? 'rgba(22, 163, 74, 0.5)' : 'var(--color-border)',
+                boxShadow: isSelected ? '0 0 0 rgba(22, 163, 74, 0.15)' : 'none',
               }}
             >
               <div className="flex items-start justify-between">

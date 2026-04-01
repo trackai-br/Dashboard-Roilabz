@@ -123,7 +123,7 @@ export default function Tab4Adsets() {
             backgroundColor: 'var(--color-accent)',
             color: 'var(--color-bg-base)',
             fontFamily: "var(--font-sans)",
-            boxShadow: '0 0 12px rgba(57, 255, 20, 0.3)',
+            boxShadow: '0 0 0 rgba(22, 163, 74, 0.3)',
           }}
         >
           + Adicionar Tipo de Adset
@@ -256,7 +256,7 @@ function AdsetTypeCard({ adsetType, expanded, onToggle, onUpdate, onRemove, need
   return (
     <div
       className="rounded-lg border overflow-hidden"
-      style={{ borderColor: expanded ? 'rgba(57, 255, 20, 0.3)' : 'var(--color-border)', backgroundColor: 'rgba(255, 255, 255, 0.02)' }}
+      style={{ borderColor: expanded ? 'rgba(22, 163, 74, 0.3)' : 'var(--color-border)', backgroundColor: 'rgba(255, 255, 255, 0.02)' }}
     >
       {/* Header — always visible */}
       <div className="flex items-center gap-3 px-4 py-3 cursor-pointer" onClick={onToggle}>
@@ -273,7 +273,7 @@ function AdsetTypeCard({ adsetType, expanded, onToggle, onUpdate, onRemove, need
         </span>
         <span
           className="px-2 py-0.5 rounded-full text-xs font-medium"
-          style={{ backgroundColor: 'rgba(0, 240, 255, 0.1)', color: 'var(--color-info)', border: '1px solid rgba(0, 240, 255, 0.3)' }}
+          style={{ backgroundColor: 'rgba(0, 240, 255, 0.1)', color: 'var(--color-accent-bright)', border: '1px solid rgba(22, 163, 74, 0.3)' }}
         >
           {adsetType.adsetCount * adsetType.campaignsCount} adsets
         </span>
@@ -452,8 +452,8 @@ function AdsetTypeCard({ adsetType, expanded, onToggle, onUpdate, onRemove, need
                     onClick={() => toggleCountry(c.code)}
                     className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs transition-all"
                     style={{
-                      backgroundColor: isSelected ? 'rgba(57, 255, 20, 0.08)' : 'transparent',
-                      borderColor: isSelected ? 'rgba(57, 255, 20, 0.4)' : 'var(--color-border)',
+                      backgroundColor: isSelected ? 'rgba(22, 163, 74, 0.08)' : 'transparent',
+                      borderColor: isSelected ? 'rgba(22, 163, 74, 0.4)' : 'var(--color-border)',
                       color: isSelected ? 'var(--color-accent)' : 'var(--color-text-secondary)',
                     }}
                   >
@@ -478,7 +478,7 @@ function AdsetTypeCard({ adsetType, expanded, onToggle, onUpdate, onRemove, need
                     onClick={() => onUpdate({ adsetStatus: status })}
                     className="flex-1 py-2 rounded-lg border text-sm font-medium transition-all"
                     style={{
-                      backgroundColor: isActive ? (status === 'ACTIVE' ? 'rgba(57, 255, 20, 0.1)' : 'rgba(255, 183, 3, 0.1)') : 'transparent',
+                      backgroundColor: isActive ? (status === 'ACTIVE' ? 'rgba(22, 163, 74, 0.1)' : 'rgba(255, 183, 3, 0.1)') : 'transparent',
                       borderColor: isActive ? color : 'var(--color-border)',
                       color: isActive ? color : 'var(--color-text-secondary)',
                     }}

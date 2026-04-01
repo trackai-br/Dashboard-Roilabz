@@ -6,6 +6,7 @@ import { KPISection } from '@/components/KPISection';
 import { CampaignsTableNew } from '@/components/CampaignsTableNew';
 import { useMetaAccounts, useMetaAccountsKPIs } from '@/hooks/useMetaAccounts';
 import { useMetaCampaigns } from '@/hooks/useMetaCampaigns';
+import { RefreshCw, ChevronDown } from 'lucide-react';
 
 export default function Dashboard() {
   const [selectedAccountId, setSelectedAccountId] = useState<string | undefined>();
@@ -14,7 +15,6 @@ export default function Dashboard() {
   const [syncMessage, setSyncMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const queryClient = useQueryClient();
 
-  // Queries
   const { data: accounts, isLoading: accountsLoading, error: accountsError } = useMetaAccounts();
   const { data: kpis, isLoading: kpisLoading, error: kpisError } = useMetaAccountsKPIs(selectedAccountId);
   const {
@@ -27,47 +27,33 @@ export default function Dashboard() {
     offset: pageOffset,
   });
 
-  // Set default account on load
   useEffect(() => {
     if (accounts && accounts.length > 0 && !selectedAccountId) {
       setSelectedAccountId(accounts[0].id);
     }
   }, [accounts, selectedAccountId]);
 
-  // Handle account sync
-  const handleSyncAccounts = async () => {
+  const handleSync = async () => {
     setSyncLoading(true);
     setSyncMessage(null);
-
     try {
-      // Get current session with access token
-      const response = await authenticatedFetch('/api/meta/sync-all', {
-        method: 'POST',
-      });
-
+      const response = await authenticatedFetch('/api/meta/sync-all', { method: 'POST' });
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          errorData.error || `Sync failed: ${response.statusText}`
-        );
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error || response.statusText);
       }
-
       const data = await response.json();
       setSyncMessage({
         type: 'success',
-        text: `✅ ${data.synced_accounts} conta(s), ${data.synced_pages} página(s), ${data.synced_pixels} pixel(s) sincronizado(s)`,
+        text: `${data.synced_accounts} conta(s), ${data.synced_pages} página(s), ${data.synced_pixels} pixel(s) sincronizados`,
       });
-
-      // Refetch all sync-related data
       queryClient.invalidateQueries({ queryKey: ['meta-accounts'] });
       queryClient.invalidateQueries({ queryKey: ['sync-logs'] });
-
-      // Auto-hide message after 3 seconds
       setTimeout(() => setSyncMessage(null), 3000);
     } catch (error) {
       setSyncMessage({
         type: 'error',
-        text: `❌ Erro ao sincronizar: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        text: error instanceof Error ? error.message : 'Erro desconhecido',
       });
       setTimeout(() => setSyncMessage(null), 5000);
     } finally {
@@ -76,79 +62,106 @@ export default function Dashboard() {
   };
 
   const errorMessage = accountsError?.message || kpisError?.message || campaignsError?.message;
+  const kpisAreLoading = kpisLoading || accountsLoading;
 
   return (
-    <DashboardLayout>
+    <DashboardLayout title="Dashboard">
+
+      <div style={{ padding: '0' }}>
+
+        {/* Error banner */}
         {errorMessage && (
-          <div className="mb-6 rounded-lg border p-4" style={{ backgroundColor: 'var(--color-danger-bg)', borderColor: 'var(--color-danger)' }}>
-            <p className="text-sm font-medium" style={{ color: 'var(--color-danger)' }}>
+          <div style={{
+            margin: '16px 24px 0',
+            padding: '12px 16px',
+            borderRadius: 'var(--radius-md)',
+            backgroundColor: 'var(--color-danger-bg)',
+            border: '1px solid rgba(239,68,68,0.3)',
+          }}>
+            <p style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'var(--color-danger)' }}>
               ⚠️ {errorMessage}
             </p>
           </div>
         )}
 
-        {/* Sync Message */}
+        {/* Sync message */}
         {syncMessage && (
-          <div
-            className="mb-6 rounded-lg border p-4"
-            style={{
-              backgroundColor:
-                syncMessage.type === 'success'
-                  ? 'var(--color-success-bg)'
-                  : 'var(--color-danger-bg)',
-              borderColor:
-                syncMessage.type === 'success'
-                  ? 'var(--color-success)'
-                  : 'var(--color-danger)',
-            }}
-          >
-            <p
-              className="text-sm font-medium"
-              style={{
-                color:
-                  syncMessage.type === 'success'
-                    ? 'var(--color-success)'
-                    : 'var(--color-danger)',
-              }}
-            >
+          <div style={{
+            margin: '16px 24px 0',
+            padding: '12px 16px',
+            borderRadius: 'var(--radius-md)',
+            backgroundColor: syncMessage.type === 'success' ? 'var(--color-success-bg)' : 'var(--color-danger-bg)',
+            border: `1px solid ${syncMessage.type === 'success' ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`,
+          }}>
+            <p style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: syncMessage.type === 'success' ? 'var(--color-success)' : 'var(--color-danger)' }}>
               {syncMessage.text}
             </p>
           </div>
         )}
 
-        {/* Account Selector + Sync Button */}
-        <div className="mb-8 flex items-center gap-4">
-          <label htmlFor="account-select" className="font-medium" style={{ color: 'var(--color-text-primary)' }}>
-            Conta:
-          </label>
-          <select
-            id="account-select"
-            value={selectedAccountId || ''}
-            onChange={(e) => {
-              setSelectedAccountId(e.target.value || undefined);
-              setPageOffset(0);
-            }}
-            disabled={accountsLoading}
-            className="input rounded-lg px-4 py-2 disabled:opacity-50"
-          >
-            <option value="">Todas as Contas</option>
-            {accounts?.map((account) => (
-              <option key={account.id} value={account.id}>
-                {account.meta_account_name} ({account.meta_account_id})
-              </option>
-            ))}
-          </select>
+        {/* Toolbar — account selector + sync */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '16px 24px 0',
+          gap: '12px',
+        }}>
+          {/* Account selector */}
+          <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
+            <select
+              value={selectedAccountId || ''}
+              onChange={e => { setSelectedAccountId(e.target.value || undefined); setPageOffset(0); }}
+              disabled={accountsLoading}
+              className="input"
+              style={{ width: '240px', paddingRight: '32px', appearance: 'none', cursor: 'pointer' }}
+            >
+              <option value="">Todas as contas</option>
+              {accounts?.map(account => (
+                <option key={account.id} value={account.id}>
+                  {account.meta_account_name}
+                </option>
+              ))}
+            </select>
+            <ChevronDown
+              size={14}
+              style={{ position: 'absolute', right: '10px', pointerEvents: 'none', color: 'var(--color-text-tertiary)' }}
+            />
+          </div>
 
+          {/* Sync button */}
           <button
-            onClick={handleSyncAccounts}
+            onClick={handleSync}
             disabled={syncLoading}
-            className="rounded-lg px-4 py-2 font-medium transition-colors disabled:opacity-50"
             style={{
-              backgroundColor: 'var(--color-brand)',
-              color: '#ffffff',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '7px 14px',
+              borderRadius: 'var(--radius-md)',
+              border: '1px solid var(--color-border)',
+              backgroundColor: 'transparent',
+              cursor: syncLoading ? 'not-allowed' : 'pointer',
+              fontFamily: 'var(--font-sans)',
+              fontSize: '12px',
+              fontWeight: 500,
+              color: 'var(--color-text-secondary)',
+              opacity: syncLoading ? 0.6 : 1,
+              transition: 'all 120ms ease',
+            }}
+            onMouseEnter={e => {
+              if (!syncLoading) {
+                (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--color-bg-surface)';
+                (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-text-primary)';
+              }
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
+              (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-text-secondary)';
             }}
           >
-            {syncLoading ? 'Sincronizando...' : '🔄 Sincronizar Tudo'}
+            <RefreshCw size={13} strokeWidth={1.5} style={{ animation: syncLoading ? 'spin 1s linear infinite' : 'none' }} />
+            {syncLoading ? 'Sincronizando...' : 'Sincronizar'}
           </button>
         </div>
 
@@ -160,14 +173,31 @@ export default function Dashboard() {
             dailySpend: kpis?.totalSpend || 0,
             monthlySpend: kpis?.totalSpend || 0,
             conversions: 0,
+            activePages: 0,
           }}
+          loading={kpisAreLoading}
         />
 
-        {/* Campaign Table */}
-        <section className="mt-8">
-          <h2 className="mb-4 text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-            Campanhas
-          </h2>
+        {/* Campaigns */}
+        <div style={{ padding: '0 24px 24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+            <h2 style={{
+              fontFamily: 'var(--font-sans)',
+              fontWeight: 600,
+              fontSize: '14px',
+              letterSpacing: '-0.02em',
+              color: 'var(--color-text-primary)',
+              margin: 0,
+            }}>
+              Campanhas
+            </h2>
+            {campaigns && campaigns.length > 0 && (
+              <span style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', color: 'var(--color-text-tertiary)' }}>
+                {campaigns.length} campanha{campaigns.length !== 1 ? 's' : ''}
+              </span>
+            )}
+          </div>
+
           <CampaignsTableNew
             campaigns={campaigns || []}
             loading={campaignsLoading}
@@ -175,27 +205,66 @@ export default function Dashboard() {
           />
 
           {/* Pagination */}
-          <div className="mt-4 flex items-center justify-between">
-            <button
-              onClick={() => setPageOffset(Math.max(0, pageOffset - 50))}
-              disabled={pageOffset === 0}
-              className="rounded-lg border px-4 py-2 disabled:opacity-50 transition-colors"
-              style={{ backgroundColor: 'var(--color-bg-surface)', borderColor: 'var(--color-border)', color: 'var(--color-text-secondary)' }}
-            >
-              ← Anterior
-            </button>
-            <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-              Mostrando {pageOffset + 1} a {pageOffset + 50}
-            </span>
-            <button
-              onClick={() => setPageOffset(pageOffset + 50)}
-              className="rounded-lg border px-4 py-2 transition-colors"
-              style={{ backgroundColor: 'var(--color-bg-surface)', borderColor: 'var(--color-border)', color: 'var(--color-text-secondary)' }}
-            >
-              Próximo →
-            </button>
-          </div>
-        </section>
-      </DashboardLayout>
+          {(campaigns?.length || 0) > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '12px' }}>
+              <button
+                onClick={() => setPageOffset(Math.max(0, pageOffset - 50))}
+                aria-label="Página anterior"
+                disabled={pageOffset === 0}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '6px 12px',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid var(--color-border)',
+                  backgroundColor: 'transparent',
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: '12px',
+                  color: 'var(--color-text-secondary)',
+                  cursor: pageOffset === 0 ? 'not-allowed' : 'pointer',
+                  opacity: pageOffset === 0 ? 0.4 : 1,
+                  transition: 'all 120ms ease',
+                }}
+              >
+                ← Anterior
+              </button>
+
+              <span style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', color: 'var(--color-text-tertiary)' }}>
+                {pageOffset + 1} – {pageOffset + 50}
+              </span>
+
+              <button
+                onClick={() => setPageOffset(pageOffset + 50)}
+                aria-label="Próxima página"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '6px 12px',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid var(--color-border)',
+                  backgroundColor: 'transparent',
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: '12px',
+                  color: 'var(--color-text-secondary)',
+                  cursor: 'pointer',
+                  transition: 'all 120ms ease',
+                }}
+              >
+                Próximo →
+              </button>
+            </div>
+          )}
+        </div>
+
+        <style>{`
+          @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    </DashboardLayout>
   );
 }

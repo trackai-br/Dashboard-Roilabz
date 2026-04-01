@@ -134,9 +134,9 @@ export default function ConfigPopupV2({ onClose, onSaved, draftState, draftId, t
                   onClick={() => addBatch()}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium cursor-pointer focus:outline-none"
                   style={{
-                    backgroundColor: 'rgba(57, 255, 20, 0.08)',
-                    border: '1px solid rgba(57, 255, 20, 0.25)',
-                    color: 'var(--color-accent)',
+                    backgroundColor: 'rgba(22, 163, 74, 0.08)',
+                    border: '1px solid rgba(22, 163, 74, 0.25)',
+                    color: 'var(--color-accent-bright)',
                     fontFamily: "var(--font-sans)",
                     transition: 'all 150ms cubic-bezier(0.16, 1, 0.3, 1)',
                   }}
@@ -159,8 +159,8 @@ export default function ConfigPopupV2({ onClose, onSaved, draftState, draftId, t
               <div
                 className="p-6 rounded-lg text-center"
                 style={{
-                  backgroundColor: 'rgba(255, 183, 3, 0.1)',
-                  border: '1px solid rgba(255, 183, 3, 0.3)',
+                  backgroundColor: 'var(--color-warning-bg)',
+                  border: '1px solid rgba(234,179,8,0.3)',
                 }}
               >
                 <p style={{ color: 'var(--color-warning)' }}>
@@ -228,7 +228,7 @@ export default function ConfigPopupV2({ onClose, onSaved, draftState, draftId, t
         {/* Header */}
         <div
           className="flex items-center justify-between px-6 py-4"
-          style={{ borderBottom: '1px solid rgba(57, 255, 20, 0.1)' }}
+          style={{ borderBottom: '1px solid var(--color-border)' }}
         >
           <h2
             className="text-xl font-bold"
@@ -243,9 +243,9 @@ export default function ConfigPopupV2({ onClose, onSaved, draftState, draftId, t
               <span
                 className="ml-3 text-xs font-normal px-2 py-0.5 rounded-full"
                 style={{
-                  backgroundColor: 'rgba(57, 255, 20, 0.1)',
-                  color: 'var(--color-accent)',
-                  border: '1px solid rgba(57, 255, 20, 0.2)',
+                  backgroundColor: 'rgba(22, 163, 74, 0.1)',
+                  color: 'var(--color-accent-bright)',
+                  border: '1px solid rgba(22, 163, 74, 0.25)',
                 }}
               >
                 {mode === 'quick' ? 'Rapido' : mode === 'advanced' ? 'Avancado' : 'Adicionar Adsets'}
@@ -267,7 +267,7 @@ export default function ConfigPopupV2({ onClose, onSaved, draftState, draftId, t
         {/* Tabs */}
         <div
           className="flex items-center gap-1 px-6 overflow-x-auto"
-          style={{ borderBottom: '1px solid rgba(57, 255, 20, 0.1)' }}
+          style={{ borderBottom: '1px solid var(--color-border)' }}
         >
           {STEPS.map((step) => {
             const isActive = currentStep === step.index;
@@ -300,10 +300,7 @@ export default function ConfigPopupV2({ onClose, onSaved, draftState, draftId, t
                 {isActive && (
                   <span
                     className="absolute bottom-0 left-0 right-0 h-0.5"
-                    style={{
-                      backgroundColor: 'var(--color-accent)',
-                      boxShadow: '0 0 8px rgba(57, 255, 20, 0.5)',
-                    }}
+                    style={{ backgroundColor: 'var(--color-accent)' }}
                   />
                 )}
               </button>
@@ -325,7 +322,7 @@ export default function ConfigPopupV2({ onClose, onSaved, draftState, draftId, t
         {/* Footer */}
         <div
           className="flex items-center justify-between px-6 py-4"
-          style={{ borderTop: '1px solid rgba(57, 255, 20, 0.1)' }}
+          style={{ borderTop: '1px solid var(--color-border)' }}
         >
           <button
             onClick={handleBack}

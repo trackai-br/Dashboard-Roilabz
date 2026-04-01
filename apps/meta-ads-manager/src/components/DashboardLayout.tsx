@@ -46,7 +46,7 @@ export function DashboardLayout({
   if (!user) return null;
 
   return (
-    <div className="flex h-screen overflow-hidden dark">
+    <div className="flex h-screen overflow-hidden">
       {/* Sidebar - Desktop only */}
       {!isMobile && (
         <Sidebar open={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />

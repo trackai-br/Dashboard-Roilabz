@@ -1,202 +1,122 @@
-'use client';
-
 import React from 'react';
 import { DashboardLayout } from '@/components/DashboardLayout';
+import { Breadcrumb } from '@/components/Breadcrumb';
 import { useSyncLogs, SyncLog } from '@/hooks/useSyncLogs';
-import { AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import { CheckCircle, AlertCircle, Clock } from 'lucide-react';
+
+const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ElementType }> = {
+  success: { label: 'Sucesso', color: 'var(--color-success)', icon: CheckCircle },
+  partial: { label: 'Parcial', color: 'var(--color-warning)', icon: AlertCircle },
+  failed: { label: 'Falhou', color: 'var(--color-danger)', icon: AlertCircle },
+};
+
+function formatDate(dateString: string) {
+  return new Date(dateString).toLocaleString('pt-BR');
+}
 
 export default function LogsPage() {
   const { data: logs = [], isLoading, error } = useSyncLogs();
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'success':
-        return <CheckCircle size={20} style={{ color: 'var(--color-accent)' }} />;
-      case 'partial':
-        return <AlertCircle size={20} style={{ color: 'var(--color-warning)' }} />;
-      case 'failed':
-        return <AlertCircle size={20} style={{ color: 'var(--color-danger)' }} />;
-      default:
-        return <Clock size={20} style={{ color: 'var(--color-text-tertiary)' }} />;
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'success':
-        return 'var(--color-accent)';
-      case 'partial':
-        return 'var(--color-warning)';
-      case 'failed':
-        return 'var(--color-danger)';
-      default:
-        return 'var(--color-text-tertiary)';
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'success':
-        return 'Sucesso';
-      case 'partial':
-        return 'Parcial';
-      case 'failed':
-        return 'Falhou';
-      default:
-        return 'Desconhecido';
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleString('pt-BR');
-  };
-
   return (
-    <DashboardLayout>
-      <div className="p-6" style={{ backgroundColor: 'var(--color-bg-base)' }}>
-        {/* Header */}
-        <div className="mb-6">
-          <h1
-            className="text-3xl font-bold mb-2"
-            style={{
-              color: 'var(--color-accent)',
-              
-              fontFamily: "var(--font-sans)",
-              
-            }}
-          >
-            📋 Logs de Sincronização
+    <DashboardLayout title="Logs">
+      <Breadcrumb items={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Logs', href: '/logs' }]} />
+
+      <div style={{ padding: '16px 24px 24px' }}>
+
+        {/* Page header */}
+        <div style={{ marginBottom: '20px' }}>
+          <h1 style={{ fontFamily: 'var(--font-sans)', fontWeight: 700, fontSize: '20px', letterSpacing: '-0.03em', color: 'var(--color-text-primary)', margin: '0 0 4px' }}>
+            Logs de Sincronização
           </h1>
-          <p style={{ color: 'var(--color-text-secondary)' }}>
-            Histórico de sincronizações com Meta API
+          <p style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'var(--color-text-tertiary)' }}>
+            Histórico de sincronizações com a Meta API
           </p>
         </div>
 
-        {/* Error State */}
+        {/* Error */}
         {error && (
-          <div
-            className="mb-6 p-4 rounded-lg border"
-            style={{
-              backgroundColor: 'rgba(255,45,120,0.06)',
-              borderColor: 'var(--color-danger)',
-            }}
-          >
-            <p style={{ color: 'var(--color-danger)' }}>⚠️ Erro ao carregar logs</p>
-          </div>
-        )}
-
-        {/* Loading State */}
-        {isLoading && (
-          <div className="text-center py-12">
-            <p style={{ color: 'var(--color-text-secondary)' }}>Carregando logs...</p>
-          </div>
-        )}
-
-        {/* Empty State */}
-        {!isLoading && logs.length === 0 && (
-          <div
-            className="p-12 rounded-lg text-center"
-            style={{
-              backgroundColor: 'rgba(0,212,255,0.05)',
-              border: '1px solid rgba(0,212,255,0.2)',
-            }}
-          >
-            <p style={{ color: 'var(--color-info)' }}>
-              Nenhuma sincronização realizada ainda
+          <div style={{
+            marginBottom: '16px',
+            padding: '12px 16px',
+            borderRadius: 'var(--radius-md)',
+            backgroundColor: 'var(--color-danger-bg)',
+            border: '1px solid rgba(239,68,68,0.3)',
+          }}>
+            <p style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'var(--color-danger)' }}>
+              Erro ao carregar logs
             </p>
           </div>
         )}
 
-        {/* Logs Table */}
-        {!isLoading && logs.length > 0 && (
-          <div className="overflow-x-auto rounded-lg border" style={{ borderColor: 'var(--color-border)' }}>
-            <table className="min-w-full divide-y" style={{ backgroundColor: 'var(--color-bg-surface)' }}>
-              <thead style={{ backgroundColor: 'var(--color-bg-sidebar)' }}>
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase" style={{ color: 'var(--color-text-secondary)' }}>
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase" style={{ color: 'var(--color-text-secondary)' }}>
-                    Contas
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase" style={{ color: 'var(--color-text-secondary)' }}>
-                    Páginas
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase" style={{ color: 'var(--color-text-secondary)' }}>
-                    Pixels
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase" style={{ color: 'var(--color-text-secondary)' }}>
-                    Data/Hora
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase" style={{ color: 'var(--color-text-secondary)' }}>
-                    Detalhes
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y" style={{ borderColor: 'var(--color-border)' }}>
-                {logs.map((log: SyncLog) => (
-                  <tr key={log.id} style={{ borderColor: 'var(--color-border)' }}>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        {getStatusIcon(log.status)}
-                        <span style={{ color: getStatusColor(log.status) }} className="text-sm font-medium">
-                          {getStatusLabel(log.status)}
-                        </span>
+        {/* Table */}
+        <div style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', backgroundColor: 'var(--color-bg-surface)', overflow: 'hidden' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid var(--color-border)', backgroundColor: 'var(--color-bg-sidebar)' }}>
+                {['Status', 'Contas', 'Páginas', 'Pixels', 'Data/Hora', 'Detalhes'].map(h => (
+                  <th key={h} className="col-header" style={{ padding: '0 16px', height: '36px', textAlign: 'left', verticalAlign: 'middle' }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {isLoading ? (
+                <tr><td colSpan={6} style={{ padding: '32px 16px', textAlign: 'center', fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'var(--color-text-tertiary)' }}>Carregando logs...</td></tr>
+              ) : logs.length === 0 ? (
+                <tr><td colSpan={6} style={{ padding: '40px 16px', textAlign: 'center', fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'var(--color-text-tertiary)' }}>Nenhuma sincronização realizada ainda</td></tr>
+              ) : logs.map((log: SyncLog) => {
+                const cfg = STATUS_CONFIG[log.status] || { label: 'Desconhecido', color: 'var(--color-text-tertiary)', icon: Clock };
+                const Icon = cfg.icon;
+                const hasErrors = log.error_details && Object.keys(log.error_details).length > 0;
+                return (
+                  <tr key={log.id} style={{ borderBottom: '1px solid var(--color-border)', height: '44px' }}>
+                    <td style={{ padding: '0 16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Icon size={14} strokeWidth={2} style={{ color: cfg.color }} aria-hidden="true" />
+                        <span style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 500, color: cfg.color }}>{cfg.label}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm" style={{ color: 'var(--color-text-primary)' }}>
-                      {log.synced_accounts}
-                    </td>
-                    <td className="px-6 py-4 text-sm" style={{ color: 'var(--color-text-primary)' }}>
-                      {log.synced_pages}
-                    </td>
-                    <td className="px-6 py-4 text-sm" style={{ color: 'var(--color-text-primary)' }}>
-                      {log.synced_pixels}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-nowrap" style={{ color: 'var(--color-text-secondary)' }}>
+                    <td style={{ padding: '0 16px' }}><span className="value-mono" style={{ color: 'var(--color-text-primary)' }}>{log.synced_accounts}</span></td>
+                    <td style={{ padding: '0 16px' }}><span className="value-mono" style={{ color: 'var(--color-text-primary)' }}>{log.synced_pages}</span></td>
+                    <td style={{ padding: '0 16px' }}><span className="value-mono" style={{ color: 'var(--color-text-primary)' }}>{log.synced_pixels}</span></td>
+                    <td style={{ padding: '0 16px', whiteSpace: 'nowrap', fontFamily: 'var(--font-sans)', fontSize: '12px', color: 'var(--color-text-tertiary)' }}>
                       {formatDate(log.created_at)}
                     </td>
-                    <td className="px-6 py-4 text-sm">
-                      {log.error_details && Object.keys(log.error_details).length > 0 ? (
-                        <details className="cursor-pointer">
-                          <summary style={{ color: 'var(--color-warning)' }}>Ver erros</summary>
-                          <div
-                            className="mt-2 p-2 rounded text-xs"
-                            style={{
-                              backgroundColor: 'rgba(255,184,0,0.08)',
-                              color: 'var(--color-warning)',
-                              fontFamily: 'monospace',
-                              whiteSpace: 'pre-wrap',
-                              wordBreak: 'break-word',
-                            }}
-                          >
+                    <td style={{ padding: '0 16px' }}>
+                      {hasErrors ? (
+                        <details style={{ cursor: 'pointer' }}>
+                          <summary style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', color: 'var(--color-warning)', cursor: 'pointer', listStyle: 'none' }}>
+                            Ver erros
+                          </summary>
+                          <div style={{
+                            marginTop: '8px',
+                            padding: '10px 12px',
+                            borderRadius: 'var(--radius-md)',
+                            backgroundColor: 'var(--color-warning-bg)',
+                            fontFamily: 'var(--font-mono)',
+                            fontSize: '11px',
+                            color: 'var(--color-warning)',
+                            whiteSpace: 'pre-wrap',
+                            wordBreak: 'break-word',
+                            maxWidth: '320px',
+                          }}>
                             {JSON.stringify(log.error_details, null, 2)}
                           </div>
                         </details>
                       ) : (
-                        <span style={{ color: 'var(--color-text-secondary)' }}>—</span>
+                        <span style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'var(--color-text-tertiary)' }}>—</span>
                       )}
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {/* Info Box */}
-        <div
-          className="mt-6 p-4 rounded-lg border"
-          style={{
-            backgroundColor: 'rgba(0,212,255,0.05)',
-            borderColor: 'rgba(0,212,255,0.2)',
-          }}
-        >
-          <p style={{ color: 'var(--color-info)' }} className="text-sm">
-            ℹ️ <strong>Info:</strong> Os logs atualizam automaticamente a cada 10 segundos. Clique em &quot;Ver erros&quot; para detalhes técnicos.
-          </p>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
+
+        {/* Info */}
+        <p style={{ marginTop: '12px', fontFamily: 'var(--font-sans)', fontSize: '11px', color: 'var(--color-text-tertiary)' }}>
+          Logs atualizam automaticamente a cada 10 segundos. Clique em &quot;Ver erros&quot; para detalhes técnicos.
+        </p>
       </div>
     </DashboardLayout>
   );

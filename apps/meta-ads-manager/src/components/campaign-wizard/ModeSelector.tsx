@@ -80,9 +80,9 @@ export default function ModeSelector() {
               onClick={() => handleSelect(option.id)}
               className="relative p-6 rounded-xl border text-left cursor-pointer focus:outline-none group"
               style={{
-                backgroundColor: isSelected ? 'rgba(57, 255, 20, 0.06)' : 'rgba(255, 255, 255, 0.02)',
-                borderColor: isSelected ? 'rgba(57, 255, 20, 0.4)' : 'var(--color-border-subtle)',
-                boxShadow: isSelected ? '0 0 0 3px rgba(57, 255, 20, 0.08), var(--shadow-card)' : 'var(--shadow-card)',
+                backgroundColor: isSelected ? 'rgba(22, 163, 74, 0.06)' : 'rgba(255, 255, 255, 0.02)',
+                borderColor: isSelected ? 'rgba(22, 163, 74, 0.4)' : 'var(--color-border-subtle)',
+                boxShadow: 'var(--shadow-card)',
                 transition: 'all 150ms cubic-bezier(0.16, 1, 0.3, 1)',
               }}
             >
@@ -90,8 +90,8 @@ export default function ModeSelector() {
                 <span
                   className="absolute top-3 right-3 text-[10px] font-semibold px-2 py-0.5 rounded-full"
                   style={{
-                    backgroundColor: 'rgba(57, 255, 20, 0.15)',
-                    color: 'var(--color-accent)',
+                    backgroundColor: 'rgba(22, 163, 74, 0.1)',
+                    color: 'var(--color-accent-bright)',
                     fontFamily: "var(--font-sans)",
                     letterSpacing: '0.05em',
                   }}
@@ -103,7 +103,7 @@ export default function ModeSelector() {
               <div
                 className="w-10 h-10 rounded-lg flex items-center justify-center mb-4"
                 style={{
-                  backgroundColor: isSelected ? 'rgba(57, 255, 20, 0.15)' : 'rgba(255, 255, 255, 0.05)',
+                  backgroundColor: isSelected ? 'rgba(22, 163, 74, 0.15)' : 'rgba(255, 255, 255, 0.05)',
                   color: isSelected ? 'var(--color-accent)' : 'var(--color-text-secondary)',
                 }}
               >
@@ -131,10 +131,7 @@ export default function ModeSelector() {
               {isSelected && (
                 <div
                   className="absolute bottom-0 left-0 right-0 h-0.5 rounded-b-xl"
-                  style={{
-                    backgroundColor: 'var(--color-accent)',
-                    boxShadow: '0 0 8px rgba(57, 255, 20, 0.5)',
-                  }}
+                  style={{ backgroundColor: 'var(--color-accent)' }}
                 />
               )}
             </button>

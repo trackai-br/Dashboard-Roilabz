@@ -3,11 +3,11 @@ import { useWizardStore, selectCreativePool, selectDistributionMode, selectBatch
 import type { CreativeFile, DistributionMode } from '@/stores/wizard-store';
 import { useDriveFiles } from '@/hooks/useDriveFiles';
 
-const DISTRIBUTION_MODES: { value: DistributionMode; label: string; desc: string; icon: string }[] = [
-  { value: 'per_campaign', label: 'Por campanha', desc: '1 criativo = 1 campanha', icon: '📌' },
-  { value: 'sequential', label: 'Sequencial', desc: 'Distribui em ordem nos adsets', icon: '🔢' },
-  { value: 'random', label: 'Aleatorio', desc: 'Distribui aleatoriamente', icon: '🎲' },
-  { value: 'manual', label: 'Manual', desc: 'Voce escolhe por campanha', icon: '✋' },
+const DISTRIBUTION_MODES: { value: DistributionMode; label: string; desc: string }[] = [
+  { value: 'per_campaign', label: 'Por campanha', desc: '1 criativo = 1 campanha' },
+  { value: 'sequential', label: 'Sequencial', desc: 'Distribui em ordem nos adsets' },
+  { value: 'random', label: 'Aleatório', desc: 'Distribui aleatoriamente' },
+  { value: 'manual', label: 'Manual', desc: 'Você escolhe por campanha' },
 ];
 
 export default function CreativePoolStep() {
@@ -77,7 +77,7 @@ export default function CreativePoolStep() {
       {/* Drive URL Input */}
       <div
         className="p-4 rounded-lg"
-        style={{ backgroundColor: 'rgba(57, 255, 20, 0.03)', border: '1px solid rgba(57, 255, 20, 0.1)' }}
+        style={{ backgroundColor: 'var(--color-bg-surface)', border: '1px solid var(--color-border)' }}
       >
         <label className="block text-xs font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
           Link da pasta do Google Drive
@@ -91,7 +91,7 @@ export default function CreativePoolStep() {
             className="flex-1 px-3 py-2 rounded-lg text-sm"
             style={{
               backgroundColor: 'rgba(255, 255, 255, 0.05)',
-              border: '1px solid rgba(57, 255, 20, 0.2)',
+              border: '1px solid var(--color-border)',
               color: 'var(--color-text-primary)',
               outline: 'none',
             }}
@@ -135,8 +135,8 @@ export default function CreativePoolStep() {
               onClick={handleImportAll}
               className="text-xs px-3 py-1.5 rounded-lg font-medium transition-all"
               style={{
-                backgroundColor: 'rgba(57, 255, 20, 0.1)',
-                border: '1px solid rgba(57, 255, 20, 0.3)',
+                backgroundColor: 'rgba(22, 163, 74, 0.1)',
+                border: '1px solid rgba(22, 163, 74, 0.3)',
                 color: 'var(--color-accent)',
               }}
             >
@@ -156,7 +156,7 @@ export default function CreativePoolStep() {
                     border: isSelected
                       ? '2px solid var(--color-accent)'
                       : '2px solid rgba(255, 255, 255, 0.1)',
-                    boxShadow: isSelected ? '0 0 12px rgba(57, 255, 20, 0.2)' : 'none',
+                    boxShadow: 'none',
                   }}
                 >
                   {/* Thumbnail */}
@@ -169,7 +169,7 @@ export default function CreativePoolStep() {
                   >
                     {!file.thumbnailUrl && (
                       <div className="flex items-center justify-center h-full">
-                        <span className="text-2xl">{file.type === 'video' ? '🎬' : '🖼️'}</span>
+                        <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>{file.type === 'video' ? 'VID' : 'IMG'}</span>
                       </div>
                     )}
                   </div>
@@ -207,7 +207,7 @@ export default function CreativePoolStep() {
       {creativePool.length > 0 && (
         <div
           className="flex items-center justify-between p-3 rounded-lg"
-          style={{ backgroundColor: 'rgba(57, 255, 20, 0.06)', border: '1px solid rgba(57, 255, 20, 0.15)' }}
+          style={{ backgroundColor: 'rgba(22, 163, 74, 0.06)', border: '1px solid rgba(22, 163, 74, 0.15)' }}
         >
           <span className="text-sm" style={{ color: 'var(--color-accent)' }}>
             {creativePool.length} criativo{creativePool.length !== 1 ? 's' : ''} selecionado{creativePool.length !== 1 ? 's' : ''}
@@ -237,26 +237,23 @@ export default function CreativePoolStep() {
               <button
                 key={dm.value}
                 onClick={() => setDistributionMode(dm.value)}
-                className="flex items-start gap-3 p-3 rounded-lg text-left transition-all"
+                className="flex flex-col gap-1 p-3 rounded-lg text-left transition-all"
                 style={{
-                  backgroundColor: isActive ? 'rgba(57, 255, 20, 0.08)' : 'rgba(255, 255, 255, 0.02)',
+                  backgroundColor: isActive ? 'rgba(22, 163, 74, 0.08)' : 'rgba(255, 255, 255, 0.02)',
                   border: isActive
-                    ? '1px solid rgba(57, 255, 20, 0.4)'
-                    : '1px solid rgba(255, 255, 255, 0.08)',
+                    ? '1px solid rgba(22, 163, 74, 0.4)'
+                    : '1px solid var(--color-border)',
                 }}
               >
-                <span className="text-lg">{dm.icon}</span>
-                <div>
-                  <span
-                    className="block text-sm font-medium"
-                    style={{ color: isActive ? 'var(--color-accent)' : 'var(--color-text-primary)' }}
-                  >
-                    {dm.label}
-                  </span>
-                  <span className="block text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-                    {dm.desc}
-                  </span>
-                </div>
+                <span
+                  className="block text-sm font-medium"
+                  style={{ color: isActive ? 'var(--color-accent-bright)' : 'var(--color-text-primary)' }}
+                >
+                  {dm.label}
+                </span>
+                <span className="block text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                  {dm.desc}
+                </span>
               </button>
             );
           })}
@@ -306,7 +303,7 @@ export default function CreativePoolStep() {
                   key={c.id}
                   className="w-8 h-8 rounded overflow-hidden"
                   style={{
-                    border: '1px solid rgba(57, 255, 20, 0.3)',
+                    border: '1px solid var(--color-border)',
                   }}
                   title={c.fileName}
                 >

@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { supabase } from '@/lib/supabase';
 import {
   LayoutDashboard,
   Rocket,
@@ -11,6 +12,8 @@ import {
   Settings,
   LogOut,
   FileText,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -18,7 +21,7 @@ interface SidebarProps {
   onToggle: () => void;
 }
 
-export function Sidebar({ open }: SidebarProps) {
+export function Sidebar({ open, onToggle }: SidebarProps) {
   const router = useRouter();
 
   const navItems = [
@@ -30,115 +33,181 @@ export function Sidebar({ open }: SidebarProps) {
     { icon: Settings,        label: 'Configurações',   href: '/settings' },
   ];
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/login');
+  };
+
   return (
     <aside
-      className="w-56 h-screen overflow-y-auto flex flex-col flex-shrink-0"
       style={{
+        width: open ? '220px' : '56px',
+        minWidth: open ? '220px' : '56px',
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
         backgroundColor: 'var(--color-bg-sidebar)',
         borderRight: '1px solid var(--color-border)',
+        transition: 'width 220ms cubic-bezier(0.16,1,0.3,1), min-width 220ms cubic-bezier(0.16,1,0.3,1)',
+        overflow: 'hidden',
+        flexShrink: 0,
       }}
       role="navigation"
       aria-label="Menu principal"
     >
-      {/* Skip link — accessibility */}
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:px-4 focus:py-2 focus:text-sm focus:font-medium"
-        style={{
-          backgroundColor: 'var(--color-accent-dark)',
-          color: '#fff',
-        }}
-      >
-        Pular para conteúdo principal
-      </a>
+      {/* Logo row */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: open ? 'space-between' : 'center',
+        padding: open ? '14px 14px 14px 16px' : '14px 0',
+        borderBottom: '1px solid var(--color-border)',
+        minHeight: '56px',
+        flexShrink: 0,
+      }}>
+        {open && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden' }}>
+            <div style={{
+              width: '28px',
+              height: '28px',
+              borderRadius: '8px',
+              backgroundColor: 'var(--color-accent-dark)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}>
+              <span style={{ color: '#fff', fontFamily: 'var(--font-sans)', fontWeight: 700, fontSize: '13px', letterSpacing: '-0.02em' }}>R</span>
+            </div>
+            <div style={{ overflow: 'hidden' }}>
+              <span style={{ display: 'block', fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '14px', letterSpacing: '-0.02em', color: 'var(--color-text-primary)', whiteSpace: 'nowrap' }}>ROILabz</span>
+              <span style={{ display: 'block', fontFamily: 'var(--font-sans)', fontSize: '11px', color: 'var(--color-text-tertiary)', whiteSpace: 'nowrap', letterSpacing: '0.02em' }}>Meta Ads</span>
+            </div>
+          </div>
+        )}
 
-      {/* Logo */}
-      <div
-        className="flex items-center gap-2.5 px-4 py-4"
-        style={{ borderBottom: '1px solid var(--color-border)', minHeight: '56px' }}
-      >
-        <div
-          className="w-7 h-7 rounded flex items-center justify-center text-xs font-bold flex-shrink-0"
+        {/* Toggle button */}
+        <button
+          onClick={onToggle}
+          aria-label={open ? 'Recolher menu' : 'Expandir menu'}
           style={{
-            backgroundColor: 'var(--color-accent-dark)',
-            color: '#ffffff',
-            fontFamily: 'var(--font-sans)',
-            letterSpacing: '0.02em',
+            width: '28px',
+            height: '28px',
+            borderRadius: '8px',
+            border: '1px solid var(--color-border)',
+            backgroundColor: 'transparent',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'var(--color-text-tertiary)',
+            transition: 'all 120ms ease',
+            flexShrink: 0,
           }}
-          role="img"
-          aria-label="ROILabz logo"
+          onMouseEnter={e => {
+            (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--color-bg-surface)';
+            (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-text-primary)';
+          }}
+          onMouseLeave={e => {
+            (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
+            (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-text-tertiary)';
+          }}
         >
-          R
-        </div>
-        <div className="flex-1 min-w-0">
-          <span
-            className="text-sm font-semibold leading-none block"
-            style={{ color: 'var(--color-text-primary)', fontFamily: 'var(--font-sans)' }}
-          >
-            ROILabz
-          </span>
-          <span
-            className="text-xs leading-none block mt-0.5"
-            style={{ color: 'var(--color-text-tertiary)', fontFamily: 'var(--font-sans)', letterSpacing: '0.04em' }}
-          >
-            Meta Ads
-          </span>
-        </div>
+          {open ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
+        </button>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-2 py-3 flex flex-col gap-0.5" aria-label="Navegação principal">
-        {navItems.map((item) => {
+      <nav style={{ flex: 1, padding: '8px 6px', display: 'flex', flexDirection: 'column', gap: '2px', overflowY: 'auto' }}>
+        {navItems.map(item => {
           const isActive = router.pathname === item.href || router.pathname.startsWith(item.href + '/');
           const Icon = item.icon;
           return (
             <Link
               key={item.href}
               href={item.href}
-              className="group flex items-center gap-2.5 px-3 rounded transition-all focus:outline-none focus-visible:ring-1"
+              title={!open ? item.label : undefined}
               style={{
-                color:           isActive ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
-                backgroundColor: isActive ? 'var(--color-bg-surface)' : 'transparent',
-                borderLeft:      isActive ? '2px solid var(--color-accent)' : '2px solid transparent',
-                paddingLeft:     isActive ? 'calc(12px - 2px)' : '12px',
-                minHeight:       '36px',
-                fontSize:        '13px',
-                fontFamily:      'var(--font-sans)',
-                fontWeight:      isActive ? 500 : 400,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: open ? '0 10px' : '0',
+                justifyContent: open ? 'flex-start' : 'center',
+                minHeight: '36px',
+                borderRadius: '8px',
+                fontFamily: 'var(--font-sans)',
+                fontSize: '13px',
+                fontWeight: isActive ? 500 : 400,
+                color: isActive ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
+                backgroundColor: isActive ? 'rgba(22, 163, 74, 0.12)' : 'transparent',
+                textDecoration: 'none',
+                transition: 'all 120ms ease',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+              }}
+              onMouseEnter={e => {
+                if (!isActive) {
+                  (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--color-bg-surface)';
+                  (e.currentTarget as HTMLAnchorElement).style.color = 'var(--color-text-primary)';
+                }
+              }}
+              onMouseLeave={e => {
+                if (!isActive) {
+                  (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'transparent';
+                  (e.currentTarget as HTMLAnchorElement).style.color = 'var(--color-text-secondary)';
+                }
               }}
               aria-current={isActive ? 'page' : undefined}
-              tabIndex={0}
             >
-              <Icon size={16} strokeWidth={isActive ? 2 : 1.5} className="flex-shrink-0" aria-hidden="true" />
-              <span>{item.label}</span>
+              <Icon
+                size={16}
+                strokeWidth={isActive ? 2 : 1.5}
+                style={{
+                  flexShrink: 0,
+                  color: isActive ? 'var(--color-accent-bright)' : 'inherit',
+                }}
+              />
+              {open && <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.label}</span>}
             </Link>
           );
         })}
       </nav>
 
-      {/* Footer — Logout */}
-      <div className="px-2 py-3" style={{ borderTop: '1px solid var(--color-border)' }}>
+      {/* Logout */}
+      <div style={{ padding: '6px 6px', borderTop: '1px solid var(--color-border)', flexShrink: 0 }}>
         <button
-          className="w-full flex items-center gap-2.5 px-3 rounded text-sm transition-all focus:outline-none focus-visible:ring-1"
+          onClick={handleLogout}
+          title={!open ? 'Sair' : undefined}
           style={{
-            color:      'var(--color-text-tertiary)',
-            minHeight:  '36px',
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            padding: open ? '0 10px' : '0',
+            justifyContent: open ? 'flex-start' : 'center',
+            minHeight: '36px',
+            borderRadius: '8px',
+            border: 'none',
+            backgroundColor: 'transparent',
+            cursor: 'pointer',
             fontFamily: 'var(--font-sans)',
-            fontWeight: 400,
-            fontSize:   '13px',
+            fontSize: '13px',
+            color: 'var(--color-text-tertiary)',
+            transition: 'all 120ms ease',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
           }}
-          aria-label="Sair da conta"
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'var(--color-bg-surface)';
-            e.currentTarget.style.color = 'var(--color-danger)';
+          onMouseEnter={e => {
+            (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'rgba(239,68,68,0.08)';
+            (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-danger)';
           }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'transparent';
-            e.currentTarget.style.color = 'var(--color-text-tertiary)';
+          onMouseLeave={e => {
+            (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
+            (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-text-tertiary)';
           }}
         >
-          <LogOut size={16} strokeWidth={1.5} aria-hidden="true" />
-          <span>Sair</span>
+          <LogOut size={16} strokeWidth={1.5} style={{ flexShrink: 0 }} />
+          {open && <span>Sair</span>}
         </button>
       </div>
     </aside>

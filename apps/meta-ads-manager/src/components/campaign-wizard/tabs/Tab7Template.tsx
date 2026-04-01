@@ -85,7 +85,7 @@ export default function Tab7Template({ onSaved }: Tab7TemplateProps) {
             className="w-full px-4 py-3 rounded-lg border text-base outline-none"
             style={{
               backgroundColor: 'var(--color-bg-input)',
-              borderColor: templateName.trim() ? 'rgba(57, 255, 20, 0.3)' : 'var(--color-border)',
+              borderColor: templateName.trim() ? 'rgba(22, 163, 74, 0.3)' : 'var(--color-border)',
               color: 'var(--color-text-primary)',
               ...headingFont,
             }}
@@ -122,11 +122,11 @@ export default function Tab7Template({ onSaved }: Tab7TemplateProps) {
           disabled={!templateName.trim() || saving}
           className="w-full py-3 rounded-lg text-base font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
           style={{
-            backgroundColor: templateName.trim() ? 'var(--color-accent)' : 'rgba(57, 255, 20, 0.3)',
+            backgroundColor: templateName.trim() ? 'var(--color-accent)' : 'rgba(22, 163, 74, 0.3)',
             color: 'var(--color-bg-base)',
             ...headingFont,
             letterSpacing: '0.04em',
-            boxShadow: templateName.trim() ? '0 0 20px rgba(57, 255, 20, 0.4)' : 'none',
+            boxShadow: templateName.trim() ? '0 0 0 rgba(22, 163, 74, 0.4)' : 'none',
           }}
         >
           {saving ? 'Salvando...' : 'Salvar Template'}

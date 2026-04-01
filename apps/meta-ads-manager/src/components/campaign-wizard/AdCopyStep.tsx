@@ -87,7 +87,7 @@ export default function AdCopyStep() {
           className="w-full px-3 py-2.5 rounded-lg text-sm"
           style={{
             backgroundColor: 'rgba(255,255,255,0.05)',
-            border: '1px solid rgba(57, 255, 20, 0.2)',
+            border: '1px solid var(--color-border)',
             color: 'var(--color-text-primary)',
             outline: 'none',
           }}
@@ -107,7 +107,7 @@ export default function AdCopyStep() {
           className="w-full px-3 py-2.5 rounded-lg text-sm resize-none"
           style={{
             backgroundColor: 'rgba(255,255,255,0.05)',
-            border: '1px solid rgba(57, 255, 20, 0.2)',
+            border: '1px solid var(--color-border)',
             color: 'var(--color-text-primary)',
             outline: 'none',
           }}
@@ -130,7 +130,7 @@ export default function AdCopyStep() {
           className="w-full px-3 py-2.5 rounded-lg text-sm"
           style={{
             backgroundColor: 'rgba(255,255,255,0.05)',
-            border: '1px solid rgba(57, 255, 20, 0.2)',
+            border: '1px solid var(--color-border)',
             color: 'var(--color-text-primary)',
             outline: 'none',
           }}
@@ -153,7 +153,7 @@ export default function AdCopyStep() {
           className="w-full px-3 py-2.5 rounded-lg text-sm"
           style={{
             backgroundColor: 'rgba(255,255,255,0.05)',
-            border: '1px solid rgba(57, 255, 20, 0.2)',
+            border: '1px solid var(--color-border)',
             color: 'var(--color-text-primary)',
             outline: 'none',
           }}
@@ -163,7 +163,7 @@ export default function AdCopyStep() {
       {/* UTM Parameters */}
       <div
         className="p-4 rounded-lg"
-        style={{ backgroundColor: 'rgba(57, 255, 20, 0.03)', border: '1px solid rgba(57, 255, 20, 0.1)' }}
+        style={{ backgroundColor: 'var(--color-bg-surface)', border: '1px solid var(--color-border)' }}
       >
         <label className="block text-xs font-medium mb-3" style={{ color: 'var(--color-text-secondary)' }}>
           Parametros UTM
@@ -188,7 +188,7 @@ export default function AdCopyStep() {
                 className="w-full px-3 py-2 rounded-lg text-sm"
                 style={{
                   backgroundColor: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(57, 255, 20, 0.15)',
+                  border: '1px solid var(--color-border)',
                   color: 'var(--color-text-primary)',
                   outline: 'none',
                 }}
@@ -201,7 +201,7 @@ export default function AdCopyStep() {
         {fullUrlPreview && (
           <div
             className="mt-4 p-3 rounded-lg"
-            style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)', border: '1px solid rgba(57, 255, 20, 0.1)' }}
+            style={{ backgroundColor: 'var(--color-bg-input)', border: '1px solid var(--color-border)' }}
           >
             <p className="text-xs mb-1" style={{ color: 'var(--color-text-tertiary)' }}>URL final:</p>
             <p className="text-xs font-mono break-all" style={{ color: 'var(--color-accent)' }}>

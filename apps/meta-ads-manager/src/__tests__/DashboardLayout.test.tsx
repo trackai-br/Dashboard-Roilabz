@@ -53,15 +53,15 @@ describe('DashboardLayout', () => {
     expect(screen.getByText('Custom Title')).toBeInTheDocument();
   });
 
-  it('always applies dark mode (NEON system)', () => {
+  it('renders main layout wrapper', () => {
     const { container } = renderWithProviders(
       <DashboardLayout>
         <div>Test Content</div>
       </DashboardLayout>
     );
 
-    const darkDiv = container.querySelector('.dark');
-    expect(darkDiv).toBeInTheDocument();
+    const wrapper = container.querySelector('.flex');
+    expect(wrapper).toBeInTheDocument();
   });
 
   it('renders Sidebar on desktop', () => {

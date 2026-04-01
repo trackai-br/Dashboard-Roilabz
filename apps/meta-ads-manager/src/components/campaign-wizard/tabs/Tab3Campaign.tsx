@@ -83,9 +83,9 @@ export default function Tab3Campaign() {
                 onClick={() => update({ objective: obj.value })}
                 className="p-4 rounded-lg border text-left transition-all duration-150"
                 style={{
-                  backgroundColor: isSelected ? 'rgba(57, 255, 20, 0.06)' : 'rgba(255, 255, 255, 0.02)',
-                  borderColor: isSelected ? 'rgba(57, 255, 20, 0.5)' : 'var(--color-border)',
-                  boxShadow: isSelected ? '0 0 12px rgba(57, 255, 20, 0.15)' : 'none',
+                  backgroundColor: isSelected ? 'rgba(22, 163, 74, 0.06)' : 'rgba(255, 255, 255, 0.02)',
+                  borderColor: isSelected ? 'rgba(22, 163, 74, 0.5)' : 'var(--color-border)',
+                  boxShadow: isSelected ? '0 0 0 rgba(22, 163, 74, 0.15)' : 'none',
                 }}
               >
                 <span className="text-2xl mb-2 block">{obj.icon}</span>
@@ -153,7 +153,7 @@ export default function Tab3Campaign() {
         {/* Preview */}
         <div className="p-3 rounded-lg" style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}>
           <p className="text-xs mb-1" style={{ color: 'var(--color-text-tertiary)' }}>Preview do nome:</p>
-          <p className="text-sm font-mono break-all" style={{ color: 'var(--color-info)' }}>
+          <p className="text-sm font-mono break-all" style={{ color: 'var(--color-accent-bright)' }}>
             {namingPreview}
           </p>
         </div>
@@ -185,8 +185,8 @@ export default function Tab3Campaign() {
                 onClick={() => update({ budgetType: type })}
                 className="flex-1 py-2.5 rounded-lg border text-sm font-medium transition-all"
                 style={{
-                  backgroundColor: isActive ? 'rgba(57, 255, 20, 0.1)' : 'transparent',
-                  borderColor: isActive ? 'rgba(57, 255, 20, 0.5)' : 'var(--color-border)',
+                  backgroundColor: isActive ? 'rgba(22, 163, 74, 0.1)' : 'transparent',
+                  borderColor: isActive ? 'rgba(22, 163, 74, 0.5)' : 'var(--color-border)',
                   color: isActive ? 'var(--color-accent)' : 'var(--color-text-secondary)',
                 }}
               >
@@ -287,7 +287,7 @@ export default function Tab3Campaign() {
                 onClick={() => update({ campaignStatus: status })}
                 className="flex-1 py-2.5 rounded-lg border text-sm font-medium transition-all"
                 style={{
-                  backgroundColor: isActive ? `${status === 'ACTIVE' ? 'rgba(57, 255, 20, 0.1)' : 'rgba(255, 183, 3, 0.1)'}` : 'transparent',
+                  backgroundColor: isActive ? `${status === 'ACTIVE' ? 'rgba(22, 163, 74, 0.1)' : 'rgba(255, 183, 3, 0.1)'}` : 'transparent',
                   borderColor: isActive ? color : 'var(--color-border)',
                   color: isActive ? color : 'var(--color-text-secondary)',
                 }}

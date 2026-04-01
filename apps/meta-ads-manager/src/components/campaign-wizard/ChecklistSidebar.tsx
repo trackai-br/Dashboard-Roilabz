@@ -16,8 +16,8 @@ export default function ChecklistSidebar() {
     <div
       className="w-64 flex-shrink-0 border-l p-4 overflow-y-auto"
       style={{
-        borderLeftColor: 'rgba(57, 255, 20, 0.1)',
-        backgroundColor: 'rgba(0, 0, 0, 0.2)',
+        borderLeftColor: 'var(--color-border)',
+        backgroundColor: 'var(--color-bg-sidebar)',
       }}
     >
       {/* Header */}
@@ -50,14 +50,14 @@ export default function ChecklistSidebar() {
         </div>
         <div
           className="h-1.5 rounded-full overflow-hidden"
-          style={{ backgroundColor: 'rgba(57, 255, 20, 0.1)' }}
+          style={{ backgroundColor: 'var(--color-bg-input)' }}
         >
           <div
             className="h-full rounded-full transition-all duration-500"
             style={{
               width: `${progress.percent}%`,
               backgroundColor: progress.percent === 100 ? 'var(--color-success)' : 'var(--color-accent)',
-              boxShadow: progress.percent > 0 ? '0 0 8px rgba(57, 255, 20, 0.4)' : 'none',
+              boxShadow: 'none',
             }}
           />
         </div>
@@ -75,10 +75,10 @@ export default function ChecklistSidebar() {
               className="w-4 h-4 rounded flex-shrink-0 flex items-center justify-center transition-all duration-200"
               style={{
                 backgroundColor: item.isComplete
-                  ? 'rgba(57, 255, 20, 0.2)'
+                  ? 'rgba(22, 163, 74, 0.2)'
                   : 'rgba(255, 255, 255, 0.05)',
                 border: item.isComplete
-                  ? '1px solid rgba(57, 255, 20, 0.5)'
+                  ? '1px solid rgba(22, 163, 74, 0.5)'
                   : '1px solid rgba(112, 112, 128, 0.3)',
               }}
             >
@@ -115,8 +115,8 @@ export default function ChecklistSidebar() {
         <div
           className="mt-4 p-3 rounded-lg text-center"
           style={{
-            backgroundColor: 'rgba(0, 255, 136, 0.1)',
-            border: '1px solid rgba(0, 255, 136, 0.3)',
+            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+            border: '1px solid rgba(34, 197, 94, 0.3)',
           }}
         >
           <p

@@ -190,13 +190,13 @@ export default function Tab5Ads() {
       {/* Info Box */}
       <div
         className="flex items-start gap-3 p-4 rounded-lg"
-        style={{ backgroundColor: 'rgba(0, 240, 255, 0.08)', border: '1px solid rgba(0, 240, 255, 0.3)' }}
+        style={{ backgroundColor: 'rgba(22, 163, 74, 0.06)', border: '1px solid rgba(22, 163, 74, 0.3)' }}
       >
-        <svg width="20" height="20" className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} style={{ color: 'var(--color-info)' }}>
+        <svg width="20" height="20" className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} style={{ color: 'var(--color-accent-bright)' }}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
         </svg>
         <div>
-          <p className="text-sm" style={{ color: 'var(--color-info)' }}>
+          <p className="text-sm" style={{ color: 'var(--color-accent-bright)' }}>
             O nome de cada anuncio sera o mesmo do seu conjunto (adset) correspondente.
           </p>
           <p className="text-xs mt-1" style={{ color: 'var(--color-text-secondary)' }}>
@@ -243,9 +243,9 @@ export default function Tab5Ads() {
                 onClick={() => { setCreativeFormat(opt.value); syncToContext({ creativeFormat: opt.value }); }}
                 className="p-3 rounded-lg border text-center transition-all"
                 style={{
-                  backgroundColor: isSelected ? 'rgba(57, 255, 20, 0.06)' : 'rgba(255, 255, 255, 0.02)',
-                  borderColor: isSelected ? 'rgba(57, 255, 20, 0.5)' : 'var(--color-border)',
-                  boxShadow: isSelected ? '0 0 12px rgba(57, 255, 20, 0.15)' : 'none',
+                  backgroundColor: isSelected ? 'rgba(22, 163, 74, 0.06)' : 'rgba(255, 255, 255, 0.02)',
+                  borderColor: isSelected ? 'rgba(22, 163, 74, 0.5)' : 'var(--color-border)',
+                  boxShadow: isSelected ? '0 0 0 rgba(22, 163, 74, 0.15)' : 'none',
                 }}
               >
                 <FormatIcon type={opt.icon} selected={isSelected} />
@@ -280,9 +280,9 @@ export default function Tab5Ads() {
             disabled={driveLoading || !driveLink.trim()}
             className="px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap disabled:opacity-30"
             style={{
-              backgroundColor: 'rgba(57, 255, 20, 0.15)',
+              backgroundColor: 'rgba(22, 163, 74, 0.15)',
               color: 'var(--color-accent)',
-              border: '1px solid rgba(57, 255, 20, 0.3)',
+              border: '1px solid rgba(22, 163, 74, 0.3)',
             }}
           >
             {driveLoading ? 'Buscando...' : 'Buscar Criativos'}
@@ -291,7 +291,7 @@ export default function Tab5Ads() {
 
         {/* Loading state */}
         {driveLoading && (
-          <div className="flex items-center gap-2 p-3 rounded-lg mb-3" style={{ backgroundColor: 'rgba(57, 255, 20, 0.05)', border: '1px solid rgba(57, 255, 20, 0.2)' }}>
+          <div className="flex items-center gap-2 p-3 rounded-lg mb-3" style={{ backgroundColor: 'rgba(22, 163, 74, 0.05)', border: '1px solid rgba(22, 163, 74, 0.2)' }}>
             <svg className="animate-spin h-4 w-4" style={{ color: 'var(--color-accent)' }} viewBox="0 0 24 24" fill="none">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
@@ -323,8 +323,8 @@ export default function Tab5Ads() {
                     key={file.id}
                     className="flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-all"
                     style={{
-                      backgroundColor: isChecked ? 'rgba(57, 255, 20, 0.04)' : 'rgba(255, 255, 255, 0.02)',
-                      border: `1px solid ${isChecked ? 'rgba(57, 255, 20, 0.25)' : 'var(--color-border)'}`,
+                      backgroundColor: isChecked ? 'rgba(22, 163, 74, 0.04)' : 'rgba(255, 255, 255, 0.02)',
+                      border: `1px solid ${isChecked ? 'rgba(22, 163, 74, 0.25)' : 'var(--color-border)'}`,
                     }}
                   >
                     <input
@@ -338,7 +338,7 @@ export default function Tab5Ads() {
                       className="px-2 py-0.5 rounded text-xs font-medium"
                       style={{
                         backgroundColor: file.type === 'video' ? 'rgba(139, 92, 246, 0.15)' : 'rgba(0, 240, 255, 0.1)',
-                        color: file.type === 'video' ? '#a78bfa' : 'var(--color-info)',
+                        color: file.type === 'video' ? '#a78bfa' : 'var(--color-accent-bright)',
                       }}
                     >
                       {file.type === 'video' ? 'VID' : 'IMG'}
@@ -376,7 +376,7 @@ export default function Tab5Ads() {
                   className="px-2 py-0.5 rounded text-xs font-medium"
                   style={{
                     backgroundColor: file.type === 'video' ? 'rgba(139, 92, 246, 0.15)' : 'rgba(0, 240, 255, 0.1)',
-                    color: file.type === 'video' ? '#a78bfa' : 'var(--color-info)',
+                    color: file.type === 'video' ? '#a78bfa' : 'var(--color-accent-bright)',
                   }}
                 >
                   {file.type === 'video' ? 'VID' : 'IMG'}
@@ -385,7 +385,7 @@ export default function Tab5Ads() {
                   {file.fileName}
                 </span>
                 {file.driveUrl ? (
-                  <span className="text-xs px-1.5 py-0.5 rounded" style={{ backgroundColor: 'rgba(57, 255, 20, 0.1)', color: 'var(--color-accent)' }}>
+                  <span className="text-xs px-1.5 py-0.5 rounded" style={{ backgroundColor: 'rgba(22, 163, 74, 0.1)', color: 'var(--color-accent)' }}>
                     Drive
                   </span>
                 ) : (
@@ -423,8 +423,8 @@ export default function Tab5Ads() {
             className="px-2 py-1.5 rounded-lg border text-xs font-medium transition-all"
             style={{
               backgroundColor: newFileType === 'video' ? 'rgba(139, 92, 246, 0.15)' : 'rgba(0, 240, 255, 0.1)',
-              borderColor: newFileType === 'video' ? 'rgba(139, 92, 246, 0.3)' : 'rgba(0, 240, 255, 0.3)',
-              color: newFileType === 'video' ? '#a78bfa' : 'var(--color-info)',
+              borderColor: newFileType === 'video' ? 'rgba(139, 92, 246, 0.3)' : 'rgba(22, 163, 74, 0.3)',
+              color: newFileType === 'video' ? '#a78bfa' : 'var(--color-accent-bright)',
             }}
           >
             {newFileType === 'video' ? 'VID' : 'IMG'}
@@ -433,7 +433,7 @@ export default function Tab5Ads() {
             onClick={addCreative}
             disabled={!newFileName.trim()}
             className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all disabled:opacity-30"
-            style={{ backgroundColor: 'rgba(57, 255, 20, 0.15)', color: 'var(--color-accent)', border: '1px solid rgba(57, 255, 20, 0.3)' }}
+            style={{ backgroundColor: 'rgba(22, 163, 74, 0.15)', color: 'var(--color-accent)', border: '1px solid rgba(22, 163, 74, 0.3)' }}
           >
             + Adicionar
           </button>
@@ -506,7 +506,7 @@ export default function Tab5Ads() {
             <div className="rounded-lg overflow-hidden" style={{ backgroundColor: '#242436', border: '1px solid var(--color-border)' }}>
               {/* Preview header */}
               <div className="flex items-center gap-2 px-3 py-2">
-                <div className="w-8 h-8 rounded-full" style={{ backgroundColor: 'rgba(57, 255, 20, 0.2)' }} />
+                <div className="w-8 h-8 rounded-full" style={{ backgroundColor: 'rgba(22, 163, 74, 0.2)' }} />
                 <div>
                   <p className="text-xs font-medium" style={{ color: 'var(--color-text-primary)' }}>Sua Pagina</p>
                   <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>Patrocinado</p>
@@ -575,7 +575,7 @@ export default function Tab5Ads() {
         {/* URL Preview */}
         <div className="mt-3 p-3 rounded-lg" style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}>
           <p className="text-xs mb-1" style={{ color: 'var(--color-text-tertiary)' }}>Preview da URL final:</p>
-          <p className="text-xs font-mono break-all" style={{ color: 'var(--color-info)' }}>
+          <p className="text-xs font-mono break-all" style={{ color: 'var(--color-accent-bright)' }}>
             {utmPreview}
           </p>
         </div>

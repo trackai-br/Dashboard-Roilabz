@@ -145,15 +145,15 @@ export default function Tab2PagesVolume() {
                     backgroundColor: isFull
                       ? 'rgba(112, 112, 128, 0.05)'
                       : isSelected
-                      ? 'rgba(57, 255, 20, 0.06)'
+                      ? 'rgba(22, 163, 74, 0.06)'
                       : 'rgba(255, 255, 255, 0.02)',
                     borderColor: isFull
                       ? 'rgba(112, 112, 128, 0.2)'
                       : isSelected
-                      ? 'rgba(57, 255, 20, 0.5)'
+                      ? 'rgba(22, 163, 74, 0.5)'
                       : 'var(--color-border)',
                     opacity: isFull ? 0.5 : 1,
-                    boxShadow: isSelected ? '0 0 12px rgba(57, 255, 20, 0.15)' : 'none',
+                    boxShadow: isSelected ? '0 0 0 rgba(22, 163, 74, 0.15)' : 'none',
                   }}
                 >
                   <div className="flex items-start justify-between mb-2">
@@ -234,7 +234,7 @@ export default function Tab2PagesVolume() {
         </div>
         <div className="flex gap-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
           <span>Total de adsets: <strong style={{ color: 'var(--color-accent)' }}>{totalAdsets}</strong></span>
-          <span>Páginas necessárias: <strong style={{ color: 'var(--color-info)' }}>~{pagesNeeded}</strong></span>
+          <span>Páginas necessárias: <strong style={{ color: 'var(--color-accent-bright)' }}>~{pagesNeeded}</strong></span>
         </div>
       </div>
 
@@ -270,7 +270,7 @@ export default function Tab2PagesVolume() {
                       <td className="px-3 py-2" style={{ color: 'var(--color-text-primary)' }}>Campanha {entry.campaignIndex}</td>
                       <td className="px-3 py-2" style={{ color: 'var(--color-accent)' }}>{entry.pageName}</td>
                       <td className="px-3 py-2 text-xs" style={{ color: 'var(--color-text-tertiary)' }}>{entry.accountId}</td>
-                      <td className="px-3 py-2 text-right" style={{ color: 'var(--color-info)' }}>{entry.adsetCount}</td>
+                      <td className="px-3 py-2 text-right" style={{ color: 'var(--color-accent-bright)' }}>{entry.adsetCount}</td>
                     </tr>
                   ))}
                 </tbody>

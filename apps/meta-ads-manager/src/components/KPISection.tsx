@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { TrendingUp, BarChart3, DollarSign, CheckCircle, Settings } from 'lucide-react';
+import { TrendingUp, ShoppingCart, Zap, Target, Globe } from 'lucide-react';
 
 export interface KPIData {
   roas: number;
@@ -9,138 +9,260 @@ export interface KPIData {
   dailySpend: number;
   monthlySpend: number;
   conversions: number;
+  activePages?: number;
 }
 
 interface KPISectionProps {
   data: KPIData;
+  loading?: boolean;
 }
 
-export function KPISection({ data }: KPISectionProps) {
-  const metrics = [
-    {
-      id:          'roas',
-      label:       'ROAS',
-      value:       data.roas.toFixed(2),
-      unit:        'x',
-      icon:        TrendingUp,
-      description: 'Retorno sobre investimento',
-    },
-    {
-      id:          'activeCampaigns',
-      label:       'Campanhas Ativas',
-      value:       data.activeCampaigns.toString(),
-      unit:        '',
-      icon:        BarChart3,
-      description: 'Em veiculação agora',
-    },
-    {
-      id:          'spend',
-      label:       'Gasto',
-      value:       `R$${(data.monthlySpend / 1000).toFixed(1)}k`,
-      unit:        '/mês',
-      icon:        DollarSign,
-      description: `Hoje: R$${data.dailySpend.toFixed(2)}`,
-    },
-    {
-      id:          'conversions',
-      label:       'Conversões',
-      value:       data.conversions.toString(),
-      unit:        'total',
-      icon:        CheckCircle,
-      description: 'Ações realizadas',
-    },
-  ];
+function formatCurrency(value: number): string {
+  if (value >= 1000000) return `R$${(value / 1000000).toFixed(1)}M`;
+  if (value >= 1000) return `R$${(value / 1000).toFixed(1)}k`;
+  return `R$${value.toFixed(2)}`;
+}
 
+function formatNumber(value: number): string {
+  if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
+  if (value >= 1000) return `${(value / 1000).toFixed(1)}k`;
+  return value.toLocaleString('pt-BR');
+}
+
+interface BigCardProps {
+  label: string;
+  value: string;
+  sub?: string;
+  icon: React.ElementType;
+  loading?: boolean;
+  accent?: boolean;
+}
+
+function BigCard({ label, value, sub, icon: Icon, loading, accent }: BigCardProps) {
   return (
-    <section className="px-6 py-5">
-      {/* Section header */}
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h2
-            className="text-sm font-semibold"
-            style={{ color: 'var(--color-text-primary)', fontFamily: 'var(--font-sans)', margin: 0 }}
-          >
-            Performance
-          </h2>
-          <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
-            Métricas em tempo real
-          </p>
+    <div
+      style={{
+        flex: 1,
+        padding: '20px 24px',
+        backgroundColor: 'var(--color-bg-surface)',
+        border: '1px solid var(--color-border)',
+        borderRadius: 'var(--radius-lg)',
+        boxShadow: 'var(--shadow-card)',
+        transition: 'border-color 120ms ease, box-shadow 120ms ease',
+        minWidth: 0,
+      }}
+      onMouseEnter={e => {
+        (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--color-border-accent)';
+        (e.currentTarget as HTMLDivElement).style.boxShadow = 'var(--shadow-card-hover)';
+      }}
+      onMouseLeave={e => {
+        (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--color-border)';
+        (e.currentTarget as HTMLDivElement).style.boxShadow = 'var(--shadow-card)';
+      }}
+    >
+      {/* Top row: label + icon */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+        <span style={{
+          fontFamily: 'var(--font-sans)',
+          fontSize: '10px',
+          fontWeight: 600,
+          letterSpacing: '0.08em',
+          textTransform: 'uppercase',
+          color: 'var(--color-text-tertiary)',
+        }}>
+          {label}
+        </span>
+        <div style={{
+          width: '32px',
+          height: '32px',
+          borderRadius: 'var(--radius-md)',
+          backgroundColor: accent ? 'rgba(22,163,74,0.1)' : 'var(--color-bg-input)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: accent ? 'var(--color-accent-bright)' : 'var(--color-text-tertiary)',
+          flexShrink: 0,
+        }}>
+          <Icon size={15} strokeWidth={1.5} aria-hidden="true" />
         </div>
-        <button
-          className="btn-ghost"
-          style={{ fontSize: '12px', padding: '5px 10px', color: 'var(--color-text-tertiary)' }}
-          aria-label="Customizar métricas"
-        >
-          <Settings size={13} strokeWidth={1.5} aria-hidden="true" />
-          Customizar
-        </button>
       </div>
 
-      {/* KPI Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-        {metrics.map((metric) => {
-          const Icon = metric.icon;
-          return (
-            <div
-              key={metric.id}
-              className="p-4 transition-all"
-              style={{
-                backgroundColor: 'var(--color-bg-surface)',
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-lg)',
-                boxShadow: 'var(--shadow-card)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = 'var(--color-border-accent)';
-                e.currentTarget.style.boxShadow = 'var(--shadow-card-hover)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'var(--color-border)';
-                e.currentTarget.style.boxShadow = 'var(--shadow-card)';
-              }}
-            >
-              {/* Header row: label + icon */}
-              <div className="flex items-center justify-between mb-3">
-                <p className="col-header">{metric.label}</p>
-                <div
-                  className="flex items-center justify-center"
-                  style={{
-                    width: '28px',
-                    height: '28px',
-                    borderRadius: 'var(--radius-sm)',
-                    backgroundColor: 'var(--color-bg-input)',
-                    color: 'var(--color-text-tertiary)',
-                  }}
-                  role="img"
-                  aria-label={metric.label}
-                >
-                  <Icon size={14} strokeWidth={1.5} aria-hidden="true" />
-                </div>
-              </div>
+      {/* Value */}
+      {loading ? (
+        <div className="animate-pulse" style={{ height: '36px', width: '120px', borderRadius: '6px', backgroundColor: 'var(--color-bg-input)' }} />
+      ) : (
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+          <span style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: '32px',
+            fontWeight: 600,
+            letterSpacing: '-0.03em',
+            color: 'var(--color-text-primary)',
+            fontVariantNumeric: 'tabular-nums',
+            lineHeight: 1,
+          }}>
+            {value}
+          </span>
+        </div>
+      )}
 
-              {/* Value */}
-              <div className="flex items-baseline gap-1.5">
-                <span
-                  className="value-mono"
-                  style={{ fontSize: '22px', fontWeight: 600, color: 'var(--color-text-primary)' }}
-                >
-                  {metric.value}
-                </span>
-                {metric.unit && (
-                  <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-                    {metric.unit}
-                  </span>
-                )}
-              </div>
+      {/* Sub */}
+      {sub && !loading && (
+        <p style={{
+          fontFamily: 'var(--font-sans)',
+          fontSize: '12px',
+          color: 'var(--color-text-tertiary)',
+          marginTop: '8px',
+          letterSpacing: '-0.01em',
+        }}>
+          {sub}
+        </p>
+      )}
+    </div>
+  );
+}
 
-              {/* Description */}
-              <p className="text-xs mt-1.5" style={{ color: 'var(--color-text-tertiary)' }}>
-                {metric.description}
-              </p>
-            </div>
-          );
-        })}
+interface SmallCardProps {
+  label: string;
+  value: string;
+  sub?: string;
+  icon: React.ElementType;
+  loading?: boolean;
+}
+
+function SmallCard({ label, value, sub, icon: Icon, loading }: SmallCardProps) {
+  return (
+    <div
+      style={{
+        flex: 1,
+        padding: '16px 20px',
+        backgroundColor: 'var(--color-bg-surface)',
+        border: '1px solid var(--color-border)',
+        borderRadius: 'var(--radius-lg)',
+        boxShadow: 'var(--shadow-card)',
+        transition: 'border-color 120ms ease, box-shadow 120ms ease',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '16px',
+        minWidth: 0,
+      }}
+      onMouseEnter={e => {
+        (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--color-border-accent)';
+        (e.currentTarget as HTMLDivElement).style.boxShadow = 'var(--shadow-card-hover)';
+      }}
+      onMouseLeave={e => {
+        (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--color-border)';
+        (e.currentTarget as HTMLDivElement).style.boxShadow = 'var(--shadow-card)';
+      }}
+    >
+      {/* Icon */}
+      <div style={{
+        width: '40px',
+        height: '40px',
+        borderRadius: 'var(--radius-md)',
+        backgroundColor: 'var(--color-bg-input)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: 'var(--color-text-tertiary)',
+        flexShrink: 0,
+      }}>
+        <Icon size={16} strokeWidth={1.5} aria-hidden="true" />
       </div>
+
+      {/* Text */}
+      <div style={{ minWidth: 0 }}>
+        <span style={{
+          display: 'block',
+          fontFamily: 'var(--font-sans)',
+          fontSize: '10px',
+          fontWeight: 600,
+          letterSpacing: '0.08em',
+          textTransform: 'uppercase',
+          color: 'var(--color-text-tertiary)',
+          marginBottom: '4px',
+        }}>
+          {label}
+        </span>
+        {loading ? (
+          <div className="animate-pulse" style={{ height: '24px', width: '60px', borderRadius: '4px', backgroundColor: 'var(--color-bg-input)' }} />
+        ) : (
+          <span style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: '22px',
+            fontWeight: 600,
+            letterSpacing: '-0.02em',
+            color: 'var(--color-text-primary)',
+            fontVariantNumeric: 'tabular-nums',
+            lineHeight: 1,
+          }}>
+            {value}
+          </span>
+        )}
+        {sub && !loading && (
+          <span style={{
+            display: 'block',
+            fontFamily: 'var(--font-sans)',
+            fontSize: '11px',
+            color: 'var(--color-text-tertiary)',
+            marginTop: '3px',
+          }}>
+            {sub}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function KPISection({ data, loading }: KPISectionProps) {
+  return (
+    <section style={{ padding: '20px 24px' }}>
+
+      {/* Linha 1 — 3 cards grandes em destaque */}
+      <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
+        <BigCard
+          label="Valor Usado"
+          value={formatCurrency(data.monthlySpend)}
+          sub={`Hoje: ${formatCurrency(data.dailySpend)}`}
+          icon={Zap}
+          loading={loading}
+          accent
+        />
+        <BigCard
+          label="Número de Vendas"
+          value={formatNumber(data.conversions)}
+          sub="Conversões totais"
+          icon={ShoppingCart}
+          loading={loading}
+        />
+        <BigCard
+          label="ROAS"
+          value={`${data.roas.toFixed(2)}x`}
+          sub="Retorno sobre investimento"
+          icon={TrendingUp}
+          loading={loading}
+        />
+      </div>
+
+      {/* Linha 2 — 2 cards menores */}
+      <div style={{ display: 'flex', gap: '12px' }}>
+        <SmallCard
+          label="Campanhas Ativas"
+          value={formatNumber(data.activeCampaigns)}
+          sub="Em veiculação agora"
+          icon={Target}
+          loading={loading}
+        />
+        <SmallCard
+          label="Páginas Ativas"
+          value={formatNumber(data.activePages ?? 0)}
+          sub="Páginas conectadas"
+          icon={Globe}
+          loading={loading}
+        />
+      </div>
+
     </section>
   );
 }

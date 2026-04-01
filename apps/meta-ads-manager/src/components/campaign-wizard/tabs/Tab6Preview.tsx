@@ -206,7 +206,7 @@ export default function Tab6Preview({ onGoToTemplate }: Tab6PreviewProps) {
           <div className="w-full h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
             <div
               className="h-full rounded-full transition-all duration-500"
-              style={{ width: `${pct}%`, backgroundColor: 'var(--color-accent)', boxShadow: '0 0 8px rgba(57, 255, 20, 0.5)' }}
+              style={{ width: `${pct}%`, backgroundColor: 'var(--color-accent)', boxShadow: '0 0 0 rgba(22, 163, 74, 0.5)' }}
             />
           </div>
         </div>
@@ -233,7 +233,7 @@ export default function Tab6Preview({ onGoToTemplate }: Tab6PreviewProps) {
               }
             } else if (!publishDone && publishCompleted >= entry.campaignIndex) {
               statusIcon = '\uD83D\uDD04';
-              statusColor = 'var(--color-info)';
+              statusColor = 'var(--color-accent-bright)';
             }
 
             return (
@@ -351,7 +351,7 @@ export default function Tab6Preview({ onGoToTemplate }: Tab6PreviewProps) {
                   <td className="px-3 py-2" style={{ color: 'var(--color-text-primary)' }}>{row.campaign}</td>
                   <td className="px-3 py-2" style={{ color: 'var(--color-text-secondary)' }}>{row.account}</td>
                   <td className="px-3 py-2" style={{ color: 'var(--color-text-secondary)' }}>{row.page}</td>
-                  <td className="px-3 py-2" style={{ color: 'var(--color-info)' }}>{row.adsets}</td>
+                  <td className="px-3 py-2" style={{ color: 'var(--color-accent-bright)' }}>{row.adsets}</td>
                   <td className="px-3 py-2">
                     {row.status === 'ok'
                       ? <span style={{ color: 'var(--color-accent)' }} title="Pronto">&#10003; Pronto</span>
@@ -385,7 +385,7 @@ export default function Tab6Preview({ onGoToTemplate }: Tab6PreviewProps) {
             <div className="space-y-3">
               {state.adsetTypes.map((t) => (
                 <div key={t.id} className="p-3 rounded-lg" style={{ backgroundColor: 'rgba(0, 0, 0, 0.2)' }}>
-                  <p className="text-sm font-medium mb-2" style={{ color: 'var(--color-info)' }}>{t.name || 'Sem nome'} - {t.adsetCount} adsets x {t.campaignsCount} campanhas</p>
+                  <p className="text-sm font-medium mb-2" style={{ color: 'var(--color-accent-bright)' }}>{t.name || 'Sem nome'} - {t.adsetCount} adsets x {t.campaignsCount} campanhas</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                     <InfoRow label="Criativos" value={t.creativesInAdset.filter(Boolean).join(', ') || '-'} small />
                     <InfoRow label="Evento" value={EVENT_LABELS[t.conversionEvent] || t.conversionEvent} small />
@@ -429,7 +429,7 @@ export default function Tab6Preview({ onGoToTemplate }: Tab6PreviewProps) {
             color: 'var(--color-bg-base)',
             ...headingFont,
             letterSpacing: '0.04em',
-            boxShadow: '0 0 20px rgba(57, 255, 20, 0.4)',
+            boxShadow: '0 0 0 rgba(22, 163, 74, 0.4)',
           }}
         >
           Publicar Campanhas
@@ -446,7 +446,7 @@ export default function Tab6Preview({ onGoToTemplate }: Tab6PreviewProps) {
         return (
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 10001, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.7)' }} onClick={() => setShowPublishModal(false)} />
-            <div className="relative rounded-xl p-6 border shadow-xl max-w-lg w-full" style={{ backgroundColor: '#1a1a2e', borderColor: willSpendMoney ? 'rgba(255, 51, 51, 0.5)' : 'rgba(57, 255, 20, 0.3)' }}>
+            <div className="relative rounded-xl p-6 border shadow-xl max-w-lg w-full" style={{ backgroundColor: '#1a1a2e', borderColor: willSpendMoney ? 'rgba(255, 51, 51, 0.5)' : 'rgba(22, 163, 74, 0.3)' }}>
               <p className="text-lg font-bold mb-3" style={{ color: 'var(--color-text-primary)', ...headingFont }}>
                 Confirmar Publicacao
               </p>
@@ -467,8 +467,8 @@ export default function Tab6Preview({ onGoToTemplate }: Tab6PreviewProps) {
               )}
 
               {!willSpendMoney && (
-                <div className="p-3 rounded-lg mb-4" style={{ backgroundColor: 'rgba(0, 240, 255, 0.08)', border: '1px solid rgba(0, 240, 255, 0.3)' }}>
-                  <p className="text-sm" style={{ color: 'var(--color-info)' }}>
+                <div className="p-3 rounded-lg mb-4" style={{ backgroundColor: 'rgba(22, 163, 74, 0.06)', border: '1px solid rgba(22, 163, 74, 0.3)' }}>
+                  <p className="text-sm" style={{ color: 'var(--color-accent-bright)' }}>
                     As campanhas serao criadas <strong>PAUSADAS</strong>. Nenhum gasto sera feito ate voce ativa-las manualmente no Meta Ads Manager.
                   </p>
                 </div>
@@ -494,7 +494,7 @@ export default function Tab6Preview({ onGoToTemplate }: Tab6PreviewProps) {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span style={{ color: 'var(--color-text-secondary)' }}>Status das campanhas</span>
-                  <span className="font-semibold" style={{ color: isActive ? '#ff5555' : 'var(--color-info)' }}>
+                  <span className="font-semibold" style={{ color: isActive ? '#ff5555' : 'var(--color-accent-bright)' }}>
                     {isActive ? 'ATIVO' : 'PAUSADO'}
                   </span>
                 </div>
@@ -515,7 +515,7 @@ export default function Tab6Preview({ onGoToTemplate }: Tab6PreviewProps) {
                     backgroundColor: willSpendMoney ? '#ff5555' : 'var(--color-accent)',
                     color: willSpendMoney ? '#fff' : 'var(--color-bg-base)',
                     ...headingFont,
-                    boxShadow: willSpendMoney ? '0 0 16px rgba(255, 51, 51, 0.4)' : '0 0 12px rgba(57, 255, 20, 0.3)',
+                    boxShadow: willSpendMoney ? '0 0 16px rgba(255, 51, 51, 0.4)' : '0 0 0 rgba(22, 163, 74, 0.3)',
                   }}
                 >
                   {willSpendMoney ? 'Publicar e Ativar' : 'Publicar Pausado'}
@@ -533,9 +533,9 @@ export default function Tab6Preview({ onGoToTemplate }: Tab6PreviewProps) {
 
 function SummaryCard({ icon, label, value, highlight }: { icon: React.ReactNode; label: string; value: string; highlight?: boolean }) {
   return (
-    <div className="p-3 rounded-lg border text-center" style={{ backgroundColor: 'rgba(255, 255, 255, 0.03)', borderColor: highlight ? 'rgba(57, 255, 20, 0.3)' : 'var(--color-border)' }}>
+    <div className="p-3 rounded-lg border text-center" style={{ backgroundColor: 'rgba(255, 255, 255, 0.03)', borderColor: highlight ? 'rgba(22, 163, 74, 0.3)' : 'var(--color-border)' }}>
       <div className="mb-1.5" style={{ color: highlight ? 'var(--color-accent)' : 'var(--color-text-secondary)' }}>{icon}</div>
-      <p className="text-lg font-bold" style={{ color: highlight ? 'var(--color-accent)' : 'var(--color-text-primary)', fontFamily: "var(--font-sans)", textShadow: highlight ? '0 0 8px rgba(57, 255, 20, 0.3)' : 'none' }}>{value}</p>
+      <p className="text-lg font-bold" style={{ color: highlight ? 'var(--color-accent)' : 'var(--color-text-primary)', fontFamily: "var(--font-sans)", textShadow: 'none' }}>{value}</p>
       <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>{label}</p>
     </div>
   );
@@ -543,7 +543,7 @@ function SummaryCard({ icon, label, value, highlight }: { icon: React.ReactNode;
 
 function AccordionSection({ id, title, open, onToggle, children }: { id: string; title: string; open: boolean; onToggle: () => void; children: React.ReactNode }) {
   return (
-    <div className="rounded-lg border overflow-hidden" style={{ borderColor: open ? 'rgba(57, 255, 20, 0.2)' : 'var(--color-border)', backgroundColor: 'rgba(255, 255, 255, 0.02)' }}>
+    <div className="rounded-lg border overflow-hidden" style={{ borderColor: open ? 'rgba(22, 163, 74, 0.2)' : 'var(--color-border)', backgroundColor: 'rgba(255, 255, 255, 0.02)' }}>
       <button onClick={onToggle} className="w-full flex items-center gap-2 px-4 py-3 text-left">
         <svg width="16" height="16" className="w-4 h-4 transition-transform flex-shrink-0" style={{ color: 'var(--color-text-secondary)', transform: open ? 'rotate(90deg)' : 'rotate(0)' }} fill="currentColor" viewBox="0 0 20 20">
           <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
@@ -660,7 +660,7 @@ function PublishResultRow({ cpName, statusIcon, statusColor, result, cataloged, 
             )}
           </div>
           <p style={{ color: 'var(--color-text-secondary)' }}>{cataloged.description}</p>
-          <div className="p-2 rounded" style={{ backgroundColor: 'rgba(57, 255, 20, 0.06)', border: '1px solid rgba(57, 255, 20, 0.15)' }}>
+          <div className="p-2 rounded" style={{ backgroundColor: 'rgba(22, 163, 74, 0.06)', border: '1px solid rgba(22, 163, 74, 0.15)' }}>
             <span className="font-semibold" style={{ color: 'var(--color-accent)' }}>O que fazer: </span>
             <span style={{ color: 'var(--color-text-primary)' }}>{cataloged.action}</span>
           </div>

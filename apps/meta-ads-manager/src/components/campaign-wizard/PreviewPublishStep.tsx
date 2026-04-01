@@ -314,20 +314,20 @@ export default function PreviewPublishStep({ onSaved }: PreviewPublishStepProps)
               <div
                 key={batch.id}
                 className="rounded-lg overflow-hidden"
-                style={{ border: '1px solid rgba(57, 255, 20, 0.1)' }}
+                style={{ border: '1px solid var(--color-border)' }}
               >
                 {/* Batch header */}
                 <div
                   className="flex items-center justify-between px-4 py-2.5"
-                  style={{ backgroundColor: 'rgba(57, 255, 20, 0.04)' }}
+                  style={{ backgroundColor: 'var(--color-bg-sidebar)' }}
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
                       {batch.name}
                     </span>
                     <span className="text-xs px-2 py-0.5 rounded-full" style={{
-                      backgroundColor: 'rgba(57, 255, 20, 0.1)',
-                      color: 'var(--color-accent)',
+                      backgroundColor: 'rgba(22, 163, 74, 0.1)',
+                      color: 'var(--color-accent-bright)',
                     }}>
                       {batch.totalCampaigns} camp · {batch.accounts.length} contas · {batch.pages.length} pag
                     </span>
@@ -362,8 +362,8 @@ export default function PreviewPublishStep({ onSaved }: PreviewPublishStepProps)
                               <span
                                 className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full"
                                 style={{
-                                  backgroundColor: batch.campaignConfig.campaignStatus === 'PAUSED' ? 'rgba(255,184,0,0.1)' : 'rgba(57,255,20,0.1)',
-                                  color: batch.campaignConfig.campaignStatus === 'PAUSED' ? 'var(--color-warning)' : 'var(--color-accent)',
+                                  backgroundColor: batch.campaignConfig.campaignStatus === 'PAUSED' ? 'var(--color-warning-bg)' : 'rgba(22, 163, 74, 0.1)',
+                                  color: batch.campaignConfig.campaignStatus === 'PAUSED' ? 'var(--color-warning)' : 'var(--color-accent-bright)',
                                 }}
                               >
                                 {batch.campaignConfig.campaignStatus === 'PAUSED' ? 'Pausado' : 'Ativo'}
@@ -378,7 +378,7 @@ export default function PreviewPublishStep({ onSaved }: PreviewPublishStepProps)
 
                 {/* Per-batch progress bar */}
                 {batchPublish && (
-                  <div className="px-4 py-2" style={{ borderTop: '1px solid rgba(57, 255, 20, 0.08)' }}>
+                  <div className="px-4 py-2" style={{ borderTop: '1px solid var(--color-border)' }}>
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-xs" style={{
                         color: batchPublish.status === 'completed' ? 'var(--color-success)'
@@ -397,7 +397,7 @@ export default function PreviewPublishStep({ onSaved }: PreviewPublishStepProps)
                           className="text-xs px-2 py-0.5 rounded-lg cursor-pointer focus:outline-none"
                           style={{
                             color: 'var(--color-accent)',
-                            border: '1px solid rgba(57, 255, 20, 0.3)',
+                            border: '1px solid rgba(22, 163, 74, 0.35)',
                             transition: 'all 150ms cubic-bezier(0.16, 1, 0.3, 1)',
                           }}
                         >
@@ -444,7 +444,7 @@ export default function PreviewPublishStep({ onSaved }: PreviewPublishStepProps)
       {publishDone && (
         <div
           className="p-4 rounded-lg"
-          style={{ backgroundColor: 'rgba(57, 255, 20, 0.04)', border: '1px solid rgba(57, 255, 20, 0.15)' }}
+          style={{ backgroundColor: 'var(--color-bg-surface)', border: '1px solid var(--color-border)' }}
         >
           <h4 className="text-sm font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>
             Salvar como Template

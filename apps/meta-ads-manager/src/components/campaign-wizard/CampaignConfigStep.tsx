@@ -3,12 +3,12 @@ import { useWizardStore, selectBatches, selectActiveBatch } from '@/stores/wizar
 import type { BatchCampaignConfig } from '@/stores/wizard-store';
 
 const OBJECTIVES = [
-  { value: 'OUTCOME_SALES', label: 'Vendas', icon: '🛒' },
-  { value: 'OUTCOME_LEADS', label: 'Leads', icon: '📋' },
-  { value: 'OUTCOME_TRAFFIC', label: 'Trafego', icon: '🔗' },
-  { value: 'OUTCOME_AWARENESS', label: 'Reconhecimento', icon: '📢' },
-  { value: 'OUTCOME_ENGAGEMENT', label: 'Engajamento', icon: '💬' },
-  { value: 'OUTCOME_APP_PROMOTION', label: 'Instalacao de app', icon: '📱' },
+  { value: 'OUTCOME_SALES', label: 'Vendas' },
+  { value: 'OUTCOME_LEADS', label: 'Leads' },
+  { value: 'OUTCOME_TRAFFIC', label: 'Tráfego' },
+  { value: 'OUTCOME_AWARENESS', label: 'Reconhecimento' },
+  { value: 'OUTCOME_ENGAGEMENT', label: 'Engajamento' },
+  { value: 'OUTCOME_APP_PROMOTION', label: 'App' },
 ];
 
 const BID_STRATEGIES = [
@@ -147,9 +147,9 @@ export default function CampaignConfigStep() {
               onClick={() => useWizardStore.getState().setActiveBatch(b.id)}
               className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
               style={{
-                backgroundColor: b.id === batch.id ? 'rgba(57, 255, 20, 0.15)' : 'rgba(255,255,255,0.05)',
-                border: b.id === batch.id ? '1px solid rgba(57, 255, 20, 0.4)' : '1px solid rgba(255,255,255,0.1)',
-                color: b.id === batch.id ? 'var(--color-accent)' : 'var(--color-text-secondary)',
+                backgroundColor: b.id === batch.id ? 'rgba(22, 163, 74, 0.1)' : 'rgba(255,255,255,0.03)',
+                border: b.id === batch.id ? '1px solid rgba(22, 163, 74, 0.4)' : '1px solid var(--color-border)',
+                color: b.id === batch.id ? 'var(--color-accent-bright)' : 'var(--color-text-secondary)',
               }}
             >
               {b.name}
@@ -172,12 +172,11 @@ export default function CampaignConfigStep() {
                 onClick={() => updateConfig({ objective: obj.value })}
                 className="flex items-center gap-2 p-3 rounded-lg text-left transition-all"
                 style={{
-                  backgroundColor: isSelected ? 'rgba(57, 255, 20, 0.08)' : 'rgba(255,255,255,0.02)',
-                  border: isSelected ? '1px solid rgba(57, 255, 20, 0.4)' : '1px solid rgba(255,255,255,0.08)',
+                  backgroundColor: isSelected ? 'rgba(22, 163, 74, 0.08)' : 'rgba(255,255,255,0.02)',
+                  border: isSelected ? '1px solid rgba(22, 163, 74, 0.4)' : '1px solid var(--color-border)',
                 }}
               >
-                <span>{obj.icon}</span>
-                <span className="text-sm" style={{ color: isSelected ? 'var(--color-accent)' : 'var(--color-text-primary)' }}>
+                <span className="text-sm" style={{ color: isSelected ? 'var(--color-accent-bright)' : 'var(--color-text-primary)' }}>
                   {obj.label}
                 </span>
               </button>
@@ -189,7 +188,7 @@ export default function CampaignConfigStep() {
       {/* Naming Tags System */}
       <div
         className="p-4 rounded-lg"
-        style={{ backgroundColor: 'rgba(57, 255, 20, 0.03)', border: '1px solid rgba(57, 255, 20, 0.1)' }}
+        style={{ backgroundColor: 'var(--color-bg-surface)', border: '1px solid var(--color-border)' }}
       >
         <div className="flex items-center justify-between mb-3">
           <label className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>
@@ -198,7 +197,7 @@ export default function CampaignConfigStep() {
           <button
             onClick={handleAddTextTag}
             className="text-xs px-2 py-1 rounded transition-all"
-            style={{ color: 'var(--color-accent)', border: '1px solid rgba(57, 255, 20, 0.3)' }}
+            style={{ color: 'var(--color-accent-bright)', border: '1px solid rgba(22, 163, 74, 0.3)' }}
           >
             + Texto customizado
           </button>
@@ -255,7 +254,7 @@ export default function CampaignConfigStep() {
               className="w-full px-3 py-2 rounded-lg text-sm"
               style={{
                 backgroundColor: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(57, 255, 20, 0.2)',
+                border: '1px solid var(--color-border)',
                 color: 'var(--color-text-primary)',
                 outline: 'none',
               }}
@@ -271,7 +270,7 @@ export default function CampaignConfigStep() {
               className="w-full px-3 py-2 rounded-lg text-sm"
               style={{
                 backgroundColor: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(57, 255, 20, 0.2)',
+                border: '1px solid var(--color-border)',
                 color: 'var(--color-text-primary)',
                 outline: 'none',
               }}
@@ -282,7 +281,7 @@ export default function CampaignConfigStep() {
         {/* Preview */}
         <div
           className="p-3 rounded-lg"
-          style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)', border: '1px solid rgba(57, 255, 20, 0.1)' }}
+          style={{ backgroundColor: 'var(--color-bg-input)', border: '1px solid var(--color-border)' }}
         >
           <p className="text-xs mb-1" style={{ color: 'var(--color-text-tertiary)' }}>Preview do nome:</p>
           <p className="text-sm font-mono break-all" style={{ color: 'var(--color-accent)' }}>
@@ -304,8 +303,8 @@ export default function CampaignConfigStep() {
                 onClick={() => updateConfig({ budgetType: type })}
                 className="flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all"
                 style={{
-                  backgroundColor: config.budgetType === type ? 'rgba(57, 255, 20, 0.1)' : 'rgba(255,255,255,0.03)',
-                  border: config.budgetType === type ? '1px solid rgba(57, 255, 20, 0.4)' : '1px solid rgba(255,255,255,0.08)',
+                  backgroundColor: config.budgetType === type ? 'rgba(22, 163, 74, 0.1)' : 'rgba(255,255,255,0.03)',
+                  border: config.budgetType === type ? '1px solid rgba(22, 163, 74, 0.4)' : '1px solid var(--color-border)',
                   color: config.budgetType === type ? 'var(--color-accent)' : 'var(--color-text-secondary)',
                 }}
               >
@@ -326,7 +325,7 @@ export default function CampaignConfigStep() {
             className="w-full px-3 py-2 rounded-lg text-sm"
             style={{
               backgroundColor: 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(57, 255, 20, 0.2)',
+              border: '1px solid var(--color-border)',
               color: 'var(--color-text-primary)',
               outline: 'none',
             }}
@@ -351,8 +350,8 @@ export default function CampaignConfigStep() {
               onClick={() => updateConfig({ bidStrategy: bs.value })}
               className="px-3 py-2 rounded-lg text-sm transition-all text-left"
               style={{
-                backgroundColor: config.bidStrategy === bs.value ? 'rgba(57, 255, 20, 0.08)' : 'rgba(255,255,255,0.02)',
-                border: config.bidStrategy === bs.value ? '1px solid rgba(57, 255, 20, 0.4)' : '1px solid rgba(255,255,255,0.08)',
+                backgroundColor: config.bidStrategy === bs.value ? 'rgba(22, 163, 74, 0.08)' : 'rgba(255,255,255,0.02)',
+                border: config.bidStrategy === bs.value ? '1px solid rgba(22, 163, 74, 0.4)' : '1px solid var(--color-border)',
                 color: config.bidStrategy === bs.value ? 'var(--color-accent)' : 'var(--color-text-secondary)',
               }}
             >
@@ -374,8 +373,8 @@ export default function CampaignConfigStep() {
               onClick={() => updateConfig({ campaignStatus: status })}
               className="flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all"
               style={{
-                backgroundColor: config.campaignStatus === status ? 'rgba(57, 255, 20, 0.1)' : 'rgba(255,255,255,0.03)',
-                border: config.campaignStatus === status ? '1px solid rgba(57, 255, 20, 0.4)' : '1px solid rgba(255,255,255,0.08)',
+                backgroundColor: config.campaignStatus === status ? 'rgba(22, 163, 74, 0.1)' : 'rgba(255,255,255,0.03)',
+                border: config.campaignStatus === status ? '1px solid rgba(22, 163, 74, 0.4)' : '1px solid var(--color-border)',
                 color: config.campaignStatus === status ? 'var(--color-accent)' : 'var(--color-text-secondary)',
               }}
             >
