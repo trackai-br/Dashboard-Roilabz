@@ -34,11 +34,33 @@ interface SyncStatus {
   last_sync_status: string;
 }
 
+const statusBadge: Record<string, string> = {
+  ACTIVE:   'badge-active',
+  PAUSED:   'badge-paused',
+  ARCHIVED: 'badge-off',
+};
+const statusLabel: Record<string, string> = {
+  ACTIVE:   'Ativo',
+  PAUSED:   'Pausado',
+  ARCHIVED: 'Arquivado',
+};
+
+const COLS = [
+  { label: 'Campanha',     align: 'left'  },
+  { label: 'Status',       align: 'left'  },
+  { label: 'Gasto',        align: 'right' },
+  { label: 'Impressões',   align: 'right' },
+  { label: 'Cliques',      align: 'right' },
+  { label: 'CPC',          align: 'right' },
+  { label: 'CPM',          align: 'right' },
+  { label: 'CTR',          align: 'right' },
+  { label: 'Conversões',   align: 'right' },
+];
+
 export default function CampaignsPage() {
   const router = useRouter();
   const [selectedAccountId, setSelectedAccountId] = useState<string>('');
 
-  // Queries
   const { data: accounts, isLoading: accountsLoading } = useMetaAccounts();
 
   const {
@@ -50,7 +72,6 @@ export default function CampaignsPage() {
     queryFn: async () => {
       const params = new URLSearchParams();
       if (selectedAccountId) params.append('accountId', selectedAccountId);
-
       const res = await authenticatedFetch(`/api/meta/campaigns?${params.toString()}`);
       if (!res.ok) throw new Error('Failed to fetch campaigns');
       return res.json();
@@ -58,7 +79,6 @@ export default function CampaignsPage() {
     enabled: !!selectedAccountId || accounts?.length === 0,
   });
 
-  // Set default account on load
   useEffect(() => {
     if (accounts && accounts.length > 0 && !selectedAccountId) {
       setSelectedAccountId(accounts[0].id);
@@ -68,45 +88,51 @@ export default function CampaignsPage() {
   const campaigns = campaignsResponse?.campaigns || [];
   const syncStatuses: SyncStatus[] = campaignsResponse?.syncStatus || [];
 
-  // Find most recent sync for selected account
   const lastSync = syncStatuses.find(
     (s) => s.sync_type === 'insights' && s.meta_account_id === selectedAccountId
   );
 
   const formatSyncTime = (isoDate: string | null) => {
-    if (!isoDate) return 'Never';
-    const d = new Date(isoDate);
-    return d.toLocaleString();
+    if (!isoDate) return 'Nunca';
+    return new Date(isoDate).toLocaleString('pt-BR');
   };
+
+  const syncDotColor =
+    lastSync?.last_sync_status === 'success'
+      ? 'var(--color-success)'
+      : lastSync?.last_sync_status === 'running'
+      ? 'var(--color-warning)'
+      : 'var(--color-text-tertiary)';
 
   return (
     <DashboardLayout>
       <Breadcrumb
         items={[
-          { label: 'Accounts', href: '/dashboard' },
-          { label: 'Campaigns', href: '/campaigns' },
+          { label: 'Dashboard', href: '/dashboard' },
+          { label: 'Campanhas', href: '/campaigns' },
         ]}
       />
 
-      <div className="p-6">
-        {/* Account Selector + Sync Status */}
-        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+      <div className="p-5">
+        {/* Filters row */}
+        <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
             <label
               htmlFor="account-select"
-              className="block text-sm font-medium mb-2"
-              style={{ color: 'var(--color-primary)' }}
+              className="block text-xs font-medium mb-1.5"
+              style={{ color: 'var(--color-text-secondary)', fontFamily: 'var(--font-sans)' }}
             >
-              Select Account
+              Conta
             </label>
             <select
               id="account-select"
               value={selectedAccountId}
               onChange={(e) => setSelectedAccountId(e.target.value)}
               disabled={accountsLoading}
-              className="input rounded-lg px-4 py-2 disabled:opacity-50"
+              className="input"
+              style={{ width: '220px' }}
             >
-              <option value="">All Accounts</option>
+              <option value="">Todas as contas</option>
               {accounts?.map((account) => (
                 <option key={account.id} value={account.id}>
                   {account.meta_account_name}
@@ -115,87 +141,52 @@ export default function CampaignsPage() {
             </select>
           </div>
 
-          {/* Sync Status Indicator */}
-          <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--color-secondary)' }}>
-            <span
-              className="inline-block h-2 w-2 rounded-full"
-              style={{
-                backgroundColor:
-                  lastSync?.last_sync_status === 'success'
-                    ? 'var(--color-success)'
-                    : lastSync?.last_sync_status === 'running'
-                    ? 'var(--color-warning, #f59e0b)'
-                    : 'var(--color-secondary)',
-              }}
-            />
-            <span>
-              Last sync: {formatSyncTime(lastSync?.last_synced_at || null)}
-              {lastSync?.last_sync_status === 'running' && ' (syncing...)'}
-            </span>
+          {/* Sync status */}
+          <div className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--color-text-tertiary)', fontFamily: 'var(--font-sans)' }}>
+            <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ backgroundColor: syncDotColor }} />
+            Último sync: {formatSyncTime(lastSync?.last_synced_at || null)}
+            {lastSync?.last_sync_status === 'running' && ' (sincronizando...)'}
           </div>
         </div>
 
         {campaignsError && (
-          <div className="mb-6 rounded-lg border p-4" style={{ backgroundColor: 'var(--color-danger-bg)', borderColor: 'var(--color-danger)' }}>
-            <p className="text-sm font-medium" style={{ color: 'var(--color-danger)' }}>
-              Error loading campaigns: {campaignsError instanceof Error ? campaignsError.message : 'Unknown error'}
+          <div className="mb-5 rounded p-3" style={{ backgroundColor: 'rgba(255,45,120,0.06)', border: '1px solid var(--color-danger)' }}>
+            <p className="text-sm" style={{ color: 'var(--color-danger)', fontFamily: 'var(--font-sans)' }}>
+              Erro ao carregar campanhas: {campaignsError instanceof Error ? campaignsError.message : 'Erro desconhecido'}
             </p>
           </div>
         )}
 
-        {/* Campaigns Table */}
-        <div className="overflow-x-auto rounded-lg border" style={{ borderColor: 'var(--color-tertiary)' }}>
-          <table className="min-w-full divide-y" style={{ backgroundColor: 'var(--bg-card)' }}>
-            <thead style={{ backgroundColor: 'var(--bg-table-header)' }}>
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase" style={{ color: 'var(--color-secondary)' }}>
-                  Campaign Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase" style={{ color: 'var(--color-secondary)' }}>
-                  Status
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium uppercase" style={{ color: 'var(--color-secondary)' }}>
-                  Spend
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium uppercase" style={{ color: 'var(--color-secondary)' }}>
-                  Impressions
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium uppercase" style={{ color: 'var(--color-secondary)' }}>
-                  Clicks
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium uppercase" style={{ color: 'var(--color-secondary)' }}>
-                  CPC
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium uppercase" style={{ color: 'var(--color-secondary)' }}>
-                  CPM
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium uppercase" style={{ color: 'var(--color-secondary)' }}>
-                  CTR
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium uppercase" style={{ color: 'var(--color-secondary)' }}>
-                  Conversions
-                </th>
+        {/* Table */}
+        <div
+          className="overflow-x-auto"
+          style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', backgroundColor: 'var(--color-bg-surface)' }}
+        >
+          <table className="w-full">
+            <thead>
+              <tr style={{ borderBottom: '1px solid var(--color-border)', backgroundColor: 'var(--color-bg-sidebar)' }}>
+                {COLS.map(({ label, align }) => (
+                  <th
+                    key={label}
+                    className={`px-4 text-${align} col-header`}
+                    style={{ height: '36px', verticalAlign: 'middle' }}
+                  >
+                    {label}
+                  </th>
+                ))}
               </tr>
             </thead>
-            <tbody className="divide-y" style={{ borderColor: 'var(--color-tertiary)' }}>
+            <tbody>
               {campaignsLoading ? (
                 <tr>
-                  <td
-                    colSpan={9}
-                    className="px-6 py-4 text-center"
-                    style={{ color: 'var(--color-secondary)' }}
-                  >
-                    Loading campaigns...
+                  <td colSpan={9} className="px-4 py-8 text-center text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                    Carregando campanhas...
                   </td>
                 </tr>
               ) : campaigns.length === 0 ? (
                 <tr>
-                  <td
-                    colSpan={9}
-                    className="px-6 py-4 text-center"
-                    style={{ color: 'var(--color-secondary)' }}
-                  >
-                    No campaigns found
+                  <td colSpan={9} className="px-4 py-10 text-center text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                    Nenhuma campanha encontrada
                   </td>
                 </tr>
               ) : (
@@ -203,48 +194,60 @@ export default function CampaignsPage() {
                   <tr
                     key={campaign.campaign_id}
                     className="cursor-pointer transition-colors"
+                    style={{ borderBottom: '1px solid var(--color-border)', height: '44px' }}
                     onClick={() => router.push(`/campaigns/${campaign.campaign_id}`)}
+                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--color-bg-row-hover)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
                   >
-                    <td className="px-6 py-4 text-sm font-medium" style={{ color: 'var(--color-brand)' }}>
+                    <td className="px-4 text-sm font-medium" style={{ color: 'var(--color-text-primary)', fontFamily: 'var(--font-sans)' }}>
                       <Link
                         href={`/campaigns/${campaign.campaign_id}`}
                         className="hover:underline"
-                        style={{ color: 'var(--color-brand)' }}
+                        style={{ color: 'var(--color-text-primary)' }}
+                        onClick={(e) => e.stopPropagation()}
                       >
                         {campaign.campaign_name}
                       </Link>
                     </td>
-                    <td className="px-6 py-4 text-sm">
-                      <span
-                        className="inline-flex rounded-full px-3 py-1 text-xs font-medium"
-                        style={{
-                          backgroundColor: campaign.status === 'ACTIVE' ? 'var(--color-success-bg)' : 'var(--bg-tertiary)',
-                          color: campaign.status === 'ACTIVE' ? 'var(--color-success)' : 'var(--color-secondary)'
-                        }}
-                      >
-                        {campaign.status}
+                    <td className="px-4">
+                      <span className={statusBadge[campaign.status] || 'badge-off'}>
+                        {statusLabel[campaign.status] || campaign.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-right text-sm font-mono" style={{ color: 'var(--color-primary)' }}>
-                      ${(Number(campaign.metrics?.spend || 0) / 100).toFixed(2)}
+                    <td className="px-4 text-right">
+                      <span className="value-mono" style={{ color: 'var(--color-text-primary)' }}>
+                        R${(Number(campaign.metrics?.spend || 0) / 100).toFixed(2)}
+                      </span>
                     </td>
-                    <td className="px-6 py-4 text-right text-sm font-mono" style={{ color: 'var(--color-primary)' }}>
-                      {Number(campaign.metrics?.impressions || 0).toLocaleString()}
+                    <td className="px-4 text-right">
+                      <span className="value-mono" style={{ color: 'var(--color-text-primary)' }}>
+                        {Number(campaign.metrics?.impressions || 0).toLocaleString('pt-BR')}
+                      </span>
                     </td>
-                    <td className="px-6 py-4 text-right text-sm font-mono" style={{ color: 'var(--color-primary)' }}>
-                      {Number(campaign.metrics?.clicks || 0).toLocaleString()}
+                    <td className="px-4 text-right">
+                      <span className="value-mono" style={{ color: 'var(--color-text-primary)' }}>
+                        {Number(campaign.metrics?.clicks || 0).toLocaleString('pt-BR')}
+                      </span>
                     </td>
-                    <td className="px-6 py-4 text-right text-sm font-mono" style={{ color: 'var(--color-primary)' }}>
-                      ${(Number(campaign.metrics?.cpc || 0) / 100).toFixed(2)}
+                    <td className="px-4 text-right">
+                      <span className="value-mono" style={{ color: 'var(--color-text-primary)' }}>
+                        R${(Number(campaign.metrics?.cpc || 0) / 100).toFixed(2)}
+                      </span>
                     </td>
-                    <td className="px-6 py-4 text-right text-sm font-mono" style={{ color: 'var(--color-primary)' }}>
-                      ${(Number(campaign.metrics?.cpm || 0) / 100).toFixed(2)}
+                    <td className="px-4 text-right">
+                      <span className="value-mono" style={{ color: 'var(--color-text-primary)' }}>
+                        R${(Number(campaign.metrics?.cpm || 0) / 100).toFixed(2)}
+                      </span>
                     </td>
-                    <td className="px-6 py-4 text-right text-sm font-mono" style={{ color: 'var(--color-primary)' }}>
-                      {Number(campaign.metrics?.ctr || 0).toFixed(2)}%
+                    <td className="px-4 text-right">
+                      <span className="value-mono" style={{ color: 'var(--color-text-primary)' }}>
+                        {Number(campaign.metrics?.ctr || 0).toFixed(2)}%
+                      </span>
                     </td>
-                    <td className="px-6 py-4 text-right text-sm font-mono" style={{ color: 'var(--color-primary)' }}>
-                      {Number(campaign.metrics?.conversions || 0).toLocaleString()}
+                    <td className="px-4 text-right">
+                      <span className="value-mono" style={{ color: 'var(--color-text-primary)' }}>
+                        {Number(campaign.metrics?.conversions || 0).toLocaleString('pt-BR')}
+                      </span>
                     </td>
                   </tr>
                 ))
@@ -255,10 +258,9 @@ export default function CampaignsPage() {
 
         {/* Summary */}
         {campaigns.length > 0 && (
-          <div className="mt-6 rounded-lg p-4" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--color-tertiary)', borderWidth: '1px' }}>
-            <p className="text-sm" style={{ color: 'var(--color-primary)' }}>
-              Showing <strong>{campaigns.length}</strong> campaign
-              {campaigns.length !== 1 ? 's' : ''}
+          <div className="mt-4">
+            <p className="text-xs" style={{ color: 'var(--color-text-tertiary)', fontFamily: 'var(--font-sans)' }}>
+              {campaigns.length} campanha{campaigns.length !== 1 ? 's' : ''} encontrada{campaigns.length !== 1 ? 's' : ''}
             </p>
           </div>
         )}
