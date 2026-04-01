@@ -6,6 +6,7 @@ export const BatchAccountEntrySchema = z.object({
   accountId: z.string().min(1, 'ID da conta obrigatório'),
   accountName: z.string(),
   currency: z.string(),
+  campaignCount: z.number().int().min(0, 'campaignCount não pode ser negativo').optional(),
 });
 
 export const BatchPageEntrySchema = z.object({
@@ -18,7 +19,6 @@ export const BatchAdsetTypeSchema = z.object({
   id: z.string(),
   name: z.string().min(1, 'Nome do conjunto obrigatório'),
   adsetCount: z.number().int().min(1, 'Mínimo 1 adset'),
-  campaignsCount: z.number().int().min(1),
   creativesInAdset: z.array(z.string()),
   conversionLocation: z.string().min(1, 'Local de conversão obrigatório'),
   bidCapValue: z.number().optional(),
@@ -98,6 +98,14 @@ export function validateBatch(batch: unknown): BatchValidationResult {
     // ROAS not supported
     if (data.campaignConfig.bidStrategy === 'LOWEST_COST_WITH_MIN_ROAS') {
       warnings.push('Estratégia ROAS mínimo não suportada — será usado custo mais baixo automaticamente');
+    }
+
+    // campaignCount=0 em alguma conta → alerta de volume zerado
+    const hasZeroCampaignCount = data.accounts.some(
+      (a) => a.campaignCount !== undefined && a.campaignCount === 0
+    );
+    if (hasZeroCampaignCount) {
+      warnings.push('Uma ou mais contas têm campaignCount=0 — nenhuma campanha será criada para essas contas');
     }
 
     return { isValid: true, errors: {}, warnings };

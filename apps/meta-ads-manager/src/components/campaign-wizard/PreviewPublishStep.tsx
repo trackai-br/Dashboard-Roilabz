@@ -3,6 +3,7 @@ import { useWizardStore, selectBatches, selectCreativePool, selectAdConfig } fro
 import type { PublishBatchResult, BatchConfig } from '@/stores/wizard-store';
 import { authenticatedFetch } from '@/lib/api-client';
 import { validateAllBatches } from '@/lib/batch-schemas';
+import { calculateCampaignsPerType } from '@/lib/distribution';
 
 const OBJECTIVE_LABELS: Record<string, string> = {
   OUTCOME_SALES: 'Vendas',
@@ -36,9 +37,15 @@ export default function PreviewPublishStep({ onSaved }: PreviewPublishStepProps)
     updateChecklistItem('review', true);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Helper: total de adsets de um batch usando distribuição em blocos
+  const calcBatchAdsets = (b: BatchConfig) => {
+    const blocks = calculateCampaignsPerType(b.totalCampaigns, b.adsetTypes.length);
+    return b.adsetTypes.reduce((a, t, i) => a + t.adsetCount * blocks[i], 0);
+  };
+
   // KPIs
   const totalCampaigns = batches.reduce((s, b) => s + b.totalCampaigns, 0);
-  const totalAdsets = batches.reduce((s, b) => s + b.adsetTypes.reduce((a, t) => a + t.adsetCount * t.campaignsCount, 0), 0);
+  const totalAdsets = batches.reduce((s, b) => s + calcBatchAdsets(b), 0);
   const totalCreatives = creativePool.length;
   const totalAccounts = new Set(batches.flatMap((b) => b.accounts.map((a) => a.accountId))).size;
   const totalPages = new Set(batches.flatMap((b) => b.pages.map((p) => p.pageId))).size;
@@ -46,7 +53,7 @@ export default function PreviewPublishStep({ onSaved }: PreviewPublishStepProps)
     const budgetPer = b.campaignConfig.budgetValue / 100;
     return s + (b.campaignConfig.budgetType === 'CBO'
       ? budgetPer * b.totalCampaigns
-      : budgetPer * b.adsetTypes.reduce((a, t) => a + t.adsetCount * t.campaignsCount, 0));
+      : budgetPer * calcBatchAdsets(b));
   }, 0);
 
   // Zod batch validation — errors block publication
@@ -69,7 +76,7 @@ export default function PreviewPublishStep({ onSaved }: PreviewPublishStepProps)
       const budgetPer = b.campaignConfig.budgetValue / 100;
       const totalB = b.campaignConfig.budgetType === 'CBO'
         ? budgetPer * b.totalCampaigns
-        : budgetPer * b.adsetTypes.reduce((s, t) => s + t.adsetCount * t.campaignsCount, 0);
+        : budgetPer * calcBatchAdsets(b);
       if (totalB > 50000) w.push(`Lote "${b.name}": orcamento total R$ ${totalB.toFixed(2)} excede R$ 50.000`);
       if (b.campaignConfig.bidStrategy === 'LOWEST_COST_WITH_MIN_ROAS') {
         w.push(`Lote "${b.name}": estrategia ROAS minimo nao suportada`);

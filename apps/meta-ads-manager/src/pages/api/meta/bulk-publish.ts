@@ -3,6 +3,8 @@ import { createClient } from '@supabase/supabase-js';
 import { requireAuth } from '@/lib/auth';
 import { metaAPI, MetaAPIError } from '@/lib/meta-api';
 import { getUserAccounts } from '@/lib/supabase-rls';
+import { buildAdsetPayloadExtras, buildCampaignPayloadExtras } from '@/lib/meta-ad-rules';
+import { getAdsetTypeForCampaign } from '@/lib/distribution';
 
 // Vercel serverless: extend timeout (Pro plan = 60s, Hobby = 10s)
 export const config = {
@@ -27,18 +29,6 @@ function uniqueSuffix() {
   return Math.random().toString(16).slice(2, 6);
 }
 
-/** Mapeia objective de campanha para optimization_goal de adset (quando nao tem pixel) */
-function getOptimizationGoalForObjective(objective: string): string {
-  const map: Record<string, string> = {
-    OUTCOME_TRAFFIC: 'LINK_CLICKS',
-    OUTCOME_AWARENESS: 'REACH',
-    OUTCOME_ENGAGEMENT: 'POST_ENGAGEMENT',
-    OUTCOME_LEADS: 'LEAD_GENERATION',
-    OUTCOME_APP_PROMOTION: 'APP_INSTALLS',
-    OUTCOME_SALES: 'OFFSITE_CONVERSIONS',
-  };
-  return map[objective] || 'LINK_CLICKS';
-}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -159,12 +149,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       // 2. Create Adsets for this campaign
-      const typesForCampaign = adsetTypes.filter(
-        (t: any) => t.campaignsCount > i || adsetTypes.length === 1
-      );
+      // BR-028: cada campanha recebe exatamente UM tipo via distribuição em blocos
+      const adsetType = getAdsetTypeForCampaign(adsetTypes, entry.campaignIndex, distribution.length);
 
-      for (const adsetType of typesForCampaign) {
-        for (let a = 0; a < adsetType.adsetCount; a++) {
+      for (let a = 0; a < adsetType.adsetCount; a++) {
           const adsetSuffix = adsetType.adsetCount > 1 ? ` ${String(a + 1).padStart(2, '0')}` : '';
           const adsetName = `${adsetType.name}${adsetSuffix}`;
 
@@ -181,33 +169,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             adsetBody.end_time = adsetType.endDate;
           }
 
-          // optimization_goal: SEMPRE enviar (obrigatório na Meta API)
-          if (adsetType.pixelId) {
-            adsetBody.optimization_goal = 'OFFSITE_CONVERSIONS';
-            adsetBody.promoted_object = {
-              pixel_id: adsetType.pixelId,
-              custom_event_type: adsetType.conversionEvent,
-            };
-          } else {
-            adsetBody.optimization_goal = getOptimizationGoalForObjective(campaignConfig.objective);
-          }
-
-          // bid_strategy: so enviar quando NAO for o default E tiver os campos obrigatorios
-          // Meta usa "custo mais baixo" automaticamente quando bid_strategy esta ausente
-          const bidStrategy = campaignConfig.bidStrategy;
-          const hasBidAmount = !!adsetType.bidCapValue;
-
-          if (bidStrategy === 'LOWEST_COST_WITHOUT_CAP') {
-            // Não enviar — Meta defaults para custo mais baixo
-          } else if (['LOWEST_COST_WITH_BID_CAP', 'COST_CAP'].includes(bidStrategy) && hasBidAmount) {
-            adsetBody.bid_strategy = bidStrategy;
-            adsetBody.bid_amount = adsetType.bidCapValue;
-          }
-          // LOWEST_COST_WITH_MIN_ROAS requer roas_average_floor — não implementado, omite bid_strategy
-
-          if (campaignConfig.budgetType === 'ABO') {
-            adsetBody.daily_budget = campaignConfig.budgetValue;
-          }
+          // Payload extras: optimization_goal, promoted_object, bid_strategy, budget
+          const extras = buildAdsetPayloadExtras({
+            objective: campaignConfig.objective as string,
+            pixelId: adsetType.pixelId ? String(adsetType.pixelId) : undefined,
+            conversionEvent: adsetType.conversionEvent ? String(adsetType.conversionEvent) : undefined,
+            bidStrategy: campaignConfig.bidStrategy as string,
+            bidCapValue: typeof adsetType.bidCapValue === 'number' ? adsetType.bidCapValue : undefined,
+            budgetType: campaignConfig.budgetType as 'CBO' | 'ABO',
+            budgetValue: campaignConfig.budgetValue as number,
+          });
+          Object.assign(adsetBody, extras);
 
           const adsetResult = await metaAPI.createAdSet(metaAccountId, metaCampaignId, adsetBody, user.id);
           const metaAdsetId = adsetResult.id;
@@ -304,7 +276,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
           }
         }
-      }
 
       return metaCampaignId;
     };

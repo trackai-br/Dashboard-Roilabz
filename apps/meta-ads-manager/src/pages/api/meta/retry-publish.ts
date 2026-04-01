@@ -3,22 +3,11 @@ import { createClient } from '@supabase/supabase-js';
 import { requireAuth } from '@/lib/auth';
 import { getUserAccounts } from '@/lib/supabase-rls';
 import { metaAPI } from '@/lib/meta-api';
+import { buildAdsetPayloadExtras } from '@/lib/meta-ad-rules';
+import { getAdsetTypeForCampaign } from '@/lib/distribution';
 
 const DELAY_MIN_MS = 800;
 const DELAY_MAX_MS = 2000;
-
-/** Mapeia objective de campanha para optimization_goal de adset (quando não tem pixel) */
-function getOptimizationGoalForObjective(objective: string): string {
-  const map: Record<string, string> = {
-    OUTCOME_TRAFFIC: 'LINK_CLICKS',
-    OUTCOME_AWARENESS: 'REACH',
-    OUTCOME_ENGAGEMENT: 'POST_ENGAGEMENT',
-    OUTCOME_LEADS: 'LEAD_GENERATION',
-    OUTCOME_APP_PROMOTION: 'APP_INSTALLS',
-    OUTCOME_SALES: 'OFFSITE_CONVERSIONS',
-  };
-  return map[objective] || 'LINK_CLICKS';
-}
 
 function humanDelay() {
   const jitter = DELAY_MIN_MS + Math.random() * (DELAY_MAX_MS - DELAY_MIN_MS);
@@ -100,13 +89,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       } as any);
     }
 
-    // 2. Create Adsets + Ads (same logic as bulk-publish)
-    const typesForCampaign = (adsetTypes || []).filter(
-      (t: any) => t.campaignsCount > campaignIndex || (adsetTypes || []).length === 1
+    // 2. Create Adsets + Ads — BR-028: um tipo por campanha via bloco
+    const adsetType = getAdsetTypeForCampaign(
+      adsetTypes || [],
+      campaignIndex,
+      (distribution || []).length
     );
 
-    for (const adsetType of typesForCampaign) {
-      for (let a = 0; a < adsetType.adsetCount; a++) {
+    for (let a = 0; a < adsetType.adsetCount; a++) {
         const adsetSuffix = adsetType.adsetCount > 1 ? ` ${String(a + 1).padStart(2, '0')}` : '';
         const adsetName = `${adsetType.name}${adsetSuffix}`;
 
@@ -118,29 +108,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           start_time: adsetType.startDate,
         };
 
-        const bidStrategy = campaignConfig.bidStrategy;
-        const hasBidAmount = !!adsetType.bidCapValue;
-
-        if (bidStrategy === 'LOWEST_COST_WITHOUT_CAP') {
-          // Default — omit
-        } else if (['LOWEST_COST_WITH_BID_CAP', 'COST_CAP'].includes(bidStrategy) && hasBidAmount) {
-          adsetBody.bid_strategy = bidStrategy;
-          adsetBody.bid_amount = adsetType.bidCapValue;
-        }
-
-        if (campaignConfig.budgetType === 'ABO') {
-          adsetBody.daily_budget = campaignConfig.budgetValue;
-        }
-        // optimization_goal: SEMPRE enviar (obrigatório na Meta API)
-        if (adsetType.pixelId) {
-          adsetBody.optimization_goal = 'OFFSITE_CONVERSIONS';
-          adsetBody.promoted_object = {
-            pixel_id: adsetType.pixelId,
-            custom_event_type: adsetType.conversionEvent,
-          };
-        } else {
-          adsetBody.optimization_goal = getOptimizationGoalForObjective(campaignConfig.objective);
-        }
+        // Payload extras: optimization_goal, promoted_object, bid_strategy, budget
+        const extras = buildAdsetPayloadExtras({
+          objective: campaignConfig.objective as string,
+          pixelId: adsetType.pixelId ? String(adsetType.pixelId) : undefined,
+          conversionEvent: adsetType.conversionEvent ? String(adsetType.conversionEvent) : undefined,
+          bidStrategy: campaignConfig.bidStrategy as string,
+          bidCapValue: typeof adsetType.bidCapValue === 'number' ? adsetType.bidCapValue : undefined,
+          budgetType: campaignConfig.budgetType as 'CBO' | 'ABO',
+          budgetValue: campaignConfig.budgetValue as number,
+        });
+        Object.assign(adsetBody, extras);
 
         const adsetResult = await metaAPI.createAdSet(metaAccountId, metaCampaignId, adsetBody, user.id);
         const metaAdsetId = adsetResult.id;
@@ -232,7 +210,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           }
         }
       }
-    }
 
     // Update result in job
     const results = ((job as any).results || []) as any[];

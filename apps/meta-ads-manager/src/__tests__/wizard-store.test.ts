@@ -35,7 +35,6 @@ const mockAdsetType: BatchAdsetType = {
   id: 'adset-1',
   name: 'Cr1_leva08',
   adsetCount: 5,
-  campaignsCount: 2,
   creativesInAdset: ['creative1.jpg', 'creative2.jpg'],
   conversionLocation: 'WEBSITE',
   pixelId: 'px_789',

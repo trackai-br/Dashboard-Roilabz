@@ -62,7 +62,6 @@ const SAMPLE_ADSET: BatchAdsetType = {
   id: 'adset-test-1',
   name: 'Conjunto 1',
   adsetCount: 1,
-  campaignsCount: 1,
   creativesInAdset: [],
   conversionLocation: 'WEBSITE',
   pixelId: '',

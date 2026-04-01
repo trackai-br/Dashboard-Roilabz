@@ -8,7 +8,6 @@ function validAdset() {
     id: 'adset-1',
     name: 'Conjunto 1',
     adsetCount: 1,
-    campaignsCount: 1,
     creativesInAdset: [],
     conversionLocation: 'WEBSITE',
     pixelId: 'px-123',
@@ -188,6 +187,101 @@ describe('validateBatch — warnings de orçamento', () => {
       campaignConfig: { ...validBatch().campaignConfig, budgetValue: 1000 },
     }));
     expect(result.warnings).toHaveLength(0);
+  });
+});
+
+describe('validateBatch — bid_strategy rules (BR-017, BR-018, BR-019)', () => {
+  it('BR-017: LOWEST_COST_WITH_BID_CAP sem bidCapValue → isValid=false', () => {
+    const result = validateBatch(validBatch({
+      campaignConfig: { ...validBatch().campaignConfig, bidStrategy: 'LOWEST_COST_WITH_BID_CAP' },
+      adsetTypes: [{ ...validAdset(), bidCapValue: undefined }],
+    }));
+    expect(result.isValid).toBe(false);
+  });
+
+  it('BR-017: LOWEST_COST_WITH_BID_CAP com bidCapValue=0 → isValid=false (0 não é valor válido)', () => {
+    const result = validateBatch(validBatch({
+      campaignConfig: { ...validBatch().campaignConfig, bidStrategy: 'LOWEST_COST_WITH_BID_CAP' },
+      adsetTypes: [{ ...validAdset(), bidCapValue: 0 }],
+    }));
+    expect(result.isValid).toBe(false);
+  });
+
+  it('BR-018: COST_CAP sem bidCapValue → isValid=false', () => {
+    const result = validateBatch(validBatch({
+      campaignConfig: { ...validBatch().campaignConfig, bidStrategy: 'COST_CAP' },
+      adsetTypes: [{ ...validAdset(), bidCapValue: undefined }],
+    }));
+    expect(result.isValid).toBe(false);
+    expect(result.errors['campaignConfig.bidStrategy']).toBeDefined();
+  });
+
+  it('BR-018: COST_CAP com bidCapValue > 0 → isValid=true', () => {
+    const result = validateBatch(validBatch({
+      campaignConfig: { ...validBatch().campaignConfig, bidStrategy: 'COST_CAP' },
+      adsetTypes: [{ ...validAdset(), bidCapValue: 500 }],
+    }));
+    expect(result.isValid).toBe(true);
+  });
+
+  it('BR-019: LOWEST_COST_WITH_MIN_ROAS gera warning "ROAS"', () => {
+    const result = validateBatch(validBatch({
+      campaignConfig: { ...validBatch().campaignConfig, bidStrategy: 'LOWEST_COST_WITH_MIN_ROAS' },
+    }));
+    expect(result.warnings.some((w) => w.includes('ROAS'))).toBe(true);
+  });
+
+  it('BR-022: LOWEST_COST_WITHOUT_CAP sem bidCapValue → isValid=true', () => {
+    const result = validateBatch(validBatch({
+      campaignConfig: { ...validBatch().campaignConfig, bidStrategy: 'LOWEST_COST_WITHOUT_CAP' },
+      adsetTypes: [{ ...validAdset(), bidCapValue: undefined }],
+    }));
+    expect(result.isValid).toBe(true);
+  });
+
+  it('bid_strategy inválido (string vazia) → isValid=false', () => {
+    const result = validateBatch(validBatch({
+      campaignConfig: { ...validBatch().campaignConfig, bidStrategy: '' },
+    }));
+    expect(result.isValid).toBe(false);
+  });
+});
+
+describe('validateBatch — campaignCount por conta (BR-001, BR-002, BR-003)', () => {
+  it('BR-001: conta com campaignCount=0 deve gerar warning ou erro de volume', () => {
+    // Quando TODAS as contas têm campaignCount=0, totalCampaigns efetivo é 0 → inválido
+    const batch = validBatch({
+      accounts: [
+        { accountId: 'acc-1', accountName: 'Conta 1', currency: 'BRL', campaignCount: 0 },
+      ],
+    });
+    const result = validateBatch(batch);
+    // Com campaignCount=0 em todas as contas, a publicação não faz sentido
+    // O comportamento exato depende da implementação (warning ou error)
+    // Pelo menos um dos dois deve estar presente
+    const hasIssue = !result.isValid || result.warnings.length > 0;
+    expect(hasIssue).toBe(true);
+  });
+
+  it('BR-003: conta com campaignCount negativo → isValid=false', () => {
+    const batch = validBatch({
+      accounts: [
+        { accountId: 'acc-1', accountName: 'Conta 1', currency: 'BRL', campaignCount: -1 },
+      ],
+    });
+    const result = validateBatch(batch);
+    expect(result.isValid).toBe(false);
+  });
+
+  it('conta com campaignCount positivo → sem erro de volume', () => {
+    const batch = validBatch({
+      accounts: [
+        { accountId: 'acc-1', accountName: 'Conta 1', currency: 'BRL', campaignCount: 3 },
+      ],
+    });
+    const result = validateBatch(batch);
+    // campaignCount válido não deve causar erros por si só
+    expect(result.errors['accounts.0.campaignCount']).toBeUndefined();
   });
 });
 

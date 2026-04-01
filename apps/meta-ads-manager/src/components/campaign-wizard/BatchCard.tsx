@@ -151,7 +151,6 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
       id: `adset-${Date.now()}`,
       name: `Conjunto ${batch.adsetTypes.length + 1}`,
       adsetCount: 1,
-      campaignsCount: batch.totalCampaigns,
       creativesInAdset: [],
       conversionLocation: 'WEBSITE',
       pixelId: pixelsForAccount?.[0]?.id || '',

@@ -18,6 +18,7 @@ export interface BatchAccountEntry {
   accountId: string;
   accountName: string;
   currency: string;
+  campaignCount?: number; // número de campanhas a criar nesta conta (padrão: 1)
 }
 
 export interface BatchPageEntry {
@@ -43,7 +44,6 @@ export interface BatchAdsetType {
   id: string;
   name: string;
   adsetCount: number;
-  campaignsCount: number;
   creativesInAdset: string[];
   conversionLocation: string;
   bidCapValue?: number;

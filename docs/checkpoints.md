@@ -6,6 +6,23 @@ atualizado: 2026-04-01
 
 # Checkpoints
 
+## [2026-04-01] — Auditoria UI/UX: remoção de código morto e ícones SVG
+- **O que mudou:**
+  - Removidos 3 arquivos de código morto do wizard V1: ConfigPopup.tsx, Step1Assets.tsx, Step5Review.tsx (nunca importados após migração para V2)
+  - MetaConnectionCard: emoji estruturais (✅/❌ em toasts, ⚠️ em warning box, 🔒 em nota OAuth) substituídos por texto limpo + SVG icons
+  - Violação de regra `no-emoji-icons` corrigida em todos os componentes ativos
+- **Arquivos alterados:**
+  - `src/components/MetaConnectionCard.tsx`
+  - `src/components/campaign-wizard/ConfigPopup.tsx` (deletado)
+  - `src/components/campaign-wizard/Step1Assets.tsx` (deletado)
+  - `src/components/campaign-wizard/Step5Review.tsx` (deletado)
+- **Testes passando:** 268/268 ✅
+- **Estado do projeto:** Funcionando — deployed a469c7f
+- **Próximo passo se a sessão acabar aqui:**
+  1. Testar em produção: pixels no wizard, "Editar Rascunho"/"Usar Template" no ConfigPopupV2
+  2. Testar publicação completa campanha → adset → ad com e sem pixel
+  3. Verificar logs Vercel: sem payloads verbose, apenas erros
+
 ## [2026-04-01] — Débitos técnicos de publicação: bug retry + logs + tipos TS
 - **O que mudou:**
   - retry-publish.ts: fix BUG-018 — `optimization_goal` agora sempre enviado, com fallback por objective quando sem pixel
