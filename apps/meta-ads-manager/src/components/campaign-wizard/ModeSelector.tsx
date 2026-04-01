@@ -78,11 +78,12 @@ export default function ModeSelector() {
             <button
               key={option.id}
               onClick={() => handleSelect(option.id)}
-              className="relative p-6 rounded-xl border text-left transition-all duration-200 group"
+              className="relative p-6 rounded-xl border text-left cursor-pointer focus:outline-none group"
               style={{
                 backgroundColor: isSelected ? 'rgba(57, 255, 20, 0.06)' : 'rgba(255, 255, 255, 0.02)',
-                borderColor: isSelected ? 'rgba(57, 255, 20, 0.5)' : 'rgba(57, 255, 20, 0.1)',
-                boxShadow: isSelected ? '0 0 20px rgba(57, 255, 20, 0.15)' : 'none',
+                borderColor: isSelected ? 'rgba(57, 255, 20, 0.4)' : 'var(--border-subtle)',
+                boxShadow: isSelected ? '0 0 0 3px rgba(57, 255, 20, 0.08), var(--shadow-card)' : 'var(--shadow-card)',
+                transition: 'all 150ms cubic-bezier(0.16, 1, 0.3, 1)',
               }}
             >
               {option.badge && (
@@ -112,9 +113,9 @@ export default function ModeSelector() {
               <h4
                 className="text-sm font-semibold mb-2"
                 style={{
-                  color: isSelected ? 'var(--neon-green)' : 'var(--color-primary)',
+                  color: 'var(--color-primary)',
                   fontFamily: "'Space Grotesk', system-ui, sans-serif",
-                  letterSpacing: '0.03em',
+                  letterSpacing: '-0.01em',
                 }}
               >
                 {option.title}

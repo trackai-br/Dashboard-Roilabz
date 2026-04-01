@@ -67,8 +67,8 @@ describe('KPICard', () => {
     expect(card).toHaveClass('custom-class');
   });
 
-  it('renders negative trend in red', () => {
-    const { container } = render(
+  it('renders negative trend with danger color', () => {
+    render(
       <KPICard
         title="Total Spend"
         value="$1,234.56"
@@ -77,11 +77,11 @@ describe('KPICard', () => {
     );
 
     const trendText = screen.getByText('-10% from last month');
-    expect(trendText).toHaveClass('text-red-600', 'dark:text-red-400');
+    expect(trendText).toHaveStyle({ color: 'var(--color-danger)' });
   });
 
-  it('renders positive trend in green', () => {
-    const { container } = render(
+  it('renders positive trend with success color', () => {
+    render(
       <KPICard
         title="Total Spend"
         value="$1,234.56"
@@ -90,6 +90,6 @@ describe('KPICard', () => {
     );
 
     const trendText = screen.getByText('+10% from last month');
-    expect(trendText).toHaveClass('text-green-600', 'dark:text-green-400');
+    expect(trendText).toHaveStyle({ color: 'var(--color-success)' });
   });
 });

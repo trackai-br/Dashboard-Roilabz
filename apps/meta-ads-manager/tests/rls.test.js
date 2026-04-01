@@ -173,20 +173,20 @@ describe("API Endpoint", () => {
     expect(content).toContain("requireAuth");
   });
 
-  it("should call getUserAccounts", () => {
+  it("should query user_account_access for authorization", () => {
     const fs = require("fs");
     const path = require("path");
     const apiPath = path.join(__dirname, "../src/pages/api/accounts/index.ts");
     const content = fs.readFileSync(apiPath, "utf8");
-    expect(content).toContain("getUserAccounts");
+    expect(content).toContain("user_account_access");
   });
 
-  it("should log access", () => {
+  it("should use supabaseAdmin for server-side queries", () => {
     const fs = require("fs");
     const path = require("path");
     const apiPath = path.join(__dirname, "../src/pages/api/accounts/index.ts");
     const content = fs.readFileSync(apiPath, "utf8");
-    expect(content).toContain("logAccess");
+    expect(content).toContain("supabaseAdmin");
   });
 });
 

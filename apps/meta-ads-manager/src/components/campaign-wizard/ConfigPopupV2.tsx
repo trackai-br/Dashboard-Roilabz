@@ -132,12 +132,13 @@ export default function ConfigPopupV2({ onClose, onSaved, draftState, draftId, t
               {mode === 'advanced' && (
                 <button
                   onClick={() => addBatch()}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium cursor-pointer focus:outline-none"
                   style={{
-                    backgroundColor: 'rgba(57, 255, 20, 0.1)',
-                    border: '1px solid rgba(57, 255, 20, 0.3)',
+                    backgroundColor: 'rgba(57, 255, 20, 0.08)',
+                    border: '1px solid rgba(57, 255, 20, 0.25)',
                     color: 'var(--neon-green)',
                     fontFamily: "'Space Grotesk', system-ui, sans-serif",
+                    transition: 'all 150ms cubic-bezier(0.16, 1, 0.3, 1)',
                   }}
                 >
                   <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -217,10 +218,10 @@ export default function ConfigPopupV2({ onClose, onSaved, draftState, draftId, t
           flexDirection: 'column',
           width: '95vw',
           height: '95vh',
-          backgroundColor: '#1a1a2e',
-          borderRadius: '12px',
-          border: '1px solid rgba(57, 255, 20, 0.2)',
-          boxShadow: '0 0 40px rgba(57, 255, 20, 0.15)',
+          backgroundColor: 'var(--bg-card)',
+          borderRadius: 'var(--radius-lg)',
+          border: '1px solid var(--border-subtle)',
+          boxShadow: '0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)',
           overflow: 'hidden',
         }}
       >
@@ -232,10 +233,9 @@ export default function ConfigPopupV2({ onClose, onSaved, draftState, draftId, t
           <h2
             className="text-xl font-bold"
             style={{
-              color: 'var(--neon-green)',
+              color: 'var(--color-primary)',
               fontFamily: "'Space Grotesk', system-ui, sans-serif",
-              letterSpacing: '0.03em',
-              textShadow: '0 0 12px rgba(57, 255, 20, 0.3)',
+              letterSpacing: '-0.02em',
             }}
           >
             Configuracao de Campanha
@@ -245,6 +245,7 @@ export default function ConfigPopupV2({ onClose, onSaved, draftState, draftId, t
                 style={{
                   backgroundColor: 'rgba(57, 255, 20, 0.1)',
                   color: 'var(--neon-green)',
+                  border: '1px solid rgba(57, 255, 20, 0.2)',
                 }}
               >
                 {mode === 'quick' ? 'Rapido' : mode === 'advanced' ? 'Avancado' : 'Adicionar Adsets'}
@@ -253,8 +254,8 @@ export default function ConfigPopupV2({ onClose, onSaved, draftState, draftId, t
           </h2>
           <button
             onClick={handleClose}
-            className="p-2 rounded-lg transition-colors hover:bg-white/10"
-            style={{ color: 'var(--color-secondary)' }}
+            className="p-2 rounded-lg transition-all hover:bg-white/5 cursor-pointer focus:outline-none focus:ring-2 focus:ring-neon-green/20"
+            style={{ color: 'var(--color-secondary)', transitionDuration: '150ms' }}
             aria-label="Fechar"
           >
             <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -277,16 +278,17 @@ export default function ConfigPopupV2({ onClose, onSaved, draftState, draftId, t
                 key={step.index}
                 onClick={() => handleTabClick(step.index)}
                 disabled={isDisabled}
-                className="flex items-center gap-1.5 px-4 py-3 text-sm font-medium whitespace-nowrap transition-all relative disabled:cursor-not-allowed"
+                className="flex items-center gap-1.5 px-4 py-3 text-sm font-medium whitespace-nowrap transition-all relative disabled:cursor-not-allowed cursor-pointer focus:outline-none"
                 style={{
                   color: isActive
                     ? 'var(--neon-green)'
                     : isCompleted
                     ? 'var(--color-success)'
                     : 'var(--color-secondary)',
-                  opacity: isDisabled ? 0.3 : isActive || isCompleted ? 1 : 0.6,
+                  opacity: isDisabled ? 0.3 : isActive || isCompleted ? 1 : 0.7,
                   fontFamily: "'Space Grotesk', system-ui, sans-serif",
-                  letterSpacing: '0.03em',
+                  letterSpacing: '0.01em',
+                  transitionDuration: '150ms',
                 }}
               >
                 {isCompleted && !isActive && (
@@ -328,12 +330,15 @@ export default function ConfigPopupV2({ onClose, onSaved, draftState, draftId, t
           <button
             onClick={handleBack}
             disabled={currentStep === 0}
-            className="px-5 py-2 rounded-lg border text-sm font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+            className="px-5 py-2 rounded-xl border text-sm font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer focus:outline-none focus:ring-2 focus:ring-neon-green/20"
             style={{
-              borderColor: 'rgba(57, 255, 20, 0.3)',
-              color: 'var(--neon-green)',
+              borderColor: 'var(--border-default)',
+              color: 'var(--color-secondary)',
               fontFamily: "'Space Grotesk', system-ui, sans-serif",
+              transitionDuration: '150ms',
             }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border-hover)'; (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--bg-row-hover)'; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border-default)'; (e.currentTarget as HTMLButtonElement).style.backgroundColor = ''; }}
           >
             Voltar
           </button>
@@ -344,14 +349,7 @@ export default function ConfigPopupV2({ onClose, onSaved, draftState, draftId, t
           <button
             onClick={handleAdvance}
             disabled={!canAdvance()}
-            className="px-5 py-2 rounded-lg text-sm font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-            style={{
-              backgroundColor: canAdvance() ? 'var(--neon-green)' : 'rgba(57, 255, 20, 0.3)',
-              color: 'var(--bg-deepest)',
-              fontFamily: "'Space Grotesk', system-ui, sans-serif",
-              letterSpacing: '0.03em',
-              boxShadow: canAdvance() ? '0 0 12px rgba(57, 255, 20, 0.3)' : 'none',
-            }}
+            className="btn-brand disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none disabled:filter-none"
           >
             {getAdvanceLabel()}
           </button>
@@ -363,27 +361,30 @@ export default function ConfigPopupV2({ onClose, onSaved, draftState, draftId, t
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)' }} onClick={() => setShowConfirmClose(false)} />
           <div
-            className="relative rounded-xl p-6 border shadow-xl max-w-md"
-            style={{ backgroundColor: '#1a1a2e', borderColor: 'rgba(57, 255, 20, 0.2)' }}
+            className="relative p-6 shadow-xl max-w-md w-full mx-4"
+            style={{
+              backgroundColor: 'var(--bg-card-hover)',
+              borderRadius: 'var(--radius-lg)',
+              border: '1px solid var(--border-default)',
+              boxShadow: 'var(--shadow-elevated)',
+            }}
           >
-            <p className="text-lg font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
+            <p className="text-base font-semibold mb-2" style={{ color: 'var(--color-primary)', fontFamily: "'Space Grotesk', system-ui, sans-serif" }}>
               Sair da configuracao?
             </p>
-            <p className="text-sm mb-6" style={{ color: 'var(--color-secondary)' }}>
+            <p className="text-sm mb-6 leading-relaxed" style={{ color: 'var(--color-secondary)' }}>
               Seu progresso sera salvo automaticamente. Deseja sair?
             </p>
             <div className="flex gap-3 justify-end">
               <button
                 onClick={() => setShowConfirmClose(false)}
-                className="px-4 py-2 rounded-lg border text-sm"
-                style={{ borderColor: 'rgba(57, 255, 20, 0.2)', color: 'var(--color-secondary)' }}
+                className="btn-ghost text-sm px-4 py-2 cursor-pointer"
               >
                 Cancelar
               </button>
               <button
                 onClick={confirmClose}
-                className="px-4 py-2 rounded-lg text-sm font-medium"
-                style={{ backgroundColor: 'var(--color-danger)', color: '#fff' }}
+                className="btn-danger text-sm px-4 py-2 cursor-pointer"
               >
                 Sair
               </button>

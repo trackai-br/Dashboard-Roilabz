@@ -6,6 +6,33 @@ atualizado: 2026-03-31
 
 # Progresso
 
+## [2026-03-31] Integração Zod no PreviewPublishStep
+- **Plano:** Integrar validateAllBatches no PreviewPublishStep para bloquear publicação quando há erros de validação nos lotes.
+- **Resultado:** COMPLETO
+  - Seção vermelha "Erros de validação" aparece quando algum lote falha no schema Zod (lista por lote + campo)
+  - Seção amarela "Avisos" para problemas não-bloqueantes (URL/texto/criativos ausentes, orçamento alto, ROAS)
+  - Botão "Publicar" desabilitado quando `!batchValidation.isValid || warnings.length > 0`
+  - Removidas checagens manuais redundantes (accounts/pages/adsets/budget já cobertas pelo Zod)
+  - 268/268 testes passando.
+- **O que falta:**
+  - Deploy + testar em produção
+
+## [2026-03-31] Validação Zod por batch — batch-schemas.ts
+- **Plano:** Criar schemas Zod para BatchConfig e função validateBatch/validateAllBatches.
+- **Abordagem:** Instalar Zod (v4), criar src/lib/batch-schemas.ts com schemas tipados e superRefine para regra de bid cap. Funções validateBatch (retorna errors/warnings) e validateAllBatches (valida array com índices).
+- **Resultado:** COMPLETO — 21 testes, 268/268 passando. Zod v4.3.6 instalado.
+- **O que falta:**
+  - Integrar validateBatch no PreviewPublishStep (bloquear publicação se batch inválido)
+  - Deploy + testar em produção
+
+## [2026-03-31] Testes do BatchCard — 24 testes novos
+- **Plano:** Escrever testes unitários para BatchCard (pendência identificada em sessão anterior como complexa por depender de mocks de useQuery e authenticatedFetch).
+- **Abordagem:** Mock de useMetaAccounts, useMetaPages e authenticatedFetch. QueryClientProvider como wrapper. Helpers setupOneBatch/setupTwoBatches para isolar estado do store entre testes.
+- **Resultado:** COMPLETO — 24 testes cobrindo renderização, expansão, contas, páginas, volume, ad sets, config de campanha e ações do card. Suite total: 247/247 passando.
+- **O que falta:**
+  - Validação Zod por batch
+  - Deploy + testar pixels e draft/template em produção
+
 ## [2026-03-31] Execucao de pendencias — pixels v2, ConfigPopupV2, testes, SQL
 - **Plano:** Resolver 4 pendencias acumuladas: (1) fix pixels Business Manager v2, (2) draft/template loading no ConfigPopupV2, (3) testes de componentes wizard, (4) SQL consolidado das migrations.
 - **Abordagem:** Framework "Pensar Antes de Agir" — 4 agentes de pesquisa em paralelo para analise, seguido de execucao sequencial por prioridade.
