@@ -113,25 +113,25 @@ export default function AlertsPage() {
       <div className="p-6">
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold font-display" style={{ color: 'var(--color-primary)' }}>
+            <h1 className="text-3xl font-bold font-display" style={{ color: 'var(--color-text-primary)' }}>
               Sistema de Alertas
             </h1>
-            <p className="mt-2" style={{ color: 'var(--color-secondary)' }}>
+            <p className="mt-2" style={{ color: 'var(--color-text-secondary)' }}>
               Crie regras para ser notificado sobre mudanças nas suas campanhas
             </p>
           </div>
           <button
             onClick={() => setShowForm(!showForm)}
             className="rounded-lg px-6 py-2 font-medium text-white transition-colors"
-            style={{ backgroundColor: 'var(--color-brand)' }}
+            style={{ backgroundColor: 'var(--color-accent-dark)' }}
           >
             {showForm ? '✕ Cancelar' : '+ Nova Regra'}
           </button>
         </div>
 
         {/* Account Selector */}
-        <div className="mb-6 rounded-lg border p-4" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--color-tertiary)' }}>
-          <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
+        <div className="mb-6 rounded-lg border p-4" style={{ backgroundColor: 'var(--color-bg-surface)', borderColor: 'var(--color-border)' }}>
+          <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
             Selecionar Conta
           </label>
           <select
@@ -151,27 +151,27 @@ export default function AlertsPage() {
 
         {/* Messages */}
         {error && (
-          <div className="mb-6 rounded-lg border p-4" style={{ backgroundColor: 'var(--color-danger-bg)', borderColor: 'var(--color-danger)' }}>
+          <div className="mb-6 rounded-lg border p-4" style={{ backgroundColor: 'rgba(255,45,120,0.06)', borderColor: 'var(--color-danger)' }}>
             <p className="text-sm font-medium" style={{ color: 'var(--color-danger)' }}>{error}</p>
           </div>
         )}
 
         {success && (
-          <div className="mb-6 rounded-lg border p-4" style={{ backgroundColor: 'var(--color-success-bg)', borderColor: 'var(--color-success)' }}>
+          <div className="mb-6 rounded-lg border p-4" style={{ backgroundColor: 'rgba(57,255,20,0.06)', borderColor: 'var(--color-success)' }}>
             <p className="text-sm font-medium" style={{ color: 'var(--color-success)' }}>{success}</p>
           </div>
         )}
 
         {/* Create Form */}
         {showForm && (
-          <div className="mb-8 rounded-lg border p-6" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--color-tertiary)' }}>
-            <h2 className="mb-6 text-xl font-semibold" style={{ color: 'var(--color-primary)' }}>
+          <div className="mb-8 rounded-lg border p-6" style={{ backgroundColor: 'var(--color-bg-surface)', borderColor: 'var(--color-border)' }}>
+            <h2 className="mb-6 text-xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>
               Nova Regra de Alerta
             </h2>
 
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
                   Nome da Regra *
                 </label>
                 <input
@@ -184,7 +184,7 @@ export default function AlertsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
                   Tipo de Condição *
                 </label>
                 <select
@@ -201,7 +201,7 @@ export default function AlertsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
                   Valor Limite *
                 </label>
                 <input
@@ -219,8 +219,8 @@ export default function AlertsPage() {
                 />
               </div>
 
-              <div className="pt-6" style={{ borderTop: '1px solid var(--color-tertiary)' }}>
-                <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-primary)' }}>
+              <div className="pt-6" style={{ borderTop: '1px solid var(--color-text-tertiary)' }}>
+                <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text-primary)' }}>
                   Notificações
                 </h3>
 
@@ -234,14 +234,14 @@ export default function AlertsPage() {
                       }
                       className="rounded"
                     />
-                    <span className="text-sm font-medium" style={{ color: 'var(--color-primary)' }}>
+                    <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
                       Enviar para Telegram
                     </span>
                   </label>
 
                   {formData.telegramEnabled && (
                     <div>
-                      <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
                         Chat ID do Telegram
                       </label>
                       <input
@@ -253,7 +253,7 @@ export default function AlertsPage() {
                         placeholder="seu-chat-id"
                         className="input w-full rounded-lg px-4 py-2"
                       />
-                      <p className="mt-2 text-xs" style={{ color: 'var(--color-secondary)' }}>
+                      <p className="mt-2 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
                         💡 Obtenha seu Chat ID conversando com @userinfobot no Telegram
                       </p>
                     </div>
@@ -265,7 +265,7 @@ export default function AlertsPage() {
                 <button
                   onClick={() => setShowForm(false)}
                   className="flex-1 rounded-lg border px-4 py-2 font-medium"
-                  style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--color-tertiary)', color: 'var(--color-primary)' }}
+                  style={{ backgroundColor: 'var(--color-bg-surface)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
                 >
                   Cancelar
                 </button>
@@ -273,7 +273,7 @@ export default function AlertsPage() {
                   onClick={() => createAlertMutation.mutate()}
                   disabled={createAlertMutation.isPending}
                   className="flex-1 rounded-lg px-4 py-2 font-medium text-white disabled:opacity-50"
-                  style={{ backgroundColor: 'var(--color-brand)' }}
+                  style={{ backgroundColor: 'var(--color-accent-dark)' }}
                 >
                   {createAlertMutation.isPending ? 'Criando...' : 'Criar Regra'}
                 </button>
@@ -283,69 +283,69 @@ export default function AlertsPage() {
         )}
 
         {/* Rules List */}
-        <div className="rounded-lg border overflow-hidden" style={{ borderColor: 'var(--color-tertiary)' }}>
-          <table className="w-full divide-y" style={{ backgroundColor: 'var(--bg-card)' }}>
-            <thead style={{ backgroundColor: 'var(--bg-table-header)' }}>
+        <div className="rounded-lg border overflow-hidden" style={{ borderColor: 'var(--color-border)' }}>
+          <table className="w-full divide-y" style={{ backgroundColor: 'var(--color-bg-surface)' }}>
+            <thead style={{ backgroundColor: 'var(--color-bg-sidebar)' }}>
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase" style={{ color: 'var(--color-secondary)' }}>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase" style={{ color: 'var(--color-text-secondary)' }}>
                   Nome
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase" style={{ color: 'var(--color-secondary)' }}>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase" style={{ color: 'var(--color-text-secondary)' }}>
                   Tipo
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase" style={{ color: 'var(--color-secondary)' }}>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase" style={{ color: 'var(--color-text-secondary)' }}>
                   Threshold
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase" style={{ color: 'var(--color-secondary)' }}>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase" style={{ color: 'var(--color-text-secondary)' }}>
                   Telegram
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase" style={{ color: 'var(--color-secondary)' }}>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase" style={{ color: 'var(--color-text-secondary)' }}>
                   Status
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y" style={{ borderColor: 'var(--color-tertiary)' }}>
+            <tbody className="divide-y" style={{ borderColor: 'var(--color-border)' }}>
               {rulesLoading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center" style={{ color: 'var(--color-secondary)' }}>
+                  <td colSpan={5} className="px-6 py-4 text-center" style={{ color: 'var(--color-text-secondary)' }}>
                     Carregando regras...
                   </td>
                 </tr>
               ) : rules.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center" style={{ color: 'var(--color-secondary)' }}>
+                  <td colSpan={5} className="px-6 py-4 text-center" style={{ color: 'var(--color-text-secondary)' }}>
                     Nenhuma regra criada
                   </td>
                 </tr>
               ) : (
                 rules.map((rule: AlertRule) => (
                   <tr key={rule.id}>
-                    <td className="px-6 py-4 font-medium" style={{ color: 'var(--color-primary)' }}>
+                    <td className="px-6 py-4 font-medium" style={{ color: 'var(--color-text-primary)' }}>
                       {rule.name}
                     </td>
-                    <td className="px-6 py-4 text-sm" style={{ color: 'var(--color-primary)' }}>
+                    <td className="px-6 py-4 text-sm" style={{ color: 'var(--color-text-primary)' }}>
                       {rule.condition_type === 'roas_below' && 'ROAS Abaixo'}
                       {rule.condition_type === 'daily_spend_above' && 'Gasto Acima'}
                       {rule.condition_type === 'cpc_above' && 'CPC Acima'}
                       {rule.condition_type === 'ctr_below' && 'CTR Abaixo'}
                       {rule.condition_type === 'conversion_rate_below' && 'Taxa Conversão Abaixo'}
                     </td>
-                    <td className="px-6 py-4 text-sm" style={{ color: 'var(--color-primary)' }}>
+                    <td className="px-6 py-4 text-sm" style={{ color: 'var(--color-text-primary)' }}>
                       {rule.condition_value.threshold}
                     </td>
                     <td className="px-6 py-4 text-sm">
                       {rule.telegram_enabled ? (
                         <span style={{ color: 'var(--color-success)' }}>✓ Ativo</span>
                       ) : (
-                        <span style={{ color: 'var(--color-tertiary)' }}>—</span>
+                        <span style={{ color: 'var(--color-text-tertiary)' }}>—</span>
                       )}
                     </td>
                     <td className="px-6 py-4 text-sm">
                       <span
                         className="inline-flex rounded-full px-3 py-1 text-xs font-medium"
                         style={{
-                          backgroundColor: rule.enabled ? 'var(--color-success-bg)' : 'var(--bg-tertiary)',
-                          color: rule.enabled ? 'var(--color-success)' : 'var(--color-secondary)'
+                          backgroundColor: rule.enabled ? 'rgba(57,255,20,0.06)' : 'var(--color-bg-input)',
+                          color: rule.enabled ? 'var(--color-success)' : 'var(--color-text-secondary)'
                         }}
                       >
                         {rule.enabled ? 'Ativo' : 'Inativo'}
@@ -359,7 +359,7 @@ export default function AlertsPage() {
         </div>
 
         {/* Info Box */}
-        <div className="mt-8 rounded-lg p-4" style={{ backgroundColor: 'var(--color-info-bg)' }}>
+        <div className="mt-8 rounded-lg p-4" style={{ backgroundColor: 'rgba(0,212,255,0.05)' }}>
           <p className="text-sm" style={{ color: 'var(--color-info)' }}>
             💡 <strong>Dica:</strong> As regras de alerta são verificadas a cada 15 minutos.
             Você receberá notificações no dashboard e, se habilitado, no Telegram.
