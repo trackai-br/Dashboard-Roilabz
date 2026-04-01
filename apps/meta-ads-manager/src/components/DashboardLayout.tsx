@@ -37,8 +37,8 @@ export function DashboardLayout({
 
   if (authLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen" style={{ backgroundColor: 'var(--bg-page)' }}>
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: 'var(--color-brand)' }} />
+      <div className="flex items-center justify-center min-h-screen" style={{ backgroundColor: 'var(--color-bg-base)' }}>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: 'var(--color-accent-dark)' }} />
       </div>
     );
   }
@@ -53,7 +53,7 @@ export function DashboardLayout({
       )}
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden" style={{ backgroundColor: 'var(--bg-page)' }}>
+      <div className="flex-1 flex flex-col overflow-hidden" style={{ backgroundColor: 'var(--color-bg-base)' }}>
         {/* Header com action buttons */}
         <Header
           title={title}
@@ -61,7 +61,7 @@ export function DashboardLayout({
         />
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto" style={{ backgroundColor: 'var(--bg-page)' }}>
+        <main className="flex-1 overflow-y-auto" style={{ backgroundColor: 'var(--color-bg-base)' }}>
           {children}
         </main>
       </div>

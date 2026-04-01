@@ -10,7 +10,6 @@ import {
   Bell,
   Settings,
   LogOut,
-  ChevronRight,
   FileText,
 } from 'lucide-react';
 
@@ -23,191 +22,123 @@ export function Sidebar({ open }: SidebarProps) {
   const router = useRouter();
 
   const navItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
-    { icon: Rocket, label: 'Subir Campanhas', href: '/campaigns/setup' },
-    { icon: Target, label: 'Campanhas', href: '/campaigns' },
-    { icon: Bell, label: 'Alertas', href: '/alerts' },
-    { icon: FileText, label: 'Logs', href: '/logs' },
-    { icon: Settings, label: 'Configurações', href: '/settings' },
+    { icon: LayoutDashboard, label: 'Dashboard',       href: '/dashboard' },
+    { icon: Rocket,          label: 'Subir Campanhas', href: '/campaigns/setup' },
+    { icon: Target,          label: 'Campanhas',       href: '/campaigns' },
+    { icon: Bell,            label: 'Alertas',         href: '/alerts' },
+    { icon: FileText,        label: 'Logs',            href: '/logs' },
+    { icon: Settings,        label: 'Configurações',   href: '/settings' },
   ];
 
   return (
     <aside
-      className="w-64 h-screen overflow-y-auto flex flex-col backdrop-blur-md"
+      className="w-56 h-screen overflow-y-auto flex flex-col flex-shrink-0"
       style={{
-        backgroundColor: 'rgba(26, 26, 46, 0.8)',
-        borderRight: '1px solid rgba(57, 255, 20, 0.1)',
+        backgroundColor: 'var(--color-bg-sidebar)',
+        borderRight: '1px solid var(--color-border)',
       }}
       role="navigation"
       aria-label="Menu principal"
     >
-      {/* Skip Link — Accessibility */}
+      {/* Skip link — accessibility */}
       <a
         href="#main-content"
-        className="absolute left-0 top-0 px-4 py-2 bg-brand text-white rounded-br"
+        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:px-4 focus:py-2 focus:text-sm focus:font-medium"
         style={{
-          transform: 'translateY(-100%)',
-          pointerEvents: 'none',
-        }}
-        onFocus={(e) => {
-          e.currentTarget.style.transform = 'translateY(0)';
-          e.currentTarget.style.pointerEvents = 'auto';
-        }}
-        onBlur={(e) => {
-          e.currentTarget.style.transform = 'translateY(-100%)';
-          e.currentTarget.style.pointerEvents = 'none';
+          backgroundColor: 'var(--color-accent-dark)',
+          color: '#fff',
         }}
       >
         Pular para conteúdo principal
       </a>
 
-      {/* Logo Section */}
+      {/* Logo */}
       <div
-        className="flex items-center gap-3 p-6"
-        style={{
-          borderBottom: '1px solid rgba(57, 255, 20, 0.1)',
-          minHeight: '88px',
-        }}
+        className="flex items-center gap-2.5 px-4 py-4"
+        style={{ borderBottom: '1px solid var(--color-border)', minHeight: '56px' }}
       >
-        {/* Logo Circle - 44×44px min touch target */}
         <div
-          className="w-12 h-12 rounded-xl flex items-center justify-center text-lg font-bold flex-shrink-0"
+          className="w-7 h-7 rounded flex items-center justify-center text-xs font-bold flex-shrink-0"
           style={{
-            backgroundColor: 'var(--neon-green)',
-            color: 'var(--bg-deepest)',
-            minWidth: '48px',
-            minHeight: '48px',
-            boxShadow: '0 0 12px rgba(57, 255, 20, 0.4)',
-            fontFamily: "'Space Grotesk', system-ui, sans-serif",
-            fontWeight: 700,
-            letterSpacing: '0.05em',
+            backgroundColor: 'var(--color-accent-dark)',
+            color: '#ffffff',
+            fontFamily: 'var(--font-sans)',
+            letterSpacing: '0.02em',
           }}
           role="img"
-          aria-label="Meta Ads Manager logo"
+          aria-label="ROILabz logo"
         >
-          M
+          R
         </div>
-
-        {/* Logo Text */}
         <div className="flex-1 min-w-0">
-          <h1
-            className="font-display font-bold leading-tight"
-            style={{
-              color: 'var(--neon-green)',
-              fontSize: '1.125rem',
-              margin: 0,
-              letterSpacing: '0.05em',
-              fontFamily: "'Space Grotesk', system-ui, sans-serif",
-              textShadow: '0 0 8px rgba(57, 255, 20, 0.3)',
-            }}
+          <span
+            className="text-sm font-semibold leading-none block"
+            style={{ color: 'var(--color-text-primary)', fontFamily: 'var(--font-sans)' }}
+          >
+            ROILabz
+          </span>
+          <span
+            className="text-xs leading-none block mt-0.5"
+            style={{ color: 'var(--color-text-tertiary)', fontFamily: 'var(--font-sans)', letterSpacing: '0.04em' }}
           >
             Meta Ads
-          </h1>
-          <p
-            className="text-xs font-medium"
-            style={{
-              color: 'var(--color-secondary)',
-              marginTop: '2px',
-              margin: '2px 0 0 0',
-              fontSize: '0.7rem',
-              letterSpacing: '0.1em',
-            }}
-          >
-            MANAGER PRO
-          </p>
+          </span>
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-6 flex flex-col gap-1" aria-label="Navegação principal">
+      <nav className="flex-1 px-2 py-3 flex flex-col gap-0.5" aria-label="Navegação principal">
         {navItems.map((item) => {
-          const isActive = router.pathname === item.href;
+          const isActive = router.pathname === item.href || router.pathname.startsWith(item.href + '/');
           const Icon = item.icon;
           return (
             <Link
               key={item.href}
               href={item.href}
-              className="group flex items-center gap-3 px-4 py-3 rounded-lg transition-all focus:outline-none"
+              className="group flex items-center gap-2.5 px-3 rounded transition-all focus:outline-none focus-visible:ring-1"
               style={{
-                color: isActive ? 'var(--neon-green)' : 'var(--color-sidebar-text)',
-                backgroundColor: isActive
-                  ? 'rgba(57, 255, 20, 0.08)'
-                  : 'transparent',
-                borderLeft: isActive
-                  ? '3px solid var(--neon-green)'
-                  : '3px solid transparent',
-                paddingLeft: isActive ? 'calc(16px - 3px)' : '16px',
-                minHeight: '48px',
-                outline: 'none',
-                boxShadow: isActive ? '0 0 12px rgba(57, 255, 20, 0.15)' : 'none',
+                color:           isActive ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
+                backgroundColor: isActive ? 'var(--color-bg-surface)' : 'transparent',
+                borderLeft:      isActive ? '2px solid var(--color-accent)' : '2px solid transparent',
+                paddingLeft:     isActive ? 'calc(12px - 2px)' : '12px',
+                minHeight:       '36px',
+                fontSize:        '13px',
+                fontFamily:      'var(--font-sans)',
+                fontWeight:      isActive ? 500 : 400,
               }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  router.push(item.href);
-                }
-              }}
-              aria-label={item.label}
               aria-current={isActive ? 'page' : undefined}
               tabIndex={0}
             >
-              {/* SVG Icon - 20×20px */}
-              <Icon
-                size={20}
-                strokeWidth={2}
-                className="flex-shrink-0"
-                aria-hidden="true"
-              />
-              <span
-                className="text-sm font-medium transition-opacity"
-                style={{
-                  opacity: isActive ? 1 : 0.8,
-                }}
-              >
-                {item.label}
-              </span>
+              <Icon size={16} strokeWidth={isActive ? 2 : 1.5} className="flex-shrink-0" aria-hidden="true" />
+              <span>{item.label}</span>
             </Link>
           );
         })}
       </nav>
 
-      {/* Footer */}
-      <div
-        className="px-3 py-6"
-        style={{
-          borderTop: '1px solid rgba(57, 255, 20, 0.1)',
-        }}
-      >
+      {/* Footer — Logout */}
+      <div className="px-2 py-3" style={{ borderTop: '1px solid var(--color-border)' }}>
         <button
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all focus:outline-none"
+          className="w-full flex items-center gap-2.5 px-3 rounded text-sm transition-all focus:outline-none focus-visible:ring-1"
           style={{
-            color: 'var(--color-sidebar-text)',
-            backgroundColor: 'rgba(57, 255, 20, 0.08)',
-            border: '1px solid rgba(57, 255, 20, 0.15)',
-            minHeight: '48px',
-            outline: 'none',
-            fontFamily: "'Space Grotesk', system-ui, sans-serif",
-            fontWeight: 500,
-            letterSpacing: '0.03em',
+            color:      'var(--color-text-tertiary)',
+            minHeight:  '36px',
+            fontFamily: 'var(--font-sans)',
+            fontWeight: 400,
+            fontSize:   '13px',
           }}
-          aria-label="Logout"
+          aria-label="Sair da conta"
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(57, 255, 20, 0.15)';
-            e.currentTarget.style.boxShadow = '0 0 12px rgba(57, 255, 20, 0.2)';
+            e.currentTarget.style.backgroundColor = 'var(--color-bg-surface)';
+            e.currentTarget.style.color = 'var(--color-danger)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(57, 255, 20, 0.08)';
-            e.currentTarget.style.boxShadow = 'none';
-          }}
-          onFocus={(e) => {
-            e.currentTarget.style.outline = '2px solid var(--neon-green)';
-            e.currentTarget.style.outlineOffset = '2px';
-          }}
-          onBlur={(e) => {
-            e.currentTarget.style.outline = 'none';
+            e.currentTarget.style.backgroundColor = 'transparent';
+            e.currentTarget.style.color = 'var(--color-text-tertiary)';
           }}
         >
-          <LogOut size={18} />
-          <span>LOGOUT</span>
+          <LogOut size={16} strokeWidth={1.5} aria-hidden="true" />
+          <span>Sair</span>
         </button>
       </div>
     </aside>
