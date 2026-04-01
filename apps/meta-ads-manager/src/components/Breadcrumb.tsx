@@ -14,15 +14,15 @@ export function Breadcrumb({ items }: BreadcrumbProps) {
     <nav
       className="border-b px-4 py-3"
       style={{
-        backgroundColor: 'var(--bg-page)',
-        borderBottomColor: 'var(--border-light)',
+        backgroundColor: 'var(--color-bg-base)',
+        borderBottomColor: 'var(--color-border)',
       }}
     >
       <ol className="flex items-center space-x-2">
         {items.map((item, index) => (
           <li key={index} className="flex items-center">
             {index > 0 && (
-              <span className="mx-2" style={{ color: 'var(--color-tertiary)' }}>
+              <span className="mx-2" style={{ color: 'var(--color-text-tertiary)' }}>
                 /
               </span>
             )}
@@ -30,9 +30,8 @@ export function Breadcrumb({ items }: BreadcrumbProps) {
               <span
                 className="font-medium"
                 style={{
-                  color: 'var(--neon-green)',
-                  textShadow: '0 0 6px rgba(57, 255, 20, 0.2)',
-                  fontFamily: "'Space Grotesk', system-ui, sans-serif",
+                  color: 'var(--color-accent)',
+                                    fontFamily: "var(--font-sans)",
                 }}
               >
                 {item.label}
@@ -42,9 +41,8 @@ export function Breadcrumb({ items }: BreadcrumbProps) {
                 href={item.href}
                 className="transition-colors hover:opacity-80"
                 style={{
-                  color: 'var(--neon-green)',
-                  textShadow: '0 0 6px rgba(57, 255, 20, 0.15)',
-                  fontFamily: "'Space Grotesk', system-ui, sans-serif",
+                  color: 'var(--color-accent)',
+                                    fontFamily: "var(--font-sans)",
                 }}
               >
                 {item.label}

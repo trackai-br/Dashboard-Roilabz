@@ -72,17 +72,12 @@ export function MetaTokenStatus() {
         className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all duration-200"
         style={{
           color: 'var(--color-warning)',
-          backgroundColor: 'rgba(255, 183, 3, 0.1)',
-          border: '1px solid rgba(255, 183, 3, 0.3)',
-          fontFamily: "'Space Grotesk', system-ui, sans-serif",
-          letterSpacing: '0.03em',
+          backgroundColor: 'rgba(255, 184, 0, 0.08)',
+          border: '1px solid rgba(255, 184, 0, 0.25)',
+          fontFamily: 'var(--font-sans)',
         }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.boxShadow = '0 0 12px rgba(255, 183, 3, 0.3)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.boxShadow = 'none';
-        }}
+        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 184, 0, 0.14)'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 184, 0, 0.08)'; }}
       >
         <span className="inline-flex h-1.5 w-1.5 rounded-full" style={{ backgroundColor: 'var(--color-warning)' }} />
         Expira em {daysLeft}d
@@ -97,17 +92,12 @@ export function MetaTokenStatus() {
         className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all duration-200"
         style={{
           color: 'var(--color-danger)',
-          backgroundColor: 'rgba(255, 51, 51, 0.1)',
-          border: '1px solid rgba(255, 51, 51, 0.3)',
-          fontFamily: "'Space Grotetz', system-ui, sans-serif",
-          letterSpacing: '0.03em',
+          backgroundColor: 'rgba(255, 45, 120, 0.08)',
+          border: '1px solid rgba(255, 45, 120, 0.25)',
+          fontFamily: 'var(--font-sans)',
         }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.boxShadow = '0 0 12px rgba(255, 51, 51, 0.3)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.boxShadow = 'none';
-        }}
+        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 45, 120, 0.14)'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 45, 120, 0.08)'; }}
       >
         <span className="inline-flex h-1.5 w-1.5 rounded-full" style={{ backgroundColor: 'var(--color-danger)' }} />
         Expirado
@@ -121,20 +111,15 @@ export function MetaTokenStatus() {
       onClick={() => router.push('/connections')}
       className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all duration-200"
       style={{
-        color: 'var(--color-tertiary)',
-        backgroundColor: 'rgba(112, 112, 128, 0.1)',
-        border: '1px solid rgba(112, 112, 128, 0.3)',
-        fontFamily: "'Space Grotesk', system-ui, sans-serif",
-        letterSpacing: '0.03em',
+        color: 'var(--color-text-tertiary)',
+        backgroundColor: 'var(--color-bg-input)',
+        border: '1px solid var(--color-border)',
+        fontFamily: 'var(--font-sans)',
       }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.boxShadow = '0 0 8px rgba(112, 112, 128, 0.2)';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.boxShadow = 'none';
-      }}
+      onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--color-border-hover)'; }}
+      onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--color-border)'; }}
     >
-      <span className="inline-flex h-1.5 w-1.5 rounded-full" style={{ backgroundColor: 'var(--color-tertiary)' }} />
+      <span className="inline-flex h-1.5 w-1.5 rounded-full" style={{ backgroundColor: 'var(--color-text-tertiary)' }} />
       Não conectado
     </button>
   );

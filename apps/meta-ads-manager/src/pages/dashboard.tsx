@@ -118,7 +118,7 @@ export default function Dashboard() {
 
         {/* Account Selector + Sync Button */}
         <div className="mb-8 flex items-center gap-4">
-          <label htmlFor="account-select" className="font-medium" style={{ color: 'var(--color-primary)' }}>
+          <label htmlFor="account-select" className="font-medium" style={{ color: 'var(--color-text-primary)' }}>
             Conta:
           </label>
           <select
@@ -165,7 +165,7 @@ export default function Dashboard() {
 
         {/* Campaign Table */}
         <section className="mt-8">
-          <h2 className="mb-4 text-lg font-semibold" style={{ color: 'var(--color-primary)' }}>
+          <h2 className="mb-4 text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>
             Campanhas
           </h2>
           <CampaignsTableNew
@@ -180,17 +180,17 @@ export default function Dashboard() {
               onClick={() => setPageOffset(Math.max(0, pageOffset - 50))}
               disabled={pageOffset === 0}
               className="rounded-lg border px-4 py-2 disabled:opacity-50 transition-colors"
-              style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--color-tertiary)', color: 'var(--color-secondary)' }}
+              style={{ backgroundColor: 'var(--color-bg-surface)', borderColor: 'var(--color-border)', color: 'var(--color-text-secondary)' }}
             >
               ← Anterior
             </button>
-            <span className="text-sm" style={{ color: 'var(--color-secondary)' }}>
+            <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
               Mostrando {pageOffset + 1} a {pageOffset + 50}
             </span>
             <button
               onClick={() => setPageOffset(pageOffset + 50)}
               className="rounded-lg border px-4 py-2 transition-colors"
-              style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--color-tertiary)', color: 'var(--color-secondary)' }}
+              style={{ backgroundColor: 'var(--color-bg-surface)', borderColor: 'var(--color-border)', color: 'var(--color-text-secondary)' }}
             >
               Próximo →
             </button>
