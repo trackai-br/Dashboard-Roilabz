@@ -273,97 +273,127 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
       {/* Expanded content */}
       {batch.isExpanded && (
         <div className="px-4 pb-4 space-y-4" style={{ borderTop: '1px solid var(--color-border)' }}>
-          {/* Accounts selector */}
-          <div className="pt-4">
-            <label
-              className="block text-xs font-medium mb-2"
-              style={{
-                color: 'var(--color-text-secondary)',
-                fontFamily: "var(--font-sans)",
-              }}
-            >
-              Contas de Anuncio
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {(allAccounts || []).map((acc: any) => {
-                const isSelected = batch.accounts.some(a => a.accountId === acc.meta_account_id);
-                return (
-                  <button
-                    key={acc.meta_account_id}
-                    onClick={() => handleAccountToggle({
-                      accountId: acc.meta_account_id,
-                      accountName: acc.meta_account_name || 'Sem nome',
-                      currency: acc.currency || 'USD',
-                    })}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer focus:outline-none"
-                    style={{
-                      backgroundColor: isSelected ? 'rgba(22, 163, 74, 0.08)' : 'rgba(255, 255, 255, 0.03)',
-                      border: isSelected ? '1px solid rgba(22, 163, 74, 0.35)' : '1px solid var(--color-border)',
-                      color: isSelected ? 'var(--color-accent)' : 'var(--color-text-secondary)',
-                      transition: 'all 150ms cubic-bezier(0.16, 1, 0.3, 1)',
-                    }}
-                  >
-                    {acc.meta_account_name || acc.meta_account_id}
-                    {isSelected && (
-                      <svg width="12" height="12" className="inline ml-1" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    )}
-                  </button>
-                );
-              })}
+
+          {/* Accounts + Pages — side by side */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', paddingTop: '16px' }}>
+
+            {/* Contas */}
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <label style={{ fontFamily: 'var(--font-sans)', fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                  Contas de Anúncio
+                </label>
+                {batch.accounts.length > 0 && (
+                  <span style={{ fontFamily: 'var(--font-sans)', fontSize: '10px', color: 'var(--color-accent-bright)' }}>
+                    {batch.accounts.length} selecionada{batch.accounts.length !== 1 ? 's' : ''}
+                  </span>
+                )}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '160px', overflowY: 'auto' }}>
+                {(allAccounts || []).map((acc: any) => {
+                  const isSelected = batch.accounts.some(a => a.accountId === acc.meta_account_id);
+                  return (
+                    <button
+                      key={acc.meta_account_id}
+                      onClick={() => handleAccountToggle({
+                        accountId: acc.meta_account_id,
+                        accountName: acc.meta_account_name || 'Sem nome',
+                        currency: acc.currency || 'USD',
+                      })}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '8px 10px',
+                        borderRadius: 'var(--radius-md)',
+                        backgroundColor: isSelected ? 'rgba(22, 163, 74, 0.08)' : 'var(--color-bg-input)',
+                        border: isSelected ? '1px solid rgba(22, 163, 74, 0.35)' : '1px solid var(--color-border)',
+                        cursor: 'pointer',
+                        transition: 'all 120ms ease',
+                        textAlign: 'left',
+                      }}
+                    >
+                      <span style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', color: isSelected ? 'var(--color-accent-bright)' : 'var(--color-text-primary)', fontWeight: isSelected ? 500 : 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+                        {acc.meta_account_name || acc.meta_account_id}
+                      </span>
+                      {isSelected && (
+                        <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20" style={{ flexShrink: 0, marginLeft: '6px', color: 'var(--color-accent-bright)' }}>
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </button>
+                  );
+                })}
+                {(allAccounts || []).length === 0 && (
+                  <p style={{ fontFamily: 'var(--font-sans)', fontSize: '11px', color: 'var(--color-text-tertiary)', padding: '8px 0' }}>
+                    Nenhuma conta sincronizada
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Páginas */}
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <label style={{ fontFamily: 'var(--font-sans)', fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                  Páginas Facebook
+                </label>
+                {batch.pages.length > 0 && (
+                  <span style={{ fontFamily: 'var(--font-sans)', fontSize: '10px', color: 'var(--color-accent-bright)' }}>
+                    {batch.pages.length} selecionada{batch.pages.length !== 1 ? 's' : ''}
+                  </span>
+                )}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '160px', overflowY: 'auto' }}>
+                {batch.accounts.length === 0 ? (
+                  <p style={{ fontFamily: 'var(--font-sans)', fontSize: '11px', color: 'var(--color-text-tertiary)', padding: '8px 0' }}>
+                    Selecione uma conta primeiro
+                  </p>
+                ) : !pagesForAccount ? (
+                  <p style={{ fontFamily: 'var(--font-sans)', fontSize: '11px', color: 'var(--color-text-tertiary)', padding: '8px 0' }}>
+                    Carregando páginas...
+                  </p>
+                ) : pagesForAccount.length === 0 ? (
+                  <p style={{ fontFamily: 'var(--font-sans)', fontSize: '11px', color: 'var(--color-text-tertiary)', padding: '8px 0' }}>
+                    Nenhuma página encontrada
+                  </p>
+                ) : pagesForAccount.map((page: any) => {
+                  const isSelected = batch.pages.some(p => p.pageId === page.id);
+                  return (
+                    <button
+                      key={page.id}
+                      onClick={() => handlePageToggle({
+                        pageId: page.id,
+                        pageName: page.name || 'Sem nome',
+                        accountId: firstAccountId,
+                      })}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '8px 10px',
+                        borderRadius: 'var(--radius-md)',
+                        backgroundColor: isSelected ? 'rgba(22, 163, 74, 0.08)' : 'var(--color-bg-input)',
+                        border: isSelected ? '1px solid rgba(22, 163, 74, 0.35)' : '1px solid var(--color-border)',
+                        cursor: 'pointer',
+                        transition: 'all 120ms ease',
+                        textAlign: 'left',
+                      }}
+                    >
+                      <span style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', color: isSelected ? 'var(--color-accent-bright)' : 'var(--color-text-primary)', fontWeight: isSelected ? 500 : 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+                        {page.name || page.id}
+                      </span>
+                      {isSelected && (
+                        <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20" style={{ flexShrink: 0, marginLeft: '6px', color: 'var(--color-accent-bright)' }}>
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
-
-          {/* Pages selector */}
-          {batch.accounts.length > 0 && (
-            <div>
-              <label
-                className="block text-xs font-medium mb-2"
-                style={{
-                  color: 'var(--color-text-secondary)',
-                  fontFamily: "var(--font-sans)",
-                }}
-              >
-                Paginas Facebook
-              </label>
-              {pagesForAccount && pagesForAccount.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {pagesForAccount.map((page: any) => {
-                    const isSelected = batch.pages.some(p => p.pageId === page.id);
-                    return (
-                      <button
-                        key={page.id}
-                        onClick={() => handlePageToggle({
-                          pageId: page.id,
-                          pageName: page.name || 'Sem nome',
-                          accountId: firstAccountId,
-                        })}
-                        className="px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer focus:outline-none"
-                        style={{
-                          backgroundColor: isSelected ? 'rgba(22, 163, 74, 0.08)' : 'rgba(255, 255, 255, 0.03)',
-                          border: isSelected ? '1px solid rgba(22, 163, 74, 0.35)' : '1px solid var(--color-border)',
-                          color: isSelected ? 'var(--color-accent-bright)' : 'var(--color-text-secondary)',
-                          transition: 'all 150ms cubic-bezier(0.16, 1, 0.3, 1)',
-                        }}
-                      >
-                        {page.name || page.id}
-                        {isSelected && (
-                          <svg width="12" height="12" className="inline ml-1" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              ) : (
-                <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-                  {batch.accounts.length > 0 ? 'Carregando paginas...' : 'Selecione uma conta primeiro'}
-                </p>
-              )}
-            </div>
-          )}
 
           {/* Volume */}
           <div className="grid grid-cols-2 gap-4">

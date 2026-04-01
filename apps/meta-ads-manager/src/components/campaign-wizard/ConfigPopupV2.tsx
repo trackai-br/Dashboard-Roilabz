@@ -264,10 +264,9 @@ export default function ConfigPopupV2({ onClose, onSaved, draftState, draftId, t
           </button>
         </div>
 
-        {/* Tabs */}
+        {/* Tabs — full width equally distributed */}
         <div
-          className="flex items-center gap-1 px-6 overflow-x-auto"
-          style={{ borderBottom: '1px solid var(--color-border)' }}
+          style={{ borderBottom: '1px solid var(--color-border)', display: 'flex' }}
         >
           {STEPS.map((step) => {
             const isActive = currentStep === step.index;
@@ -278,21 +277,31 @@ export default function ConfigPopupV2({ onClose, onSaved, draftState, draftId, t
                 key={step.index}
                 onClick={() => handleTabClick(step.index)}
                 disabled={isDisabled}
-                className="flex items-center gap-1.5 px-4 py-3 text-sm font-medium whitespace-nowrap transition-all relative disabled:cursor-not-allowed cursor-pointer focus:outline-none"
+                className="relative transition-all disabled:cursor-not-allowed cursor-pointer focus:outline-none"
                 style={{
+                  flex: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  padding: '12px 8px',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                  fontFamily: 'var(--font-sans)',
+                  whiteSpace: 'nowrap',
                   color: isActive
-                    ? 'var(--color-accent)'
+                    ? 'var(--color-accent-bright)'
                     : isCompleted
                     ? 'var(--color-success)'
                     : 'var(--color-text-secondary)',
-                  opacity: isDisabled ? 0.3 : isActive || isCompleted ? 1 : 0.7,
-                  fontFamily: "var(--font-sans)",
-                  letterSpacing: '0.01em',
-                  transitionDuration: '150ms',
+                  opacity: isDisabled ? 0.3 : 1,
+                  backgroundColor: isActive ? 'rgba(22,163,74,0.04)' : 'transparent',
+                  borderRight: '1px solid var(--color-border)',
+                  transition: 'all 120ms ease',
                 }}
               >
                 {isCompleted && !isActive && (
-                  <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                  <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
                 )}

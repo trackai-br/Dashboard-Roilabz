@@ -101,18 +101,19 @@ describe('BatchCard — conteúdo expandido', () => {
     const expanded = useWizardStore.getState().batches[0];
     render(<BatchCard batch={expanded} index={0} />, { wrapper: createWrapper() });
 
-    expect(screen.getByText('Contas de Anuncio')).toBeInTheDocument();
+    expect(screen.getByText('Contas de Anúncio')).toBeInTheDocument();
     expect(screen.getByText('Conta Teste 1')).toBeInTheDocument();
     expect(screen.getByText('Conta Teste 2')).toBeInTheDocument();
   });
 
-  it('não exibe páginas sem contas selecionadas', () => {
+  it('exibe placeholder em páginas quando nenhuma conta está selecionada', () => {
     const batch = setupOneBatch();
     useWizardStore.getState().updateBatch(batch.id, { isExpanded: true });
     const expanded = useWizardStore.getState().batches[0];
     render(<BatchCard batch={expanded} index={0} />, { wrapper: createWrapper() });
 
-    expect(screen.queryByText('Paginas Facebook')).not.toBeInTheDocument();
+    expect(screen.getByText('Páginas Facebook')).toBeInTheDocument();
+    expect(screen.getByText('Selecione uma conta primeiro')).toBeInTheDocument();
   });
 
   it('exibe páginas após selecionar uma conta', () => {
@@ -126,7 +127,7 @@ describe('BatchCard — conteúdo expandido', () => {
     const expanded = useWizardStore.getState().batches[0];
     render(<BatchCard batch={expanded} index={0} />, { wrapper: createWrapper() });
 
-    expect(screen.getByText('Paginas Facebook')).toBeInTheDocument();
+    expect(screen.getByText('Páginas Facebook')).toBeInTheDocument();
     expect(screen.getByText('Pagina Teste 1')).toBeInTheDocument();
     expect(screen.getByText('Pagina Teste 2')).toBeInTheDocument();
   });
