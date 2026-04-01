@@ -15,27 +15,30 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg-page)' }}>
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--color-bg-base)' }}>
       <div className="w-full max-w-md px-4">
         {/* Logo & Header */}
-        <div className="text-center mb-16">
-          <div className="flex justify-center mb-8">
-            <div className="h-16 w-16 rounded-2xl flex items-center justify-center shadow-lg" style={{ backgroundColor: 'var(--color-brand)' }}>
-              <span className="text-white font-bold text-2xl font-display">M</span>
+        <div className="text-center mb-12">
+          <div className="flex justify-center mb-6">
+            <div
+              className="h-12 w-12 rounded-lg flex items-center justify-center"
+              style={{ backgroundColor: 'var(--color-accent-dark)' }}
+            >
+              <span className="text-white font-bold text-lg" style={{ fontFamily: 'var(--font-sans)' }}>R</span>
             </div>
           </div>
-          <h1 className="text-4xl font-bold mb-3 font-display" style={{ color: 'var(--color-brand)' }}>
-            Meta Ads Manager
+          <h1 className="text-2xl font-semibold mb-2" style={{ color: 'var(--color-text-primary)', fontFamily: 'var(--font-sans)', letterSpacing: '-0.015em' }}>
+            ROILabz
           </h1>
-          <p className="text-sm" style={{ color: 'var(--color-secondary)' }}>
-            Orquestração de campanhas Meta e Google Ads
+          <p className="text-sm" style={{ color: 'var(--color-text-secondary)', fontFamily: 'var(--font-sans)' }}>
+            Dashboard de performance Meta Ads
           </p>
         </div>
 
         {/* Error message */}
         {error && (
-          <div className="mb-6 p-4 rounded-lg" style={{ backgroundColor: 'var(--color-danger-bg)', borderColor: 'var(--color-danger)', borderWidth: '1px' }}>
-            <p className="text-sm mb-2" style={{ color: 'var(--color-danger)' }}>{error}</p>
+          <div className="mb-5 p-3 rounded" style={{ backgroundColor: 'rgba(255,45,120,0.06)', border: '1px solid var(--color-danger)' }}>
+            <p className="text-sm mb-1.5" style={{ color: 'var(--color-danger)', fontFamily: 'var(--font-sans)' }}>{error}</p>
             <button
               onClick={() => setError(null)}
               className="text-xs font-medium"
@@ -46,9 +49,15 @@ export default function LoginPage() {
           </div>
         )}
 
-        {/* Login Container */}
-        <div className="rounded-2xl p-8 space-y-6" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--color-tertiary)', borderWidth: '1px' }}>
-          {/* Google Sign In Button */}
+        {/* Login card */}
+        <div
+          className="p-6 space-y-5"
+          style={{
+            backgroundColor: 'var(--color-bg-surface)',
+            border: '1px solid var(--color-border)',
+            borderRadius: 'var(--radius-lg)',
+          }}
+        >
           <GoogleAuthButton
             onSuccess={handleLoginSuccess}
             onError={(err) => setError(err.message)}
@@ -58,25 +67,28 @@ export default function LoginPage() {
           {/* Divider */}
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full" style={{ borderTop: '1px solid var(--color-tertiary)' }} />
+              <div className="w-full" style={{ borderTop: '1px solid var(--color-border)' }} />
             </div>
             <div className="relative flex justify-center">
-              <span className="px-3 text-xs uppercase tracking-wider" style={{ backgroundColor: 'var(--bg-card)', color: 'var(--color-secondary)' }}>
-                Continuar com
+              <span
+                className="px-3 text-xs uppercase tracking-wider"
+                style={{ backgroundColor: 'var(--color-bg-surface)', color: 'var(--color-text-tertiary)', fontFamily: 'var(--font-sans)' }}
+              >
+                acesso
               </span>
             </div>
           </div>
 
-          {/* Demo Credentials (Future) */}
-          <div className="pt-4" style={{ borderTop: '1px solid var(--color-tertiary)' }}>
-            <p className="text-xs uppercase tracking-wider mb-3" style={{ color: 'var(--color-secondary)' }}>
+          {/* Demo info */}
+          <div className="pt-1">
+            <p className="text-xs uppercase tracking-wider mb-2" style={{ color: 'var(--color-text-tertiary)', fontFamily: 'var(--font-sans)' }}>
               Credenciais Demo
             </p>
-            <div className="rounded-lg p-4" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
-              <p className="text-sm font-mono" style={{ color: 'var(--color-brand)' }}>
-                demo@metaads.com • senha123
+            <div className="rounded p-3" style={{ backgroundColor: 'var(--color-bg-input)', border: '1px solid var(--color-border)' }}>
+              <p className="text-sm" style={{ color: 'var(--color-text-secondary)', fontFamily: 'var(--font-mono)' }}>
+                demo@roilabz.com • senha123
               </p>
-              <p className="text-xs mt-2" style={{ color: 'var(--color-secondary)' }}>
+              <p className="text-xs mt-1.5" style={{ color: 'var(--color-text-tertiary)', fontFamily: 'var(--font-sans)' }}>
                 (Em desenvolvimento)
               </p>
             </div>
@@ -84,9 +96,9 @@ export default function LoginPage() {
         </div>
 
         {/* Footer */}
-        <div className="mt-12 text-center">
-          <p className="text-xs" style={{ color: 'var(--color-tertiary)' }}>
-            © 2026 Meta Ads Manager. Todos os direitos reservados.
+        <div className="mt-10 text-center">
+          <p className="text-xs" style={{ color: 'var(--color-text-tertiary)', fontFamily: 'var(--font-sans)' }}>
+            © 2026 ROILabz. Todos os direitos reservados.
           </p>
         </div>
       </div>

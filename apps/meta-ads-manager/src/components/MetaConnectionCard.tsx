@@ -3,29 +3,17 @@
 import React, { useState, useEffect } from 'react';
 import { useMetaConnection } from '@/hooks/useMetaConnection';
 
-/**
- * Componente de conexão com Meta/Facebook
- * Mostra dois estados: Conectado ou Não Conectado
- * Inclui toasts de sucesso/erro
- */
 export const MetaConnectionCard: React.FC = () => {
   const { connection, isLoadingConnection, disconnectMutation } = useMetaConnection();
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  // Verificar query params para mostrar mensagens
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-
     if (params.get('connected') === 'true') {
-      setMessage({
-        type: 'success',
-        text: '✅ Facebook conectado com sucesso!',
-      });
+      setMessage({ type: 'success', text: '✅ Facebook conectado com sucesso!' });
       setTimeout(() => setMessage(null), 5000);
-      // Limpar query param (substituir URL sem recarregar página)
       window.history.replaceState({}, '', '/settings');
     }
-
     const error = params.get('error');
     if (error) {
       const errorMap: Record<string, string> = {
@@ -35,12 +23,7 @@ export const MetaConnectionCard: React.FC = () => {
         database: '❌ Erro ao salvar. Tente novamente.',
         server: `❌ Erro do servidor: ${params.get('message') || 'Tente novamente.'}`,
       };
-
-      const errorMsg = errorMap[error] || '❌ Erro desconhecido.';
-      setMessage({
-        type: 'error',
-        text: errorMsg,
-      });
+      setMessage({ type: 'error', text: errorMap[error] || '❌ Erro desconhecido.' });
       setTimeout(() => setMessage(null), 5000);
       window.history.replaceState({}, '', '/settings');
     }
@@ -50,207 +33,136 @@ export const MetaConnectionCard: React.FC = () => {
     if (confirm('Tem certeza que deseja desconectar sua conta do Facebook?')) {
       try {
         await disconnectMutation.mutateAsync();
-        setMessage({
-          type: 'success',
-          text: '✅ Desconectado com sucesso!',
-        });
+        setMessage({ type: 'success', text: '✅ Desconectado com sucesso!' });
         setTimeout(() => setMessage(null), 5000);
-      } catch (error) {
-        setMessage({
-          type: 'error',
-          text: '❌ Erro ao desconectar. Tente novamente.',
-        });
+      } catch {
+        setMessage({ type: 'error', text: '❌ Erro ao desconectar. Tente novamente.' });
         setTimeout(() => setMessage(null), 5000);
       }
     }
   };
 
-  const handleReconnect = () => {
-    window.location.href = '/api/auth/meta';
+  const handleReconnect = () => { window.location.href = '/api/auth/meta'; };
+
+  const cardStyle = {
+    backgroundColor: 'var(--color-bg-surface)',
+    border: '1px solid var(--color-border)',
+    borderRadius: 'var(--radius-lg)',
+    padding: '20px',
+    fontFamily: 'var(--font-sans)',
   };
 
-  // ============= ESTADO: CARREGANDO =============
+  const FacebookIcon = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style={{ color: 'var(--color-info)', flexShrink: 0 }}>
+      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+    </svg>
+  );
+
   if (isLoadingConnection) {
     return (
-      <div className="rounded-[12px] border border-neon-green/20 bg-card p-6">
-        <div className="flex items-center gap-4">
-          <div className="h-12 w-12 animate-pulse rounded-full bg-input" />
+      <div style={cardStyle}>
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 animate-pulse rounded-full" style={{ backgroundColor: 'var(--color-bg-input)' }} />
           <div className="flex-1 space-y-2">
-            <div className="h-4 w-40 animate-pulse rounded bg-input" />
-            <div className="h-3 w-60 animate-pulse rounded bg-input" />
+            <div className="h-3.5 w-36 animate-pulse rounded" style={{ backgroundColor: 'var(--color-bg-input)' }} />
+            <div className="h-3 w-52 animate-pulse rounded" style={{ backgroundColor: 'var(--color-bg-input)' }} />
           </div>
         </div>
       </div>
     );
   }
 
-  // ============= TOAST/MESSAGE =============
   if (message) {
-    const bgColor = message.type === 'success' ? 'bg-neon-green/10 border-neon-green/50' : 'bg-danger/10 border-danger/50';
-    const textColor = message.type === 'success' ? 'text-neon-green' : 'text-danger';
-
     return (
-      <div className={`mb-6 rounded-[12px] border ${bgColor} p-4 ${textColor}`}>
+      <div
+        className="p-3 rounded text-sm"
+        style={{
+          backgroundColor: message.type === 'success' ? 'rgba(57,255,20,0.06)' : 'rgba(255,45,120,0.06)',
+          border: `1px solid ${message.type === 'success' ? 'var(--color-success)' : 'var(--color-danger)'}`,
+          color: message.type === 'success' ? 'var(--color-success)' : 'var(--color-danger)',
+          fontFamily: 'var(--font-sans)',
+        }}
+      >
         {message.text}
       </div>
     );
   }
 
-  // ============= ESTADO 1: NÃO CONECTADO =============
   if (!connection) {
     return (
-      <div className="rounded-[12px] border border-neon-green/20 bg-card p-6 shadow-card">
-        {/* Header */}
-        <div className="mb-6">
-          <div className="mb-2 flex items-center gap-3">
-            <svg
-              width="24" height="24"
-              className="h-6 w-6 text-neon-cyan"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-            >
-              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-            </svg>
-            <h3 className="text-xl font-semibold text-primary">Conectar Meta Ads</h3>
-          </div>
-          <p className="text-sm text-secondary">
-            Conecte sua conta do Facebook para acessar suas contas de anúncio, páginas e pixels.
-          </p>
+      <div style={cardStyle}>
+        <div className="mb-5 flex items-center gap-2.5">
+          <FacebookIcon />
+          <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>Conectar Meta Ads</h3>
         </div>
-
-        {/* Button */}
-        <button
-          onClick={handleReconnect}
-          className="w-full rounded-[12px] bg-neon-green px-4 py-3 font-semibold text-deepest transition-all hover:bg-neon-green/90 focus:ring-2 focus:ring-neon-green focus:ring-offset-2 focus:ring-offset-deepest"
-        >
+        <p className="text-sm mb-5" style={{ color: 'var(--color-text-secondary)' }}>
+          Conecte sua conta do Facebook para acessar suas contas de anúncio, páginas e pixels.
+        </p>
+        <button onClick={handleReconnect} className="btn-primary w-full justify-center">
           Conectar com Facebook
         </button>
-
-        {/* Info Box */}
-        <div className="mt-4 rounded-[8px] border border-neon-cyan/20 bg-neon-cyan/5 p-3">
-          <p className="text-xs text-secondary">
-            🔒 Sua conexão é segura. Usamos OAuth 2.0 e tokens de longa duração (60 dias).
-          </p>
+        <div className="mt-3 p-3 rounded text-xs" style={{ backgroundColor: 'var(--color-bg-input)', border: '1px solid var(--color-border)', color: 'var(--color-text-tertiary)' }}>
+          🔒 Conexão segura via OAuth 2.0. Tokens de longa duração (60 dias).
         </div>
       </div>
     );
   }
 
-  // ============= ESTADO 2: CONECTADO =============
   const expiresAt = new Date(connection.meta_token_expires_at || '');
-  const now = new Date();
-  const daysUntilExpiry = Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  const daysUntilExpiry = Math.ceil((expiresAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
   const isExpired = daysUntilExpiry < 0;
-  const expiringTooSoon = daysUntilExpiry <= 7 && daysUntilExpiry >= 0;
+  const expiringSoon = daysUntilExpiry <= 7 && daysUntilExpiry >= 0;
 
-  const getBadgeStyles = () => {
-    if (isExpired) {
-      return {
-        container: 'bg-danger/10 border-danger/50',
-        icon: '🔴',
-        text: 'Expirado',
-        color: 'text-danger',
-      };
-    }
-    if (expiringTooSoon) {
-      return {
-        container: 'bg-neon-amber/10 border-neon-amber/50',
-        icon: '🟡',
-        text: `Expira em ${daysUntilExpiry} dia${daysUntilExpiry !== 1 ? 's' : ''}`,
-        color: 'text-neon-amber',
-      };
-    }
-    return {
-      container: 'bg-neon-green/10 border-neon-green/50',
-      icon: '✅',
-      text: 'Conectado',
-      color: 'text-neon-green',
-    };
-  };
-
-  const badge = getBadgeStyles();
-  const connectedAt = new Date(connection.created_at).toLocaleDateString('pt-BR');
+  const badgeClass = isExpired ? 'badge-error' : expiringSoon ? 'badge-paused' : 'badge-active';
+  const badgeText = isExpired ? 'Expirado' : expiringSoon ? `Expira em ${daysUntilExpiry}d` : 'Conectado';
 
   return (
-    <div className="rounded-[12px] border border-neon-green/20 bg-card p-6 shadow-card">
+    <div style={cardStyle}>
       {/* Header */}
-      <div className="mb-6">
-        <div className="mb-4 flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <svg
-              width="24" height="24"
-              className="h-6 w-6 text-neon-cyan"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-            >
-              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-            </svg>
-            <h3 className="text-xl font-semibold text-primary">Meta Ads Conectado</h3>
-          </div>
-
-          {/* Badge */}
-          <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm font-medium ${badge.container} ${badge.color}`}>
-            <span>{badge.icon}</span>
-            <span>{badge.text}</span>
-          </div>
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex items-center gap-2.5">
+          <FacebookIcon />
+          <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>Meta Ads Conectado</h3>
         </div>
-
-        {/* Connection Info */}
-        <div className="space-y-2 text-sm text-secondary">
-          <p>
-            <span className="font-semibold text-primary">Usuário:</span> {connection.meta_user_name}
-          </p>
-          <p>
-            <span className="font-semibold text-primary">Conectado em:</span> {connectedAt}
-          </p>
-          <p>
-            <span className="font-semibold text-primary">Expira em:</span> {expiresAt.toLocaleDateString('pt-BR')}
-          </p>
-          {connection.meta_scopes && (
-            <p>
-              <span className="font-semibold text-primary">Permissões:</span>{' '}
-              <span className="text-xs">{connection.meta_scopes.split(',').join(', ')}</span>
-            </p>
-          )}
-        </div>
+        <span className={badgeClass}>{badgeText}</span>
       </div>
 
-      {/* Buttons */}
-      <div className="flex gap-3">
-        {/* Reconectar Button */}
-        <button
-          onClick={handleReconnect}
-          disabled={disconnectMutation.isPending}
-          className="flex-1 rounded-[12px] border border-neon-cyan/30 bg-transparent px-4 py-2 font-semibold text-neon-cyan transition-all hover:bg-neon-cyan/10 disabled:opacity-50"
-        >
+      {/* Info */}
+      <div className="space-y-1.5 text-sm mb-5" style={{ color: 'var(--color-text-secondary)' }}>
+        <p><span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>Usuário:</span> {connection.meta_user_name}</p>
+        <p><span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>Conectado em:</span> {new Date(connection.created_at).toLocaleDateString('pt-BR')}</p>
+        <p><span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>Expira em:</span> {expiresAt.toLocaleDateString('pt-BR')}</p>
+        {connection.meta_scopes && (
+          <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+            <span className="font-medium" style={{ color: 'var(--color-text-secondary)' }}>Permissões:</span>{' '}
+            {connection.meta_scopes.split(',').join(', ')}
+          </p>
+        )}
+      </div>
+
+      {/* Actions */}
+      <div className="flex gap-2">
+        <button onClick={handleReconnect} disabled={disconnectMutation.isPending} className="btn-secondary flex-1 justify-center">
           Reconectar
         </button>
-
-        {/* Desconectar Button */}
-        <button
-          onClick={handleDisconnect}
-          disabled={disconnectMutation.isPending}
-          className="flex-1 rounded-[12px] border border-danger/30 bg-transparent px-4 py-2 font-semibold text-danger transition-all hover:bg-danger/10 disabled:opacity-50"
-        >
+        <button onClick={handleDisconnect} disabled={disconnectMutation.isPending} className="btn-danger flex-1 justify-center" style={{ fontSize: '13px', padding: '8px 16px' }}>
           {disconnectMutation.isPending ? 'Desconectando...' : 'Desconectar'}
         </button>
       </div>
 
-      {/* Warning if expired */}
-      {isExpired && (
-        <div className="mt-4 rounded-[8px] border border-danger/20 bg-danger/5 p-3">
-          <p className="text-xs text-danger">
-            ⚠️ Seu token expirou. Reconecte para sincronizar suas campanhas e anúncios.
-          </p>
-        </div>
-      )}
-
-      {/* Warning if expiring soon */}
-      {expiringTooSoon && !isExpired && (
-        <div className="mt-4 rounded-[8px] border border-neon-amber/20 bg-neon-amber/5 p-3">
-          <p className="text-xs text-neon-amber">
-            ⚠️ Seu token expira em {daysUntilExpiry} dia{daysUntilExpiry !== 1 ? 's' : ''}. Reconecte em breve para não perder acesso.
-          </p>
+      {/* Warnings */}
+      {(isExpired || expiringSoon) && (
+        <div
+          className="mt-3 p-3 rounded text-xs"
+          style={{
+            backgroundColor: isExpired ? 'rgba(255,45,120,0.06)' : 'rgba(255,184,0,0.06)',
+            border: `1px solid ${isExpired ? 'var(--color-danger)' : 'var(--color-warning)'}`,
+            color: isExpired ? 'var(--color-danger)' : 'var(--color-warning)',
+          }}
+        >
+          {isExpired
+            ? '⚠️ Seu token expirou. Reconecte para sincronizar suas campanhas.'
+            : `⚠️ Seu token expira em ${daysUntilExpiry} dia${daysUntilExpiry !== 1 ? 's' : ''}. Reconecte em breve.`}
         </div>
       )}
     </div>
