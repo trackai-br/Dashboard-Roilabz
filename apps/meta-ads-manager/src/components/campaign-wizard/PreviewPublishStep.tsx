@@ -118,7 +118,7 @@ export default function PreviewPublishStep({ onSaved }: PreviewPublishStepProps)
               distribution,
               campaignConfig: batch.campaignConfig,
               adsetTypes: batch.adsetTypes,
-              adConfig,
+              adConfig: { ...adConfig, creativeFiles: creativePool },
             }),
           });
 
@@ -165,7 +165,7 @@ export default function PreviewPublishStep({ onSaved }: PreviewPublishStepProps)
           distribution,
           campaignConfig: batch.campaignConfig,
           adsetTypes: batch.adsetTypes,
-          adConfig,
+          adConfig: { ...adConfig, creativeFiles: creativePool },
         }),
       });
 

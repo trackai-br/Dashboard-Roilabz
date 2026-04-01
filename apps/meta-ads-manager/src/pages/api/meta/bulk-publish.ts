@@ -154,7 +154,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       for (let a = 0; a < adsetType.adsetCount; a++) {
           const adsetSuffix = adsetType.adsetCount > 1 ? ` ${String(a + 1).padStart(2, '0')}` : '';
-          const adsetName = `${adsetType.name}${adsetSuffix}`;
+          const adsetBaseName = adsetType.name || `Conjunto ${a + 1}`;
+          const adsetName = `${adsetBaseName}${adsetSuffix}`;
 
           const adsetBody: any = {
             name: adsetName,
@@ -201,9 +202,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           }
 
           // 3. Create Ads (1 per creative in adset type)
-          const validCreatives = adsetType.creativesInAdset.filter(Boolean);
+          // Se creativesInAdset estiver vazio, usa todos os criativos do pool
+          const creativeFiles: any[] = adConfig.creativeFiles || [];
+          const creativesSource = adsetType.creativesInAdset.length > 0
+            ? adsetType.creativesInAdset.filter(Boolean)
+            : creativeFiles.map((f: any) => f.fileName).filter(Boolean);
+          const validCreatives = creativesSource;
           for (const creativeName of validCreatives) {
-            const creativeFile = adConfig.creativeFiles.find((f: any) => f.fileName === creativeName);
+            const creativeFile = creativeFiles.find((f: any) => f.fileName === creativeName);
             const rawUrl = creativeFile?.driveUrl || '';
 
             if (!rawUrl) continue;
