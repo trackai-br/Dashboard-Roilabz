@@ -39,7 +39,7 @@ describe('KPICard', () => {
       />
     );
 
-    expect(screen.getByText('+15% from last month')).toBeInTheDocument();
+    expect(screen.getByText('+15% mês anterior')).toBeInTheDocument();
   });
 
   it('displays icon when provided', () => {
@@ -76,7 +76,7 @@ describe('KPICard', () => {
       />
     );
 
-    const trendText = screen.getByText('-10% from last month');
+    const trendText = screen.getByText('-10% mês anterior');
     expect(trendText).toHaveStyle({ color: 'var(--color-danger)' });
   });
 
@@ -89,7 +89,7 @@ describe('KPICard', () => {
       />
     );
 
-    const trendText = screen.getByText('+10% from last month');
+    const trendText = screen.getByText('+10% mês anterior');
     expect(trendText).toHaveStyle({ color: 'var(--color-success)' });
   });
 });

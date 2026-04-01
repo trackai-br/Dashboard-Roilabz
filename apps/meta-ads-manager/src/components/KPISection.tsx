@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { TrendingUp, BarChart3, DollarSign, CheckCircle } from 'lucide-react';
+import React from 'react';
+import { TrendingUp, BarChart3, DollarSign, CheckCircle, Settings } from 'lucide-react';
 
 export interface KPIData {
   roas: number;
@@ -16,176 +16,130 @@ interface KPISectionProps {
 }
 
 export function KPISection({ data }: KPISectionProps) {
-  const [selectedMetrics] = useState<string[]>(['roas', 'activeCampaigns', 'spend', 'conversions']);
-
   const metrics = [
     {
-      id: 'roas',
-      label: 'ROAS',
-      value: data.roas.toFixed(2),
-      unit: 'x',
-      icon: TrendingUp,
-      description: 'Return on Ad Spend',
-      color: 'from-brand to-coral',
-      accentColor: 'var(--color-brand)',
+      id:          'roas',
+      label:       'ROAS',
+      value:       data.roas.toFixed(2),
+      unit:        'x',
+      icon:        TrendingUp,
+      description: 'Retorno sobre investimento',
     },
     {
-      id: 'activeCampaigns',
-      label: 'Campanhas Ativas',
-      value: data.activeCampaigns.toString(),
-      unit: '',
-      icon: BarChart3,
-      description: 'Campanhas em veiculação',
-      color: 'from-teal to-teal-light',
-      accentColor: 'var(--color-teal)',
+      id:          'activeCampaigns',
+      label:       'Campanhas Ativas',
+      value:       data.activeCampaigns.toString(),
+      unit:        '',
+      icon:        BarChart3,
+      description: 'Em veiculação agora',
     },
     {
-      id: 'spend',
-      label: 'Gasto',
-      value: `$${(data.monthlySpend / 1000).toFixed(1)}k`,
-      unit: '/mês',
-      icon: DollarSign,
-      description: `Hoje: $${data.dailySpend.toFixed(2)}`,
-      color: 'from-sand to-coral',
-      accentColor: 'var(--color-sand)',
+      id:          'spend',
+      label:       'Gasto',
+      value:       `R$${(data.monthlySpend / 1000).toFixed(1)}k`,
+      unit:        '/mês',
+      icon:        DollarSign,
+      description: `Hoje: R$${data.dailySpend.toFixed(2)}`,
     },
     {
-      id: 'conversions',
-      label: 'Conversões',
-      value: data.conversions.toString(),
-      unit: 'total',
-      icon: CheckCircle,
+      id:          'conversions',
+      label:       'Conversões',
+      value:       data.conversions.toString(),
+      unit:        'total',
+      icon:        CheckCircle,
       description: 'Ações realizadas',
-      color: 'from-success to-success',
-      accentColor: 'var(--color-success)',
     },
   ];
 
-  const visibleMetrics = metrics.filter(m => selectedMetrics.includes(m.id));
-
   return (
-    <section className="px-8 py-8">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+    <section className="px-6 py-5">
+      {/* Section header */}
+      <div className="flex items-center justify-between mb-4">
         <div>
           <h2
-            className="text-3xl font-display font-bold"
-            style={{
-              color: 'var(--neon-green)',
-              textShadow: '0 0 12px rgba(57, 255, 20, 0.3)',
-              fontFamily: "'Space Grotesk', system-ui, sans-serif",
-              letterSpacing: '0.05em',
-            }}
+            className="text-sm font-semibold"
+            style={{ color: 'var(--color-text-primary)', fontFamily: 'var(--font-sans)', margin: 0 }}
           >
-            KEY PERFORMANCE
+            Performance
           </h2>
-          <p className="text-sm mt-2" style={{ color: 'var(--color-secondary)' }}>
-            Métricas de desempenho em tempo real
+          <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
+            Métricas em tempo real
           </p>
         </div>
         <button
-          className="text-sm font-medium px-4 py-2 rounded-lg transition-all"
-          style={{
-            color: 'var(--neon-green)',
-            backgroundColor: 'rgba(57, 255, 20, 0.08)',
-            border: '1px solid rgba(57, 255, 20, 0.2)',
-            fontFamily: "'Space Grotesk', system-ui, sans-serif",
-            fontWeight: 500,
-            letterSpacing: '0.03em',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(57, 255, 20, 0.15)';
-            e.currentTarget.style.boxShadow = '0 0 12px rgba(57, 255, 20, 0.25)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(57, 255, 20, 0.08)';
-            e.currentTarget.style.boxShadow = 'none';
-          }}
+          className="btn-ghost"
+          style={{ fontSize: '12px', padding: '5px 10px', color: 'var(--color-text-tertiary)' }}
+          aria-label="Customizar métricas"
         >
-          ⚙️ CUSTOMIZAR
+          <Settings size={13} strokeWidth={1.5} aria-hidden="true" />
+          Customizar
         </button>
       </div>
 
-      {/* Grid de KPIs */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {visibleMetrics.map((metric) => (
-          <div
-            key={metric.id}
-            className="group p-6 rounded-lg border transition-all duration-200 cursor-pointer overflow-hidden relative backdrop-blur-md"
-            style={{
-              backgroundColor: 'rgba(26, 26, 46, 0.7)',
-              border: 'var(--border-light)',
-              boxShadow: 'var(--shadow-card)',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.boxShadow = 'var(--shadow-card-hover)';
-              e.currentTarget.style.transform = 'translateY(-4px)';
-              e.currentTarget.style.borderColor = 'rgba(57, 255, 20, 0.4)';
-              e.currentTarget.style.backgroundColor = 'rgba(26, 26, 46, 0.9)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.boxShadow = 'var(--shadow-card)';
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.borderColor = 'rgba(57, 255, 20, 0.1)';
-              e.currentTarget.style.backgroundColor = 'rgba(26, 26, 46, 0.7)';
-            }}
-          >
-            {/* Content */}
-            <div className="relative z-10">
-              <div className="flex items-start justify-between mb-6">
-                <div className="flex-1">
-                  <p
-                    className="text-xs font-bold mb-2 tracking-wide"
-                    style={{
-                      color: 'var(--neon-green)',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.1em',
-                      fontFamily: "'Space Grotesk', system-ui, sans-serif",
-                      textShadow: '0 0 6px rgba(57, 255, 20, 0.25)',
-                    }}
-                  >
-                    {metric.label}
-                  </p>
-                  <p className="text-xs leading-relaxed" style={{ color: 'var(--color-tertiary)' }}>
-                    {metric.description}
-                  </p>
-                </div>
+      {/* KPI Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+        {metrics.map((metric) => {
+          const Icon = metric.icon;
+          return (
+            <div
+              key={metric.id}
+              className="p-4 transition-all"
+              style={{
+                backgroundColor: 'var(--color-bg-surface)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-lg)',
+                boxShadow: 'var(--shadow-card)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = 'var(--color-border-accent)';
+                e.currentTarget.style.boxShadow = 'var(--shadow-card-hover)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'var(--color-border)';
+                e.currentTarget.style.boxShadow = 'var(--shadow-card)';
+              }}
+            >
+              {/* Header row: label + icon */}
+              <div className="flex items-center justify-between mb-3">
+                <p className="col-header">{metric.label}</p>
                 <div
-                  className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 ml-3"
+                  className="flex items-center justify-center"
                   style={{
-                    backgroundColor: 'rgba(57, 255, 20, 0.1)',
-                    color: 'var(--neon-green)',
-                    boxShadow: '0 0 12px rgba(57, 255, 20, 0.3)',
+                    width: '28px',
+                    height: '28px',
+                    borderRadius: 'var(--radius-sm)',
+                    backgroundColor: 'var(--color-bg-input)',
+                    color: 'var(--color-text-tertiary)',
                   }}
                   role="img"
                   aria-label={metric.label}
                 >
-                  <metric.icon size={24} strokeWidth={2} aria-hidden="true" />
+                  <Icon size={14} strokeWidth={1.5} aria-hidden="true" />
                 </div>
               </div>
 
               {/* Value */}
-              <div className="flex items-baseline gap-2 pt-4" style={{ borderTop: 'var(--border-light)' }}>
+              <div className="flex items-baseline gap-1.5">
                 <span
-                  className="text-4xl font-mono font-bold"
-                  style={{
-                    color: 'var(--neon-green)',
-                    textShadow: '0 0 12px rgba(57, 255, 20, 0.4)',
-                    fontFamily: "'JetBrains Mono', monospace",
-                    letterSpacing: '0.05em',
-                  }}
+                  className="value-mono"
+                  style={{ fontSize: '22px', fontWeight: 600, color: 'var(--color-text-primary)' }}
                 >
                   {metric.value}
                 </span>
                 {metric.unit && (
-                  <span className="text-sm font-medium" style={{ color: 'var(--color-secondary)', fontSize: '0.85rem' }}>
+                  <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
                     {metric.unit}
                   </span>
                 )}
               </div>
+
+              {/* Description */}
+              <p className="text-xs mt-1.5" style={{ color: 'var(--color-text-tertiary)' }}>
+                {metric.description}
+              </p>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </section>
   );
