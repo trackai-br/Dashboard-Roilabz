@@ -4,6 +4,31 @@ projeto: Roi-Labz
 atualizado: 2026-04-01
 ---
 
+## [BUG-DIST] buildDistributionMap multiplicava campanhas por contas × páginas (resultado 24 em vez de 6)
+- **Data:** 2026-04-01
+- **Contexto:** Publicação em massa com 2 contas e 2 páginas criava 24 campanhas em vez de 6. O algoritmo legado (`calculateDistribution`) multiplicava todas as combinações possíveis de conta × página × totalCampaigns.
+- **Causa raiz:** Algoritmo round-robin que iterava `totalCampaigns` vezes e para cada campanha atribuía uma página, mas o loop de contas era feito por `i % accounts.length` — com qualquer múltiplo de páginas, o produto explodia.
+- **Detalhes:** Reescrito do zero em `src/lib/distribution.ts`. Novo modelo:
+  - Cada conta tem `campaignCount` próprio (ex: Conta A: 4, Conta B: 2 → total 6)
+  - Páginas preenchidas sequencialmente por capacidade (não round-robin)
+  - Tipos de adset distribuídos em blocos proporcionais (BR-029)
+  - `pageCurrentAdsets` suporta capacidade real da API (BR-032 a BR-035)
+- **Status:** CORRIGIDO — commit 6c2c4c7
+- **Regressão:** Teste `REGRESSÃO BUG-DIST: 2 contas + 2 páginas não devem multiplicar campanhas` adicionado
+- **Tags:** [[bulk-publish]] [[distribuição]] [[algoritmo]] [[BR-001]]
+
+## [BUG-2490487] OUTCOME_SALES sem pixel → OFFSITE_CONVERSIONS → erro Meta API 2490487
+- **Data:** 2026-04-01
+- **Contexto:** Publicação com objetivo OUTCOME_SALES sem pixel configurado falhava com erro Meta API error_subcode 2490487 ("Valor ou restrições de lance obrigatórios"). O frontend enviava `optimization_goal: OFFSITE_CONVERSIONS` que requer pixel obrigatório.
+- **Causa raiz:** `getOptimizationGoalForObjective()` em bulk-publish.ts e retry-publish.ts mapeava `OUTCOME_SALES → OFFSITE_CONVERSIONS`. Esse valor só é válido quando há pixel configurado.
+- **Detalhes:** Criado `src/lib/meta-ad-rules.ts` com mapeamento correto:
+  - `OUTCOME_SALES` sem pixel → `LINK_CLICKS`
+  - Com pixel → `OFFSITE_CONVERSIONS` (via `buildAdsetPayloadExtras`)
+  - Lógica centralizada: bulk-publish.ts e retry-publish.ts agora importam de meta-ad-rules.ts
+- **Status:** CORRIGIDO — commit 6c2c4c7
+- **Regressão:** Teste `REGRESSÃO BUG-2490487: OUTCOME_SALES NÃO deve retornar OFFSITE_CONVERSIONS sem pixel` adicionado
+- **Tags:** [[bulk-publish]] [[retry-publish]] [[Meta-API]] [[optimization_goal]] [[pixel]]
+
 ## [BUG-018] retry-publish.ts sem optimization_goal fallback quando sem pixel
 - **Data:** 2026-04-01
 - **Contexto:** bulk-publish.ts tinha `getOptimizationGoalForObjective()` que mapeia o objective da campanha para um optimization_goal válido quando não há pixel. retry-publish.ts NÃO tinha esse fallback — só enviava `optimization_goal` dentro do bloco `if (adsetType.pixelId)`.

@@ -1,10 +1,40 @@
 ---
 tipo: decisoes
 projeto: Roi-Labz
-atualizado: 2026-03-29
+atualizado: 2026-04-01
 ---
 
 # Decisoes
+
+## [2026-04-01] Distribuição em blocos proporcionais em vez de round-robin por campanha
+- **Data:** 2026-04-01
+- **Contexto:** Modelo de atribuição de tipos de adset para campanhas. Usuário tem N campanhas e M tipos de adset, quer dividir "metade pra cada em blocos".
+- **Opções consideradas:**
+  - A: Round-robin — cada campanha recebe o próximo tipo na fila (1→TypeA, 2→TypeB, 3→TypeA...). Mistura os tipos intercalados.
+  - B: Aleatório — distribuição randômica. Imprevisível, não reproduzível.
+  - C: Blocos proporcionais — N/M campanhas por bloco, sobra vai para o primeiro tipo. Ex: 7 camp + 2 tipos = [4, 3]. Previsível e agrupado.
+- **Decisão:** Opção C (blocos proporcionais). Usuário confirmou explicitamente "metade pra cada em blocos". Vantagem: todas as campanhas de um tipo ficam agrupadas cronologicamente, facilitando análise de performance por tipo.
+- **Implementação:** `calculateCampaignsPerType(N, M)` — base = floor(N/M), sobra (N mod M) distribuída nos primeiros tipos. `getAdsetTypeForCampaign(types, campaignIndex, total)` — acumula blocos para encontrar o tipo correto por índice.
+- **Impacto:** `BatchAdsetType.campaignsCount` removido do store/schema — era o campo manual que tentava expressar essa lógica de forma imperativa. Agora calculado automaticamente.
+- **Tags:** [[distribuição]] [[bulk-publish]] [[wizard]] [[blocos]]
+
+## [2026-04-01] campaignCount por conta em vez de totalCampaigns global por batch
+- **Data:** 2026-04-01
+- **Contexto:** Antes, o batch tinha apenas `totalCampaigns: number` global. Para distribuir entre múltiplas contas, o algoritmo dividia ou iterava round-robin — causando bugs.
+- **Opções consideradas:**
+  - A: Manter totalCampaigns global e dividir uniformemente entre contas.
+  - B: Manter totalCampaigns global com distribuição manual por conta (array de pesos).
+  - C: `campaignCount` por conta em `BatchAccountEntry` — cada conta declara quantas campanhas quer.
+- **Decisão:** Opção C. Usuário confirmou. Mais explícito: cada conta sabe quantas campanhas vai receber. Total é derivado (soma dos campaignCounts). Elimina ambiguidade de distribuição.
+- **Implementação:** `BatchAccountEntry.campaignCount?: number` adicionado ao store. `batch-schemas.ts` valida `campaignCount >= 0`. UI (BatchCard) ainda precisa expor input por conta.
+- **Tags:** [[wizard]] [[distribuição]] [[BatchAccountEntry]] [[campaignCount]]
+
+## [2026-04-01] meta-ad-rules.ts como módulo centralizado de regras da Meta API
+- **Data:** 2026-04-01
+- **Contexto:** Lógica de optimization_goal, bid_strategy e budget estava duplicada em bulk-publish.ts e retry-publish.ts, com divergências (um tinha o bug de OUTCOME_SALES, o outro não).
+- **Decisão:** Centralizar em `src/lib/meta-ad-rules.ts`. Funções puras, testáveis isoladamente, sem efeitos colaterais. APIs importam as funções em vez de reimplementar.
+- **Benefício:** Um único lugar para corrigir/atualizar regras da Meta API. Testes TDD cobrem todas as combinações antes do deploy.
+- **Tags:** [[meta-ad-rules]] [[bulk-publish]] [[retry-publish]] [[Meta-API]]
 
 ## [2026-03-29] Zustand para state management do novo wizard (batches/lotes)
 - **Data:** 2026-03-29

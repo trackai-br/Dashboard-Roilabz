@@ -1,10 +1,29 @@
 ---
 tipo: padroes-que-funcionam
 projeto: Roi-Labz
-atualizado: 2026-03-25
+atualizado: 2026-04-01
 ---
 
 # Padroes Que Funcionam
+
+## [2026-04-01] TDD antes de implementar: 35 regras de negócio → 50 testes → implementação
+- **Contexto:** 2 bugs críticos em produção com causa raiz complexa (algoritmo de distribuição + mapeamento Meta API). Tentativas de fix sem TDD haviam introduzido regressões antes.
+- **Detalhes:**
+  - Passo 1: Definir regras de negócio (BRs) em linguagem clara antes de tocar no código
+  - Passo 2: Escrever testes contra interfaces/módulos que ainda não existem (todos RED)
+  - Passo 3: Implementar os módulos até tudo ficar GREEN
+  - Resultado: zero regressões, 339/339 testes passando, TypeScript limpo
+- **Por que funciona:** Os testes forçam pensar na API pública antes da implementação. Bugs de edge case (ex: mais tipos que campanhas, page capacity = 0) são capturados antes do deploy.
+- **Tags:** [[TDD]] [[regras-de-negócio]] [[testes-unitários]] [[bulk-publish]]
+
+## [2026-04-01] Centralizar regras de API externa em módulo de lib puro
+- **Contexto:** Lógica de optimization_goal, bid_strategy e promoted_object estava duplicada em bulk-publish.ts e retry-publish.ts — com divergências que causaram bugs.
+- **Detalhes:**
+  - Criar `src/lib/meta-ad-rules.ts` com funções puras (sem efeitos colaterais, sem imports de Next.js/Supabase)
+  - APIs importam as funções em vez de reimplementar
+  - Regras testadas isoladamente em `meta-ad-rules.test.ts`
+  - Se a Meta API mudar uma regra, só um arquivo precisa ser atualizado
+- **Tags:** [[meta-ad-rules]] [[módulo]] [[separação-de-responsabilidades]]
 
 ## [2026-03-25] Inngest sync pipeline com Supabase como source of truth
 - **Contexto:** Frontend precisava de metricas de 10k campanhas sem fazer chamadas Meta API no request path

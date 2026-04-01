@@ -6,6 +6,28 @@ atualizado: 2026-04-01
 
 # Progresso
 
+## [2026-04-01] Fix bugs críticos bulk-publish: distribuição + optimization_goal (TDD)
+- **Plano:**
+  1. Identificar causa raiz de 2 bugs produção: distribuição 24 campanhas (deveria ser 6) + erro 2490487 (OFFSITE_CONVERSIONS sem pixel)
+  2. Gerar 35 regras de negócio (BR-001 a BR-035) antes de implementar
+  3. Escrever testes TDD que quebrem todas as regras (tudo RED primeiro)
+  4. Implementar `src/lib/distribution.ts` e `src/lib/meta-ad-rules.ts` para verde
+  5. Atualizar wizard-store, batch-schemas, componentes e APIs
+  6. Deploy e documentação
+- **Abordagem escolhida:** TDD puro — 50+ testes antes de qualquer implementação. Dois módulos novos com responsabilidades isoladas. APIs refatoradas para usar os módulos.
+- **Resultado:** COMPLETO — 339/339 testes, TypeScript limpo, build limpo, deployed a632340
+  - `src/lib/distribution.ts`: reescrito. `calculateCampaignsPerType`, `getAdsetTypeForCampaign`, `calculateAdsForCampaign`, `buildDistributionMap` (com `pageCurrentAdsets`)
+  - `src/lib/meta-ad-rules.ts`: criado. `getOptimizationGoalForObjective` (correto), `buildAdsetPayloadExtras`, `buildCampaignPayloadExtras`
+  - `wizard-store.ts`: `BatchAccountEntry.campaignCount` adicionado; `BatchAdsetType.campaignsCount` removido
+  - `batch-schemas.ts`: validação de `campaignCount` adicionada; `campaignsCount` removido
+  - `bulk-publish.ts` e `retry-publish.ts`: importam funções dos módulos novos
+  - `PreviewPublishStep.tsx` e `BatchCard.tsx`: removidas refs a `campaignsCount`
+  - Código morto deletado: `distribution.test.ts` (V1), `Tab2PagesVolume.tsx` (V1)
+- **O que falta:**
+  - UI: input de `campaignCount` por conta no `BatchCard` (atualmente o campo existe no store mas não há UI para editá-lo)
+  - API: chamar `/api/meta/pages/[pageId]/adset-count` antes de publicar para alimentar `pageCurrentAdsets`
+  - Teste em produção: verificar contagem correta de campanhas e ausência de erro 2490487
+
 ## [2026-04-01] Débitos técnicos de publicação — retry-publish bug + limpeza de logs
 - **Plano:**
   1. Fix BUG no retry-publish.ts: adicionar `getOptimizationGoalForObjective()` e fallback quando não há pixel (igual ao bulk-publish). Sem isso, retry falha com erro 2490487.

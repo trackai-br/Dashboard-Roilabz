@@ -1,10 +1,37 @@
 ---
 tipo: testes
 projeto: Roi-Labz
-atualizado: 2026-03-31
+atualizado: 2026-04-01
 ---
 
 # Testes
+
+## [2026-04-01] TDD — Algoritmo de distribuição + regras Meta API (35 BRs, 50 testes)
+- **Data:** 2026-04-01
+- **Contexto:** Dois bugs críticos em produção. Abordagem TDD: regras de negócio definidas, testes escritos (todos RED), depois implementação.
+- **Módulo 1 — `src/__tests__/distribution-algorithm.test.ts` (32 testes)**
+  - `calculateCampaignsPerType`: 8 testes — divisão exata, sobra no primeiro, mais tipos que campanhas, zero campanhas
+  - `getAdsetTypeForCampaign`: 7 testes — bloco correto por índice, tipo único, sobra no primeiro bloco
+  - `calculateAdsForCampaign`: 5 testes — TypeA vs TypeB, 0 criativos, tipo único
+  - `buildDistributionMap — entradas/contagem`: 5 testes — total por conta, conta=0, conta negativa, regressão BUG-DIST
+  - `buildDistributionMap — ordem de contas`: 2 testes — sequencial, index único
+  - `buildDistributionMap — atribuição de páginas`: 6 testes — P1→P2→P3, limite padrão 250, cenário real
+  - `buildDistributionMap — erros e casos limite`: 6 testes — páginas cheias, lista vazia, 0 ads
+  - `buildDistributionMap — bloco de tipos`: 2 testes — bloco real com 2 tipos
+  - `buildDistributionMap — pageCurrentAdsets`: 6 testes — API count, capacidade reduzida, limite zerado
+- **Módulo 2 — `src/__tests__/meta-ad-rules.test.ts` (31 testes)**
+  - `getOptimizationGoalForObjective`: 7 testes — cada objetivo sem pixel, fallback, regressão BUG-2490487
+  - `buildAdsetPayloadExtras — optimization_goal com pixel`: 4 testes — OFFSITE_CONVERSIONS, promoted_object
+  - `buildAdsetPayloadExtras — optimization_goal sempre presente`: 2 testes — todos os objetivos
+  - `buildAdsetPayloadExtras — bid_strategy`: 6 testes — BR-022 a BR-025 (sem cap, com cap, ROAS)
+  - `buildCampaignPayloadExtras`: 2 testes — CBO (daily_budget) vs ABO (ausente)
+  - `buildAdsetPayloadExtras — CBO vs ABO no adset`: 3 testes — inverso do anterior
+  - `buildAdsetPayloadExtras — combinações reais`: 3 testes — SALES+pixel+BidCap, SALES+sem pixel+CBO, TRAFFIC+COST_CAP
+- **Módulo 3 — `src/__tests__/batch-schemas.test.ts` (9 novos testes adicionados)**
+  - BR-017/018/019: bid_strategy com/sem cap, ROAS warning
+  - BR-001/003: campaignCount negativo → erro, campaignCount=0 → warning
+- **Resultado:** 339/339 passando (era 289 antes desta sessão — 50 novos testes todos verdes)
+- **Tags:** [[TDD]] [[distribuição]] [[meta-ad-rules]] [[batch-schemas]] [[bulk-publish]]
 
 ## [2026-03-31] Testes de componentes wizard — ModeSelector, ChecklistSidebar, ConfigPopupV2
 - **Data:** 2026-03-31
