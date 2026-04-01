@@ -10,20 +10,20 @@ export const MetaConnectionCard: React.FC = () => {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('connected') === 'true') {
-      setMessage({ type: 'success', text: '✅ Facebook conectado com sucesso!' });
+      setMessage({ type: 'success', text: 'Facebook conectado com sucesso!' });
       setTimeout(() => setMessage(null), 5000);
       window.history.replaceState({}, '', '/settings');
     }
     const error = params.get('error');
     if (error) {
       const errorMap: Record<string, string> = {
-        csrf: '❌ Erro de segurança (CSRF). Tente novamente.',
-        unauthorized: '❌ Você precisa estar autenticado.',
-        facebook: `❌ Erro do Facebook: ${params.get('message') || 'Tente novamente.'}`,
-        database: '❌ Erro ao salvar. Tente novamente.',
-        server: `❌ Erro do servidor: ${params.get('message') || 'Tente novamente.'}`,
+        csrf: 'Erro de segurança (CSRF). Tente novamente.',
+        unauthorized: 'Você precisa estar autenticado.',
+        facebook: `Erro do Facebook: ${params.get('message') || 'Tente novamente.'}`,
+        database: 'Erro ao salvar. Tente novamente.',
+        server: `Erro do servidor: ${params.get('message') || 'Tente novamente.'}`,
       };
-      setMessage({ type: 'error', text: errorMap[error] || '❌ Erro desconhecido.' });
+      setMessage({ type: 'error', text: errorMap[error] || 'Erro desconhecido.' });
       setTimeout(() => setMessage(null), 5000);
       window.history.replaceState({}, '', '/settings');
     }
@@ -33,10 +33,10 @@ export const MetaConnectionCard: React.FC = () => {
     if (confirm('Tem certeza que deseja desconectar sua conta do Facebook?')) {
       try {
         await disconnectMutation.mutateAsync();
-        setMessage({ type: 'success', text: '✅ Desconectado com sucesso!' });
+        setMessage({ type: 'success', text: 'Desconectado com sucesso!' });
         setTimeout(() => setMessage(null), 5000);
       } catch {
-        setMessage({ type: 'error', text: '❌ Erro ao desconectar. Tente novamente.' });
+        setMessage({ type: 'error', text: 'Erro ao desconectar. Tente novamente.' });
         setTimeout(() => setMessage(null), 5000);
       }
     }
@@ -101,8 +101,12 @@ export const MetaConnectionCard: React.FC = () => {
         <button onClick={handleReconnect} className="btn-primary w-full justify-center">
           Conectar com Facebook
         </button>
-        <div className="mt-3 p-3 rounded text-xs" style={{ backgroundColor: 'var(--color-bg-input)', border: '1px solid var(--color-border)', color: 'var(--color-text-tertiary)' }}>
-          🔒 Conexão segura via OAuth 2.0. Tokens de longa duração (60 dias).
+        <div className="mt-3 p-3 rounded text-xs flex items-center gap-1.5" style={{ backgroundColor: 'var(--color-bg-input)', border: '1px solid var(--color-border)', color: 'var(--color-text-tertiary)' }}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+            <path d="M7 11V7a5 5 0 0110 0v4" />
+          </svg>
+          Conexão segura via OAuth 2.0. Tokens de longa duração (60 dias).
         </div>
       </div>
     );
@@ -153,16 +157,23 @@ export const MetaConnectionCard: React.FC = () => {
       {/* Warnings */}
       {(isExpired || expiringSoon) && (
         <div
-          className="mt-3 p-3 rounded text-xs"
+          className="mt-3 p-3 rounded text-xs flex items-start gap-2"
           style={{
             backgroundColor: isExpired ? 'rgba(255,45,120,0.06)' : 'rgba(255,184,0,0.06)',
             border: `1px solid ${isExpired ? 'var(--color-danger)' : 'var(--color-warning)'}`,
             color: isExpired ? 'var(--color-danger)' : 'var(--color-warning)',
           }}
         >
-          {isExpired
-            ? '⚠️ Seu token expirou. Reconecte para sincronizar suas campanhas.'
-            : `⚠️ Seu token expira em ${daysUntilExpiry} dia${daysUntilExpiry !== 1 ? 's' : ''}. Reconecte em breve.`}
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}>
+            <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+            <line x1="12" y1="9" x2="12" y2="13" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
+          </svg>
+          <span>
+            {isExpired
+              ? 'Seu token expirou. Reconecte para sincronizar suas campanhas.'
+              : `Seu token expira em ${daysUntilExpiry} dia${daysUntilExpiry !== 1 ? 's' : ''}. Reconecte em breve.`}
+          </span>
         </div>
       )}
     </div>
