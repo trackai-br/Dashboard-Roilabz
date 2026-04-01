@@ -125,14 +125,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         campaignBody.daily_budget = campaignConfig.budgetValue;
       }
 
-      console.log('[DEBUG campaign payload]', JSON.stringify(campaignBody));
-      let campaignResult;
-      try {
-        campaignResult = await metaAPI.createCampaign(metaAccountId, campaignBody, user.id);
-      } catch (err: any) {
-        console.error('[DEBUG] Erro em createCampaign:', err instanceof MetaAPIError ? err.toJSON() : err.message);
-        throw err;
-      }
+      const campaignResult = await metaAPI.createCampaign(metaAccountId, campaignBody, user.id);
       const metaCampaignId = campaignResult!.id;
       await humanDelay();
 
@@ -188,20 +181,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           });
           Object.assign(adsetBody, extras);
 
-          console.log('[DEBUG adset payload]', JSON.stringify({
-            objective: campaignConfig.objective,
-            bidStrategy: campaignConfig.bidStrategy,
-            budgetType: campaignConfig.budgetType,
-            pixelId: adsetType.pixelId,
-            ...adsetBody,
-          }));
-          let adsetResult;
-          try {
-            adsetResult = await metaAPI.createAdSet(metaAccountId, metaCampaignId, adsetBody, user.id);
-          } catch (err: any) {
-            console.error('[DEBUG] Erro em createAdSet:', err instanceof MetaAPIError ? err.toJSON() : err.message);
-            throw err;
-          }
+          const adsetResult = await metaAPI.createAdSet(metaAccountId, metaCampaignId, adsetBody, user.id);
           const metaAdsetId = adsetResult!.id;
           await humanDelay();
 

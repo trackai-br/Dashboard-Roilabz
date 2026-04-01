@@ -8,11 +8,11 @@
  * BR-017: OUTCOME_ENGAGEMENT sem pixel → POST_ENGAGEMENT
  * BR-018: OUTCOME_LEADS sem pixel → LEAD_GENERATION
  * BR-019: OUTCOME_APP_PROMOTION sem pixel → APP_INSTALLS
- * BR-020: pixel + BID_CAP/COST_CAP → OFFSITE_CONVERSIONS + promoted_object
- *         pixel + LOWEST_COST_WITHOUT_CAP → objetivo mapeado (sem OFFSITE_CONVERSIONS)
- *         Meta API v23.0 rejeita OFFSITE_CONVERSIONS sem bid constraints explícitas
+ * BR-020: pixel (qualquer bid strategy) → OFFSITE_CONVERSIONS + promoted_object
+ *         sem pixel → objetivo mapeado
  * BR-021: objetivo desconhecido sem pixel → LINK_CLICKS (fallback seguro)
- * BR-022: LOWEST_COST_WITHOUT_CAP → bid_strategy ausente no payload
+ * BR-022: LOWEST_COST_WITHOUT_CAP → bid_strategy EXPLÍCITO no payload (não omitido)
+ *         Meta API v23.0 + OUTCOME_SALES: omitir bid_strategy → Meta assume ROAS → erro 2490487
  * BR-023: LOWEST_COST_WITH_BID_CAP + bidCapValue → bid_strategy + bid_amount
  * BR-024: LOWEST_COST_WITH_BID_CAP sem bidCapValue → bid_strategy ausente
  * BR-025: COST_CAP + bidCapValue → bid_strategy + bid_amount
@@ -116,25 +116,25 @@ describe('buildAdsetPayloadExtras — optimization_goal com pixel', () => {
     expect(result.promoted_object?.pixel_id).toBe('px_abc');
   });
 
-  // pixel + LOWEST_COST_WITHOUT_CAP → objetivo mapeado (sem OFFSITE_CONVERSIONS)
-  it('BR-020: pixel + LOWEST_COST_WITHOUT_CAP → objetivo mapeado (não OFFSITE_CONVERSIONS)', () => {
+  // pixel + LOWEST_COST_WITHOUT_CAP → OFFSITE_CONVERSIONS (pixel sempre ativa conversão)
+  it('BR-020: pixel + LOWEST_COST_WITHOUT_CAP → OFFSITE_CONVERSIONS (pixel sempre ativa conversão)', () => {
     const result = buildAdsetPayloadExtras({
       objective: 'OUTCOME_SALES',
       pixelId: 'px_123',
       conversionEvent: 'PURCHASE',
       bidStrategy: 'LOWEST_COST_WITHOUT_CAP',
     });
-    expect(result.optimization_goal).toBe('LINK_CLICKS');
+    expect(result.optimization_goal).toBe('OFFSITE_CONVERSIONS');
   });
 
-  it('BR-020: pixel + LOWEST_COST_WITHOUT_CAP → promoted_object ausente', () => {
+  it('BR-020: pixel + LOWEST_COST_WITHOUT_CAP → promoted_object presente', () => {
     const result = buildAdsetPayloadExtras({
       objective: 'OUTCOME_SALES',
       pixelId: 'px_123',
       conversionEvent: 'PURCHASE',
       bidStrategy: 'LOWEST_COST_WITHOUT_CAP',
     });
-    expect(result.promoted_object).toBeUndefined();
+    expect(result.promoted_object).toEqual({ pixel_id: 'px_123', custom_event_type: 'PURCHASE' });
   });
 
   it('sem pixel → promoted_object ausente no payload', () => {
@@ -145,18 +145,32 @@ describe('buildAdsetPayloadExtras — optimization_goal com pixel', () => {
     expect(result.promoted_object).toBeUndefined();
   });
 
-  it('REGRESSÃO BUG-2490487-V2: LOWEST_COST_WITHOUT_CAP + pixel NÃO deve usar OFFSITE_CONVERSIONS', () => {
-    // Bug: Meta API v23.0 rejeita OFFSITE_CONVERSIONS sem bid constraints → erro 2490487
-    // Apenas BID_CAP/COST_CAP podem usar OFFSITE_CONVERSIONS (pois fornecem bid_amount)
+  it('BR-020: pixel + LOWEST_COST_WITHOUT_CAP → bid_strategy EXPLÍCITO (BR-022)', () => {
+    // Garantia dupla: pixel não omite bid_strategy
+    const result = buildAdsetPayloadExtras({
+      objective: 'OUTCOME_SALES',
+      pixelId: 'px_123',
+      conversionEvent: 'PURCHASE',
+      bidStrategy: 'LOWEST_COST_WITHOUT_CAP',
+    });
+    expect(result.bid_strategy).toBe('LOWEST_COST_WITHOUT_CAP');
+    expect(result.bid_amount).toBeUndefined();
+  });
+
+  it('REGRESSÃO BUG-2490487-V3: LOWEST_COST_WITHOUT_CAP + pixel → OFFSITE_CONVERSIONS + bid_strategy EXPLÍCITO', () => {
+    // Fix confirmado por debug logs: omitir bid_strategy para OUTCOME_SALES faz Meta assumir ROAS → 2490487
+    // Pixel presente → OFFSITE_CONVERSIONS + promoted_object sempre
+    // LOWEST_COST_WITHOUT_CAP → bid_strategy enviado explicitamente (não omitido)
     const result = buildAdsetPayloadExtras({
       objective: 'OUTCOME_SALES',
       pixelId: 'px_real',
       conversionEvent: 'PURCHASE',
       bidStrategy: 'LOWEST_COST_WITHOUT_CAP',
     });
-    expect(result.optimization_goal).not.toBe('OFFSITE_CONVERSIONS');
-    expect(result.optimization_goal).toBe('LINK_CLICKS');
-    expect(result.promoted_object).toBeUndefined();
+    expect(result.optimization_goal).toBe('OFFSITE_CONVERSIONS');
+    expect(result.promoted_object).toEqual({ pixel_id: 'px_real', custom_event_type: 'PURCHASE' });
+    expect(result.bid_strategy).toBe('LOWEST_COST_WITHOUT_CAP');
+    expect(result.bid_amount).toBeUndefined();
   });
 });
 
@@ -189,12 +203,12 @@ describe('buildAdsetPayloadExtras — optimization_goal sempre presente', () => 
 // --- BR-022 a BR-025: bid_strategy no payload ---
 
 describe('buildAdsetPayloadExtras — bid_strategy', () => {
-  it('BR-022: LOWEST_COST_WITHOUT_CAP → bid_strategy ausente no payload', () => {
+  it('BR-022: LOWEST_COST_WITHOUT_CAP → bid_strategy EXPLÍCITO no payload', () => {
     const result = buildAdsetPayloadExtras({
       objective: 'OUTCOME_TRAFFIC',
       bidStrategy: 'LOWEST_COST_WITHOUT_CAP',
     });
-    expect(result.bid_strategy).toBeUndefined();
+    expect(result.bid_strategy).toBe('LOWEST_COST_WITHOUT_CAP');
     expect(result.bid_amount).toBeUndefined();
   });
 
@@ -310,7 +324,7 @@ describe('buildAdsetPayloadExtras — combinações reais', () => {
     expect(result.daily_budget).toBe(5000);
   });
 
-  it('OUTCOME_SALES + SEM pixel + custo mais baixo → LINK_CLICKS, sem bid_strategy, sem promoted_object', () => {
+  it('OUTCOME_SALES + SEM pixel + custo mais baixo → LINK_CLICKS, bid_strategy explícito, sem promoted_object', () => {
     const result = buildAdsetPayloadExtras({
       objective: 'OUTCOME_SALES',
       bidStrategy: 'LOWEST_COST_WITHOUT_CAP',
@@ -319,12 +333,12 @@ describe('buildAdsetPayloadExtras — combinações reais', () => {
     });
     expect(result.optimization_goal).toBe('LINK_CLICKS');
     expect(result.promoted_object).toBeUndefined();
-    expect(result.bid_strategy).toBeUndefined();
+    expect(result.bid_strategy).toBe('LOWEST_COST_WITHOUT_CAP');
     expect(result.daily_budget).toBeUndefined(); // CBO → no daily_budget no adset
   });
 
-  it('OUTCOME_SALES + COM pixel + custo mais baixo (ABO) → LINK_CLICKS, sem bid_strategy, sem promoted_object', () => {
-    // Este é o caso que gerava erro 2490487 — pixel presente mas sem bid constraints
+  it('OUTCOME_SALES + COM pixel + custo mais baixo (ABO) → OFFSITE_CONVERSIONS + bid_strategy + promoted_object', () => {
+    // Fix confirmado: pixel → OFFSITE_CONVERSIONS, bid_strategy explícito para evitar 2490487
     const result = buildAdsetPayloadExtras({
       objective: 'OUTCOME_SALES',
       pixelId: 'px_real',
@@ -333,9 +347,9 @@ describe('buildAdsetPayloadExtras — combinações reais', () => {
       budgetType: 'ABO',
       budgetValue: 5000,
     });
-    expect(result.optimization_goal).toBe('LINK_CLICKS');
-    expect(result.promoted_object).toBeUndefined();
-    expect(result.bid_strategy).toBeUndefined();
+    expect(result.optimization_goal).toBe('OFFSITE_CONVERSIONS');
+    expect(result.promoted_object).toEqual({ pixel_id: 'px_real', custom_event_type: 'PURCHASE' });
+    expect(result.bid_strategy).toBe('LOWEST_COST_WITHOUT_CAP');
     expect(result.daily_budget).toBe(5000); // ABO → daily_budget no adset
   });
 

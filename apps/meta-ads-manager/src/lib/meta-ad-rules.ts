@@ -7,11 +7,13 @@
  * BR-017: OUTCOME_ENGAGEMENT sem pixel → POST_ENGAGEMENT
  * BR-018: OUTCOME_LEADS sem pixel → LEAD_GENERATION
  * BR-019: OUTCOME_APP_PROMOTION sem pixel → APP_INSTALLS
- * BR-020: pixel + BID_CAP/COST_CAP → OFFSITE_CONVERSIONS + promoted_object completo
- *         pixel + LOWEST_COST_WITHOUT_CAP → objetivo mapeado (sem OFFSITE_CONVERSIONS)
- *         Meta API v23.0 rejeita OFFSITE_CONVERSIONS sem bid constraints (bid_amount) → erro 2490487
+ * BR-020: pixel (qualquer bid strategy) → OFFSITE_CONVERSIONS + promoted_object completo
+ *         sem pixel → objetivo mapeado por getOptimizationGoalForObjective
+ *         NOTA: LOWEST_COST_WITHOUT_CAP com pixel ainda exige OFFSITE_CONVERSIONS;
+ *         a diferença é que bid_strategy deve ser enviado EXPLICITAMENTE (não omitido).
+ *         Meta API v23.0 + OUTCOME_SALES: omitir bid_strategy causa Meta assumir ROAS → erro 2490487
  * BR-021: objetivo desconhecido sem pixel → LINK_CLICKS (fallback seguro)
- * BR-022: LOWEST_COST_WITHOUT_CAP → bid_strategy ausente no payload
+ * BR-022: LOWEST_COST_WITHOUT_CAP → bid_strategy EXPLÍCITO no payload (não omitido)
  * BR-023: LOWEST_COST_WITH_BID_CAP + bidCapValue → bid_strategy + bid_amount
  * BR-024: LOWEST_COST_WITH_BID_CAP sem bidCapValue → bid_strategy ausente
  * BR-025: COST_CAP + bidCapValue → bid_strategy + bid_amount
@@ -64,30 +66,30 @@ export interface AdsetPayloadExtras {
 export function buildAdsetPayloadExtras(input: BuildAdsetExtrasInput): AdsetPayloadExtras {
   const { objective, pixelId, conversionEvent, bidStrategy, bidCapValue, budgetType, budgetValue } = input;
 
-  // BR-020: OFFSITE_CONVERSIONS + promoted_object apenas quando bidStrategy fornece
-  // bid constraints explícitas (BID_CAP ou COST_CAP). Para LOWEST_COST_WITHOUT_CAP,
-  // mesmo com pixel, Meta API v23.0 rejeita OFFSITE_CONVERSIONS sem bid_amount → erro 2490487.
-  const needsConversionOptimization =
-    !!pixelId && (bidStrategy === 'LOWEST_COST_WITH_BID_CAP' || bidStrategy === 'COST_CAP');
-
+  // BR-020: pixel presente → sempre OFFSITE_CONVERSIONS + promoted_object,
+  // independente da bid strategy. Sem pixel → objetivo mapeado.
   const result: AdsetPayloadExtras = {
-    optimization_goal: needsConversionOptimization
+    optimization_goal: pixelId
       ? 'OFFSITE_CONVERSIONS'
       : getOptimizationGoalForObjective(objective),
   };
 
-  if (needsConversionOptimization && conversionEvent) {
+  if (pixelId && conversionEvent) {
     result.promoted_object = {
       pixel_id: pixelId as string,
       custom_event_type: conversionEvent,
     };
   }
 
-  // BR-022: LOWEST_COST_WITHOUT_CAP → bid_strategy ausente
+  // BR-022: LOWEST_COST_WITHOUT_CAP → bid_strategy EXPLÍCITO (não omitido).
+  //         Meta API v23.0 + OUTCOME_SALES: omitir bid_strategy faz Meta assumir ROAS
+  //         internamente → erro 2490487 mesmo sem bid_amount no payload.
   // BR-023: LOWEST_COST_WITH_BID_CAP + bidCapValue > 0 → bid_strategy + bid_amount
   // BR-024: LOWEST_COST_WITH_BID_CAP sem bidCapValue → bid_strategy ausente
   // BR-025: COST_CAP + bidCapValue > 0 → bid_strategy + bid_amount
-  if (
+  if (bidStrategy === 'LOWEST_COST_WITHOUT_CAP') {
+    result.bid_strategy = 'LOWEST_COST_WITHOUT_CAP';
+  } else if (
     (bidStrategy === 'LOWEST_COST_WITH_BID_CAP' || bidStrategy === 'COST_CAP') &&
     bidCapValue != null && bidCapValue > 0
   ) {

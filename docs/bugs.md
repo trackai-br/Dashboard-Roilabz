@@ -4,18 +4,25 @@ projeto: Roi-Labz
 atualizado: 2026-04-01
 ---
 
-## [BUG-2490487-V2] LOWEST_COST_WITHOUT_CAP + pixel → OFFSITE_CONVERSIONS sem bid constraints → erro 2490487
+## [BUG-2490487-V3] OUTCOME_SALES + LOWEST_COST_WITHOUT_CAP: omitir bid_strategy → Meta assume ROAS → erro 2490487
 - **Data:** 2026-04-01
-- **Contexto:** Publicação com Volume Mais Alto (LOWEST_COST_WITHOUT_CAP) + pixel configurado falhava com erro 2490487 em 100% das campanhas. O erro anterior (BUG-2490487) só tratou o caso sem pixel; o caso com pixel + sem bid constraints não foi coberto.
-- **Causa raiz:** `buildAdsetPayloadExtras` usava `pixelId` como único critério para decidir `optimization_goal`: pixel presente → `OFFSITE_CONVERSIONS`. Meta API v23.0 rejeita `OFFSITE_CONVERSIONS` sem bid constraints explícitas (`bid_amount` para BID_CAP, ou `roas_average_floor` para ROAS). Para `LOWEST_COST_WITHOUT_CAP`, não há bid constraints → Meta rejeita.
-- **Por que BID_CAP funcionava:** Ao usar BID_CAP, `bid_strategy` + `bid_amount` eram enviados junto com `OFFSITE_CONVERSIONS` → Meta aceitava. Sem bid constraints (LOWEST_COST_WITHOUT_CAP), a combinação era inválida.
-- **Detalhes:** Fix em `src/lib/meta-ad-rules.ts` → `buildAdsetPayloadExtras`:
-  - Introduzido `needsConversionOptimization = pixelId && (bidStrategy === BID_CAP || COST_CAP)`
-  - `OFFSITE_CONVERSIONS` + `promoted_object` apenas quando `needsConversionOptimization = true`
-  - Para `LOWEST_COST_WITHOUT_CAP` (mesmo com pixel): usa `getOptimizationGoalForObjective(objective)` → `LINK_CLICKS` para OUTCOME_SALES
-  - 4 testes novos + 1 teste de regressão adicionados
-- **Status:** CORRIGIDO
-- **Tags:** [[bulk-publish]] [[Meta-API]] [[optimization_goal]] [[OFFSITE_CONVERSIONS]] [[bid-strategy]] [[BR-020]]
+- **Contexto:** Após BUG-2490487-V2 (que mudou OFFSITE_CONVERSIONS → LINK_CLICKS para LOWEST_COST_WITHOUT_CAP + pixel), o erro 2490487 PERSISTIU. Debug logs confirmaram: payload enviado tinha `optimization_goal: LINK_CLICKS` sem `bid_strategy` — e Meta rejeitava com o mesmo erro.
+- **Causa raiz confirmada via debug logs:** Dois problemas simultâneos:
+  1. `LINK_CLICKS` não é `optimization_goal` válido para `OUTCOME_SALES` na Meta API v23.0. Precisa ser `OFFSITE_CONVERSIONS` (com pixel) ou outro mapeamento sem pixel.
+  2. Omitir `bid_strategy` completamente para `OUTCOME_SALES` faz a Meta assumir internamente uma estratégia com restrições de lance (ROAS ou BID_CAP) → rejeita com 2490487 mesmo sem `bid_amount` no payload.
+- **Por que BID_CAP funcionava:** Enviava `bid_strategy: LOWEST_COST_WITH_BID_CAP` + `bid_amount` + `OFFSITE_CONVERSIONS` → constraints explícitas → Meta aceitava.
+- **Fix correto em `src/lib/meta-ad-rules.ts` → `buildAdsetPayloadExtras`:**
+  - Pixel presente → SEMPRE `OFFSITE_CONVERSIONS` + `promoted_object` (independente do bid strategy)
+  - `LOWEST_COST_WITHOUT_CAP` → `bid_strategy: 'LOWEST_COST_WITHOUT_CAP'` EXPLÍCITO no payload (não omitido)
+  - BID_CAP/COST_CAP com valor → `bid_strategy` + `bid_amount` (comportamento anterior mantido)
+- **Status:** CORRIGIDO (V3) — 34 testes passando
+- **Tags:** [[bulk-publish]] [[Meta-API]] [[optimization_goal]] [[OFFSITE_CONVERSIONS]] [[bid-strategy]] [[BR-020]] [[BR-022]]
+
+## [BUG-2490487-V2] LOWEST_COST_WITHOUT_CAP + pixel → OFFSITE_CONVERSIONS sem bid constraints → HIPÓTESE INCORRETA
+- **Data:** 2026-04-01
+- **Contexto:** Hipótese de que Meta API v23.0 rejeita OFFSITE_CONVERSIONS sem bid_amount estava INCORRETA para LOWEST_COST_WITHOUT_CAP. O erro real era a combinação de LINK_CLICKS (inválido para OUTCOME_SALES) + ausência de bid_strategy.
+- **Status:** SUPERSEDIDO por BUG-2490487-V3
+- **Tags:** [[bulk-publish]] [[Meta-API]] [[optimization_goal]] [[bid-strategy]]
 
 ## [BUG-DIST] buildDistributionMap multiplicava campanhas por contas × páginas (resultado 24 em vez de 6)
 - **Data:** 2026-04-01
