@@ -66,11 +66,11 @@ export default function Tab3Campaign() {
       <div>
         <h3
           className="text-lg font-bold mb-1"
-          style={{ color: 'var(--color-primary)', fontFamily: "'Space Grotesk', system-ui, sans-serif" }}
+          style={{ color: 'var(--color-text-primary)', fontFamily: "var(--font-sans)" }}
         >
           Objetivo da Campanha
         </h3>
-        <p className="text-sm mb-4" style={{ color: 'var(--color-secondary)' }}>
+        <p className="text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>
           Selecione o objetivo principal das campanhas
         </p>
 
@@ -84,14 +84,14 @@ export default function Tab3Campaign() {
                 className="p-4 rounded-lg border text-left transition-all duration-150"
                 style={{
                   backgroundColor: isSelected ? 'rgba(57, 255, 20, 0.06)' : 'rgba(255, 255, 255, 0.02)',
-                  borderColor: isSelected ? 'rgba(57, 255, 20, 0.5)' : 'var(--border-light)',
+                  borderColor: isSelected ? 'rgba(57, 255, 20, 0.5)' : 'var(--color-border)',
                   boxShadow: isSelected ? '0 0 12px rgba(57, 255, 20, 0.15)' : 'none',
                 }}
               >
                 <span className="text-2xl mb-2 block">{obj.icon}</span>
                 <p
                   className="text-sm font-medium"
-                  style={{ color: isSelected ? 'var(--neon-green)' : 'var(--color-primary)' }}
+                  style={{ color: isSelected ? 'var(--color-accent)' : 'var(--color-text-primary)' }}
                 >
                   {obj.label}
                 </p>
@@ -104,18 +104,18 @@ export default function Tab3Campaign() {
       {/* Section 2 — Nomenclatura */}
       <div
         className="p-4 rounded-lg border"
-        style={{ backgroundColor: 'rgba(255, 255, 255, 0.02)', borderColor: 'var(--border-light)' }}
+        style={{ backgroundColor: 'rgba(255, 255, 255, 0.02)', borderColor: 'var(--color-border)' }}
       >
         <h4
           className="text-sm font-bold mb-3"
-          style={{ color: 'var(--color-primary)', fontFamily: "'Space Grotesk', system-ui, sans-serif" }}
+          style={{ color: 'var(--color-text-primary)', fontFamily: "var(--font-sans)" }}
         >
           Nomenclatura da Campanha
         </h4>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="block text-xs mb-1" style={{ color: 'var(--color-secondary)' }}>
+            <label className="block text-xs mb-1" style={{ color: 'var(--color-text-secondary)' }}>
               Número da Leva
             </label>
             <input
@@ -125,14 +125,14 @@ export default function Tab3Campaign() {
               placeholder="08"
               className="w-full px-3 py-2 rounded-lg border text-sm outline-none"
               style={{
-                backgroundColor: 'var(--bg-input)',
-                borderColor: 'var(--border-light)',
-                color: 'var(--color-primary)',
+                backgroundColor: 'var(--color-bg-input)',
+                borderColor: 'var(--color-border)',
+                color: 'var(--color-text-primary)',
               }}
             />
           </div>
           <div>
-            <label className="block text-xs mb-1" style={{ color: 'var(--color-secondary)' }}>
+            <label className="block text-xs mb-1" style={{ color: 'var(--color-text-secondary)' }}>
               Identificação do Criativo
             </label>
             <input
@@ -142,9 +142,9 @@ export default function Tab3Campaign() {
               placeholder="Cr1"
               className="w-full px-3 py-2 rounded-lg border text-sm outline-none"
               style={{
-                backgroundColor: 'var(--bg-input)',
-                borderColor: 'var(--border-light)',
-                color: 'var(--color-primary)',
+                backgroundColor: 'var(--color-bg-input)',
+                borderColor: 'var(--color-border)',
+                color: 'var(--color-text-primary)',
               }}
             />
           </div>
@@ -152,13 +152,13 @@ export default function Tab3Campaign() {
 
         {/* Preview */}
         <div className="p-3 rounded-lg" style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}>
-          <p className="text-xs mb-1" style={{ color: 'var(--color-tertiary)' }}>Preview do nome:</p>
-          <p className="text-sm font-mono break-all" style={{ color: 'var(--neon-cyan)' }}>
+          <p className="text-xs mb-1" style={{ color: 'var(--color-text-tertiary)' }}>Preview do nome:</p>
+          <p className="text-sm font-mono break-all" style={{ color: 'var(--color-info)' }}>
             {namingPreview}
           </p>
         </div>
 
-        <p className="text-xs mt-2" style={{ color: 'var(--color-tertiary)' }}>
+        <p className="text-xs mt-2" style={{ color: 'var(--color-text-tertiary)' }}>
           Os valores entre colchetes são preenchidos automaticamente pelo sistema na hora da publicação.
         </p>
       </div>
@@ -166,11 +166,11 @@ export default function Tab3Campaign() {
       {/* Section 3 — Tipo de Orçamento */}
       <div
         className="p-4 rounded-lg border"
-        style={{ backgroundColor: 'rgba(255, 255, 255, 0.02)', borderColor: 'var(--border-light)' }}
+        style={{ backgroundColor: 'rgba(255, 255, 255, 0.02)', borderColor: 'var(--color-border)' }}
       >
         <h4
           className="text-sm font-bold mb-3"
-          style={{ color: 'var(--color-primary)', fontFamily: "'Space Grotesk', system-ui, sans-serif" }}
+          style={{ color: 'var(--color-text-primary)', fontFamily: "var(--font-sans)" }}
         >
           Tipo de Orçamento
         </h4>
@@ -186,8 +186,8 @@ export default function Tab3Campaign() {
                 className="flex-1 py-2.5 rounded-lg border text-sm font-medium transition-all"
                 style={{
                   backgroundColor: isActive ? 'rgba(57, 255, 20, 0.1)' : 'transparent',
-                  borderColor: isActive ? 'rgba(57, 255, 20, 0.5)' : 'var(--border-light)',
-                  color: isActive ? 'var(--neon-green)' : 'var(--color-secondary)',
+                  borderColor: isActive ? 'rgba(57, 255, 20, 0.5)' : 'var(--color-border)',
+                  color: isActive ? 'var(--color-accent)' : 'var(--color-text-secondary)',
                 }}
               >
                 {type}
@@ -196,11 +196,11 @@ export default function Tab3Campaign() {
           })}
         </div>
 
-        <label className="block text-xs mb-1" style={{ color: 'var(--color-secondary)' }}>
+        <label className="block text-xs mb-1" style={{ color: 'var(--color-text-secondary)' }}>
           {config.budgetType === 'CBO' ? 'Orçamento por campanha' : 'Orçamento por conjunto (adset)'}
         </label>
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium" style={{ color: 'var(--color-secondary)' }}>R$</span>
+          <span className="text-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>R$</span>
           <input
             type="number"
             min={0}
@@ -210,17 +210,17 @@ export default function Tab3Campaign() {
             placeholder="0.00"
             className="flex-1 px-3 py-2 rounded-lg border text-sm outline-none"
             style={{
-              backgroundColor: 'var(--bg-input)',
-              borderColor: 'var(--border-light)',
-              color: 'var(--color-primary)',
+              backgroundColor: 'var(--color-bg-input)',
+              borderColor: 'var(--color-border)',
+              color: 'var(--color-text-primary)',
             }}
           />
         </div>
 
         {config.budgetValue > 0 && (
-          <p className="text-xs mt-2" style={{ color: 'var(--color-secondary)' }}>
+          <p className="text-xs mt-2" style={{ color: 'var(--color-text-secondary)' }}>
             Total programado:{' '}
-            <strong style={{ color: 'var(--neon-green)' }}>
+            <strong style={{ color: 'var(--color-accent)' }}>
               R$ {totalBudget.toFixed(2)}
             </strong>
             {config.budgetType === 'CBO'
@@ -233,11 +233,11 @@ export default function Tab3Campaign() {
       {/* Section 4 — Estratégia de Lance */}
       <div
         className="p-4 rounded-lg border"
-        style={{ backgroundColor: 'rgba(255, 255, 255, 0.02)', borderColor: 'var(--border-light)' }}
+        style={{ backgroundColor: 'rgba(255, 255, 255, 0.02)', borderColor: 'var(--color-border)' }}
       >
         <h4
           className="text-sm font-bold mb-3"
-          style={{ color: 'var(--color-primary)', fontFamily: "'Space Grotesk', system-ui, sans-serif" }}
+          style={{ color: 'var(--color-text-primary)', fontFamily: "var(--font-sans)" }}
         >
           Estratégia de Lance
         </h4>
@@ -247,9 +247,9 @@ export default function Tab3Campaign() {
           onChange={(e) => update({ bidStrategy: e.target.value })}
           className="w-full px-3 py-2 rounded-lg border text-sm outline-none"
           style={{
-            backgroundColor: 'var(--bg-input)',
-            borderColor: 'var(--border-light)',
-            color: 'var(--color-primary)',
+            backgroundColor: 'var(--color-bg-input)',
+            borderColor: 'var(--color-border)',
+            color: 'var(--color-text-primary)',
           }}
         >
           {BID_STRATEGIES.map((s) => (
@@ -258,7 +258,7 @@ export default function Tab3Campaign() {
         </select>
 
         {needsBidCapField && (
-          <p className="text-xs mt-2" style={{ color: 'var(--color-tertiary)' }}>
+          <p className="text-xs mt-2" style={{ color: 'var(--color-text-tertiary)' }}>
             O valor do lance será definido por tipo de adset na próxima etapa.
           </p>
         )}
@@ -267,11 +267,11 @@ export default function Tab3Campaign() {
       {/* Section 5 — Status */}
       <div
         className="p-4 rounded-lg border"
-        style={{ backgroundColor: 'rgba(255, 255, 255, 0.02)', borderColor: 'var(--border-light)' }}
+        style={{ backgroundColor: 'rgba(255, 255, 255, 0.02)', borderColor: 'var(--color-border)' }}
       >
         <h4
           className="text-sm font-bold mb-3"
-          style={{ color: 'var(--color-primary)', fontFamily: "'Space Grotesk', system-ui, sans-serif" }}
+          style={{ color: 'var(--color-text-primary)', fontFamily: "var(--font-sans)" }}
         >
           Status da Campanha
         </h4>
@@ -280,7 +280,7 @@ export default function Tab3Campaign() {
           {(['ACTIVE', 'PAUSED'] as const).map((status) => {
             const isActive = config.campaignStatus === status;
             const label = status === 'ACTIVE' ? 'Ativa' : 'Pausada';
-            const color = status === 'ACTIVE' ? 'var(--neon-green)' : 'var(--color-warning)';
+            const color = status === 'ACTIVE' ? 'var(--color-accent)' : 'var(--color-warning)';
             return (
               <button
                 key={status}
@@ -288,8 +288,8 @@ export default function Tab3Campaign() {
                 className="flex-1 py-2.5 rounded-lg border text-sm font-medium transition-all"
                 style={{
                   backgroundColor: isActive ? `${status === 'ACTIVE' ? 'rgba(57, 255, 20, 0.1)' : 'rgba(255, 183, 3, 0.1)'}` : 'transparent',
-                  borderColor: isActive ? color : 'var(--border-light)',
-                  color: isActive ? color : 'var(--color-secondary)',
+                  borderColor: isActive ? color : 'var(--color-border)',
+                  color: isActive ? color : 'var(--color-text-secondary)',
                 }}
               >
                 {label}

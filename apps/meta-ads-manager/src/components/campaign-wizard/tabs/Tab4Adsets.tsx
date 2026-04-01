@@ -120,18 +120,18 @@ export default function Tab4Adsets() {
           onClick={addType}
           className="px-4 py-2 rounded-lg text-sm font-semibold transition-all"
           style={{
-            backgroundColor: 'var(--neon-green)',
-            color: 'var(--bg-deepest)',
-            fontFamily: "'Space Grotesk', system-ui, sans-serif",
+            backgroundColor: 'var(--color-accent)',
+            color: 'var(--color-bg-base)',
+            fontFamily: "var(--font-sans)",
             boxShadow: '0 0 12px rgba(57, 255, 20, 0.3)',
           }}
         >
           + Adicionar Tipo de Adset
         </button>
-        <span className="text-xs" style={{ color: 'var(--color-secondary)' }}>
+        <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
           {state.adsetTypes.length} tipo{state.adsetTypes.length !== 1 && 's'} configurado{state.adsetTypes.length !== 1 && 's'}
           {' | '}
-          <strong style={{ color: totalConfigured === totalProgrammed ? 'var(--neon-green)' : 'var(--color-warning)' }}>
+          <strong style={{ color: totalConfigured === totalProgrammed ? 'var(--color-accent)' : 'var(--color-warning)' }}>
             {totalConfigured}
           </strong>{' '}
           adsets de {totalProgrammed} programados
@@ -149,7 +149,7 @@ export default function Tab4Adsets() {
 
       {/* Empty State */}
       {state.adsetTypes.length === 0 && (
-        <div className="p-8 rounded-lg text-center" style={{ backgroundColor: 'rgba(255, 255, 255, 0.02)', border: '1px dashed var(--border-light)' }}>
+        <div className="p-8 rounded-lg text-center" style={{ backgroundColor: 'rgba(255, 255, 255, 0.02)', border: '1px dashed var(--color-border)' }}>
           <svg
             width="48" height="48"
             className="w-12 h-12 mx-auto mb-3 opacity-30"
@@ -157,11 +157,11 @@ export default function Tab4Adsets() {
             viewBox="0 0 24 24"
             stroke="currentColor"
             strokeWidth={1}
-            style={{ color: 'var(--color-secondary)' }}
+            style={{ color: 'var(--color-text-secondary)' }}
           >
             <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
           </svg>
-          <p className="text-sm" style={{ color: 'var(--color-secondary)' }}>
+          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
             Nenhum tipo de adset configurado. Clique em &ldquo;+ Adicionar Tipo de Adset&rdquo; para começar.
           </p>
         </div>
@@ -187,10 +187,10 @@ export default function Tab4Adsets() {
       {removeConfirm && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 10001, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)' }} onClick={() => setRemoveConfirm(null)} />
-          <div className="relative rounded-xl p-6 border shadow-xl max-w-sm" style={{ backgroundColor: '#1a1a2e', borderColor: 'var(--border-light)' }}>
-            <p className="text-sm font-medium mb-4" style={{ color: 'var(--color-primary)' }}>Remover este tipo de adset?</p>
+          <div className="relative rounded-xl p-6 border shadow-xl max-w-sm" style={{ backgroundColor: '#1a1a2e', borderColor: 'var(--color-border)' }}>
+            <p className="text-sm font-medium mb-4" style={{ color: 'var(--color-text-primary)' }}>Remover este tipo de adset?</p>
             <div className="flex gap-3 justify-end">
-              <button onClick={() => setRemoveConfirm(null)} className="px-4 py-2 rounded-lg border text-sm" style={{ borderColor: 'var(--border-light)', color: 'var(--color-secondary)' }}>Cancelar</button>
+              <button onClick={() => setRemoveConfirm(null)} className="px-4 py-2 rounded-lg border text-sm" style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-secondary)' }}>Cancelar</button>
               <button onClick={() => removeType(removeConfirm)} className="px-4 py-2 rounded-lg text-sm font-medium" style={{ backgroundColor: 'var(--color-danger)', color: '#fff' }}>Remover</button>
             </div>
           </div>
@@ -248,32 +248,32 @@ function AdsetTypeCard({ adsetType, expanded, onToggle, onUpdate, onRemove, need
   };
 
   const inputStyle = {
-    backgroundColor: 'var(--bg-input)',
-    borderColor: 'var(--border-light)',
-    color: 'var(--color-primary)',
+    backgroundColor: 'var(--color-bg-input)',
+    borderColor: 'var(--color-border)',
+    color: 'var(--color-text-primary)',
   };
 
   return (
     <div
       className="rounded-lg border overflow-hidden"
-      style={{ borderColor: expanded ? 'rgba(57, 255, 20, 0.3)' : 'var(--border-light)', backgroundColor: 'rgba(255, 255, 255, 0.02)' }}
+      style={{ borderColor: expanded ? 'rgba(57, 255, 20, 0.3)' : 'var(--color-border)', backgroundColor: 'rgba(255, 255, 255, 0.02)' }}
     >
       {/* Header — always visible */}
       <div className="flex items-center gap-3 px-4 py-3 cursor-pointer" onClick={onToggle}>
         <svg
           width="16" height="16"
           className="w-4 h-4 transition-transform flex-shrink-0"
-          style={{ color: 'var(--color-secondary)', transform: expanded ? 'rotate(90deg)' : 'rotate(0)' }}
+          style={{ color: 'var(--color-text-secondary)', transform: expanded ? 'rotate(90deg)' : 'rotate(0)' }}
           fill="currentColor" viewBox="0 0 20 20"
         >
           <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
         </svg>
-        <span className="flex-1 text-sm font-medium truncate" style={{ color: 'var(--color-primary)' }}>
+        <span className="flex-1 text-sm font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>
           {adsetType.name || 'Tipo sem nome'}
         </span>
         <span
           className="px-2 py-0.5 rounded-full text-xs font-medium"
-          style={{ backgroundColor: 'rgba(0, 240, 255, 0.1)', color: 'var(--neon-cyan)', border: '1px solid rgba(0, 240, 255, 0.3)' }}
+          style={{ backgroundColor: 'rgba(0, 240, 255, 0.1)', color: 'var(--color-info)', border: '1px solid rgba(0, 240, 255, 0.3)' }}
         >
           {adsetType.adsetCount * adsetType.campaignsCount} adsets
         </span>
@@ -291,7 +291,7 @@ function AdsetTypeCard({ adsetType, expanded, onToggle, onUpdate, onRemove, need
 
       {/* Expanded content */}
       {expanded && (
-        <div className="px-4 pb-4 space-y-4 border-t" style={{ borderTopColor: 'var(--border-light)' }}>
+        <div className="px-4 pb-4 space-y-4 border-t" style={{ borderTopColor: 'var(--color-border)' }}>
           {/* a) Nome */}
           <Field label="Nome do Adset">
             <input
@@ -325,7 +325,7 @@ function AdsetTypeCard({ adsetType, expanded, onToggle, onUpdate, onRemove, need
               />
             </Field>
           </div>
-          <p className="text-xs" style={{ color: 'var(--color-tertiary)' }}>
+          <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
             Distribuição: {adsetType.adsetCount} adsets × {adsetType.campaignsCount} campanha{adsetType.campaignsCount > 1 && 's'} = {adsetType.adsetCount * adsetType.campaignsCount} adsets totais
           </p>
 
@@ -369,7 +369,7 @@ function AdsetTypeCard({ adsetType, expanded, onToggle, onUpdate, onRemove, need
                 </div>
               )}
               {hasCreativeFiles && unusedCreatives.length === 0 && adsetType.creativesInAdset.filter(Boolean).length > 0 && (
-                <p className="text-xs px-1" style={{ color: 'var(--color-tertiary)' }}>
+                <p className="text-xs px-1" style={{ color: 'var(--color-text-tertiary)' }}>
                   Todos os criativos já foram adicionados.
                 </p>
               )}
@@ -392,7 +392,7 @@ function AdsetTypeCard({ adsetType, expanded, onToggle, onUpdate, onRemove, need
           {needsBidCap && (
             <Field label="Meta de Desempenho (Bid Cap)">
               <div className="flex items-center gap-2">
-                <span className="text-sm" style={{ color: 'var(--color-secondary)' }}>R$</span>
+                <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>R$</span>
                 <input
                   type="number" min={0} step={0.01}
                   value={(adsetType.bidCapValue || 0) / 100 || ''}
@@ -453,8 +453,8 @@ function AdsetTypeCard({ adsetType, expanded, onToggle, onUpdate, onRemove, need
                     className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs transition-all"
                     style={{
                       backgroundColor: isSelected ? 'rgba(57, 255, 20, 0.08)' : 'transparent',
-                      borderColor: isSelected ? 'rgba(57, 255, 20, 0.4)' : 'var(--border-light)',
-                      color: isSelected ? 'var(--neon-green)' : 'var(--color-secondary)',
+                      borderColor: isSelected ? 'rgba(57, 255, 20, 0.4)' : 'var(--color-border)',
+                      color: isSelected ? 'var(--color-accent)' : 'var(--color-text-secondary)',
                     }}
                   >
                     <span>{c.flag}</span>
@@ -471,7 +471,7 @@ function AdsetTypeCard({ adsetType, expanded, onToggle, onUpdate, onRemove, need
               {(['ACTIVE', 'PAUSED'] as const).map((status) => {
                 const isActive = adsetType.adsetStatus === status;
                 const label = status === 'ACTIVE' ? 'Ativo' : 'Pausado';
-                const color = status === 'ACTIVE' ? 'var(--neon-green)' : 'var(--color-warning)';
+                const color = status === 'ACTIVE' ? 'var(--color-accent)' : 'var(--color-warning)';
                 return (
                   <button
                     key={status}
@@ -479,8 +479,8 @@ function AdsetTypeCard({ adsetType, expanded, onToggle, onUpdate, onRemove, need
                     className="flex-1 py-2 rounded-lg border text-sm font-medium transition-all"
                     style={{
                       backgroundColor: isActive ? (status === 'ACTIVE' ? 'rgba(57, 255, 20, 0.1)' : 'rgba(255, 183, 3, 0.1)') : 'transparent',
-                      borderColor: isActive ? color : 'var(--border-light)',
-                      color: isActive ? color : 'var(--color-secondary)',
+                      borderColor: isActive ? color : 'var(--color-border)',
+                      color: isActive ? color : 'var(--color-text-secondary)',
                     }}
                   >
                     {label}
@@ -491,7 +491,7 @@ function AdsetTypeCard({ adsetType, expanded, onToggle, onUpdate, onRemove, need
           </Field>
 
           {/* Delete button */}
-          <div className="pt-4 mt-2 border-t" style={{ borderTopColor: 'var(--border-light)' }}>
+          <div className="pt-4 mt-2 border-t" style={{ borderTopColor: 'var(--color-border)' }}>
             <button
               onClick={onRemove}
               className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all hover:bg-red-500/10"
@@ -513,7 +513,7 @@ function AdsetTypeCard({ adsetType, expanded, onToggle, onUpdate, onRemove, need
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="pt-3">
-      <label className="block text-xs mb-1.5" style={{ color: 'var(--color-secondary)' }}>{label}</label>
+      <label className="block text-xs mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>{label}</label>
       {children}
     </div>
   );

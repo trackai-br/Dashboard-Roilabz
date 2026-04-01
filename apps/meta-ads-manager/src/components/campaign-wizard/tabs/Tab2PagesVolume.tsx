@@ -108,11 +108,11 @@ export default function Tab2PagesVolume() {
       <div>
         <h3
           className="text-lg font-bold mb-1"
-          style={{ color: 'var(--color-primary)', fontFamily: "'Space Grotesk', system-ui, sans-serif" }}
+          style={{ color: 'var(--color-text-primary)', fontFamily: "var(--font-sans)" }}
         >
           Páginas Empresariais
         </h3>
-        <p className="text-sm mb-4" style={{ color: 'var(--color-secondary)' }}>
+        <p className="text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>
           Selecione as páginas onde as campanhas serão vinculadas
         </p>
 
@@ -121,7 +121,7 @@ export default function Tab2PagesVolume() {
             <p className="text-sm" style={{ color: 'var(--color-warning)' }}>Selecione pelo menos uma conta na etapa anterior.</p>
           </div>
         ) : pagesLoading ? (
-          <div className="animate-pulse text-sm py-8 text-center" style={{ color: 'var(--color-secondary)' }}>
+          <div className="animate-pulse text-sm py-8 text-center" style={{ color: 'var(--color-text-secondary)' }}>
             Carregando páginas...
           </div>
         ) : pages.length === 0 ? (
@@ -151,7 +151,7 @@ export default function Tab2PagesVolume() {
                       ? 'rgba(112, 112, 128, 0.2)'
                       : isSelected
                       ? 'rgba(57, 255, 20, 0.5)'
-                      : 'var(--border-light)',
+                      : 'var(--color-border)',
                     opacity: isFull ? 0.5 : 1,
                     boxShadow: isSelected ? '0 0 12px rgba(57, 255, 20, 0.15)' : 'none',
                   }}
@@ -159,12 +159,12 @@ export default function Tab2PagesVolume() {
                   <div className="flex items-start justify-between mb-2">
                     <p
                       className="text-sm font-medium truncate"
-                      style={{ color: isSelected ? 'var(--neon-green)' : isFull ? 'var(--color-tertiary)' : 'var(--color-primary)' }}
+                      style={{ color: isSelected ? 'var(--color-accent)' : isFull ? 'var(--color-text-tertiary)' : 'var(--color-text-primary)' }}
                     >
                       {page.name}
                     </p>
                     {isSelected && (
-                      <svg width="16" height="16" className="w-4 h-4 flex-shrink-0 ml-1" style={{ color: 'var(--neon-green)' }} fill="currentColor" viewBox="0 0 20 20">
+                      <svg width="16" height="16" className="w-4 h-4 flex-shrink-0 ml-1" style={{ color: 'var(--color-accent)' }} fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                     )}
@@ -180,7 +180,7 @@ export default function Tab2PagesVolume() {
                         }}
                       />
                     </div>
-                    <span className="text-xs whitespace-nowrap" style={{ color: 'var(--color-tertiary)' }}>
+                    <span className="text-xs whitespace-nowrap" style={{ color: 'var(--color-text-tertiary)' }}>
                       {page.loading ? '...' : `${page.activeAdsets}/${MAX_ADSETS}`}
                     </span>
                   </div>
@@ -194,14 +194,14 @@ export default function Tab2PagesVolume() {
       {/* Section 2: Volume */}
       <div
         className="p-4 rounded-lg border"
-        style={{ backgroundColor: 'rgba(255, 255, 255, 0.02)', borderColor: 'var(--border-light)' }}
+        style={{ backgroundColor: 'rgba(255, 255, 255, 0.02)', borderColor: 'var(--color-border)' }}
       >
-        <h4 className="text-sm font-bold mb-3" style={{ color: 'var(--color-primary)', fontFamily: "'Space Grotesk', system-ui, sans-serif" }}>
+        <h4 className="text-sm font-bold mb-3" style={{ color: 'var(--color-text-primary)', fontFamily: "var(--font-sans)" }}>
           Definição de Volume
         </h4>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
           <div>
-            <label className="block text-xs mb-1" style={{ color: 'var(--color-secondary)' }}>Adsets por campanha</label>
+            <label className="block text-xs mb-1" style={{ color: 'var(--color-text-secondary)' }}>Adsets por campanha</label>
             <input
               type="number"
               min={1}
@@ -210,14 +210,14 @@ export default function Tab2PagesVolume() {
               onChange={(e) => dispatch({ type: 'SET_VOLUME', payload: { adsetsPerCampaign: parseInt(e.target.value) || 0 } })}
               className="w-full px-3 py-2 rounded-lg border text-sm outline-none"
               style={{
-                backgroundColor: 'var(--bg-input)',
-                borderColor: 'var(--border-light)',
-                color: 'var(--color-primary)',
+                backgroundColor: 'var(--color-bg-input)',
+                borderColor: 'var(--color-border)',
+                color: 'var(--color-text-primary)',
               }}
             />
           </div>
           <div>
-            <label className="block text-xs mb-1" style={{ color: 'var(--color-secondary)' }}>Número de campanhas</label>
+            <label className="block text-xs mb-1" style={{ color: 'var(--color-text-secondary)' }}>Número de campanhas</label>
             <input
               type="number"
               min={1}
@@ -225,23 +225,23 @@ export default function Tab2PagesVolume() {
               onChange={(e) => dispatch({ type: 'SET_VOLUME', payload: { totalCampaigns: parseInt(e.target.value) || 0 } })}
               className="w-full px-3 py-2 rounded-lg border text-sm outline-none"
               style={{
-                backgroundColor: 'var(--bg-input)',
-                borderColor: 'var(--border-light)',
-                color: 'var(--color-primary)',
+                backgroundColor: 'var(--color-bg-input)',
+                borderColor: 'var(--color-border)',
+                color: 'var(--color-text-primary)',
               }}
             />
           </div>
         </div>
-        <div className="flex gap-4 text-xs" style={{ color: 'var(--color-secondary)' }}>
-          <span>Total de adsets: <strong style={{ color: 'var(--neon-green)' }}>{totalAdsets}</strong></span>
-          <span>Páginas necessárias: <strong style={{ color: 'var(--neon-cyan)' }}>~{pagesNeeded}</strong></span>
+        <div className="flex gap-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+          <span>Total de adsets: <strong style={{ color: 'var(--color-accent)' }}>{totalAdsets}</strong></span>
+          <span>Páginas necessárias: <strong style={{ color: 'var(--color-info)' }}>~{pagesNeeded}</strong></span>
         </div>
       </div>
 
       {/* Section 3: Distribution Preview */}
       {(state.distributionMap.length > 0 || distributionErrors.length > 0) && (
         <div>
-          <h4 className="text-sm font-bold mb-2" style={{ color: 'var(--color-primary)', fontFamily: "'Space Grotesk', system-ui, sans-serif" }}>
+          <h4 className="text-sm font-bold mb-2" style={{ color: 'var(--color-text-primary)', fontFamily: "var(--font-sans)" }}>
             Preview da Distribuição
           </h4>
 
@@ -254,23 +254,23 @@ export default function Tab2PagesVolume() {
           )}
 
           {state.distributionMap.length > 0 && (
-            <div className="rounded-lg border overflow-hidden" style={{ borderColor: 'var(--border-light)' }}>
+            <div className="rounded-lg border overflow-hidden" style={{ borderColor: 'var(--color-border)' }}>
               <table className="w-full text-sm">
                 <thead>
                   <tr style={{ backgroundColor: 'rgba(255,255,255,0.03)' }}>
-                    <th className="px-3 py-2 text-left text-xs font-medium" style={{ color: 'var(--color-secondary)' }}>Campanha</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium" style={{ color: 'var(--color-secondary)' }}>Página</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium" style={{ color: 'var(--color-secondary)' }}>Conta</th>
-                    <th className="px-3 py-2 text-right text-xs font-medium" style={{ color: 'var(--color-secondary)' }}>Adsets</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>Campanha</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>Página</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>Conta</th>
+                    <th className="px-3 py-2 text-right text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>Adsets</th>
                   </tr>
                 </thead>
                 <tbody>
                   {state.distributionMap.map((entry, i) => (
-                    <tr key={i} style={{ borderTop: '1px solid var(--border-light)' }}>
-                      <td className="px-3 py-2" style={{ color: 'var(--color-primary)' }}>Campanha {entry.campaignIndex}</td>
-                      <td className="px-3 py-2" style={{ color: 'var(--neon-green)' }}>{entry.pageName}</td>
-                      <td className="px-3 py-2 text-xs" style={{ color: 'var(--color-tertiary)' }}>{entry.accountId}</td>
-                      <td className="px-3 py-2 text-right" style={{ color: 'var(--neon-cyan)' }}>{entry.adsetCount}</td>
+                    <tr key={i} style={{ borderTop: '1px solid var(--color-border)' }}>
+                      <td className="px-3 py-2" style={{ color: 'var(--color-text-primary)' }}>Campanha {entry.campaignIndex}</td>
+                      <td className="px-3 py-2" style={{ color: 'var(--color-accent)' }}>{entry.pageName}</td>
+                      <td className="px-3 py-2 text-xs" style={{ color: 'var(--color-text-tertiary)' }}>{entry.accountId}</td>
+                      <td className="px-3 py-2 text-right" style={{ color: 'var(--color-info)' }}>{entry.adsetCount}</td>
                     </tr>
                   ))}
                 </tbody>

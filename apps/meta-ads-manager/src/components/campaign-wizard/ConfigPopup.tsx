@@ -174,13 +174,13 @@ export default function ConfigPopup({ onClose, onSaved }: ConfigPopupProps) {
         {/* Header */}
         <div
           className="flex items-center justify-between px-6 py-4 border-b"
-          style={{ borderBottomColor: 'var(--border-light)' }}
+          style={{ borderBottomColor: 'var(--color-border)' }}
         >
           <h2
             className="text-xl font-bold"
             style={{
-              color: 'var(--neon-green)',
-              fontFamily: "'Space Grotesk', system-ui, sans-serif",
+              color: 'var(--color-accent)',
+              fontFamily: "var(--font-sans)",
               letterSpacing: '0.03em',
               textShadow: '0 0 12px rgba(57, 255, 20, 0.3)',
             }}
@@ -190,7 +190,7 @@ export default function ConfigPopup({ onClose, onSaved }: ConfigPopupProps) {
           <button
             onClick={handleClose}
             className="p-2 rounded-lg transition-colors hover:bg-white/10"
-            style={{ color: 'var(--color-secondary)' }}
+            style={{ color: 'var(--color-text-secondary)' }}
             aria-label="Fechar"
           >
             <svg width="20" height="20" className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -202,7 +202,7 @@ export default function ConfigPopup({ onClose, onSaved }: ConfigPopupProps) {
         {/* Tabs */}
         <div
           className="flex items-center gap-1 px-6 border-b overflow-x-auto"
-          style={{ borderBottomColor: 'var(--border-light)' }}
+          style={{ borderBottomColor: 'var(--color-border)' }}
         >
           {TABS.map((tab) => {
             const isActive = state.currentStep === tab.index;
@@ -214,12 +214,12 @@ export default function ConfigPopup({ onClose, onSaved }: ConfigPopupProps) {
                 className="flex items-center gap-1.5 px-4 py-3 text-sm font-medium whitespace-nowrap transition-all relative"
                 style={{
                   color: isActive
-                    ? 'var(--neon-green)'
+                    ? 'var(--color-accent)'
                     : isCompleted
                     ? 'var(--color-success)'
-                    : 'var(--color-secondary)',
+                    : 'var(--color-text-secondary)',
                   opacity: isActive || isCompleted ? 1 : 0.6,
-                  fontFamily: "'Space Grotesk', system-ui, sans-serif",
+                  fontFamily: "var(--font-sans)",
                   letterSpacing: '0.03em',
                 }}
               >
@@ -233,7 +233,7 @@ export default function ConfigPopup({ onClose, onSaved }: ConfigPopupProps) {
                   <span
                     className="absolute bottom-0 left-0 right-0 h-0.5"
                     style={{
-                      backgroundColor: 'var(--neon-green)',
+                      backgroundColor: 'var(--color-accent)',
                       boxShadow: '0 0 8px rgba(57, 255, 20, 0.5)',
                     }}
                   />
@@ -251,7 +251,7 @@ export default function ConfigPopup({ onClose, onSaved }: ConfigPopupProps) {
         {/* Footer */}
         <div
           className="flex items-center justify-between px-6 py-4 border-t"
-          style={{ borderTopColor: 'var(--border-light)' }}
+          style={{ borderTopColor: 'var(--color-border)' }}
         >
           <button
             onClick={handleBack}
@@ -259,13 +259,13 @@ export default function ConfigPopup({ onClose, onSaved }: ConfigPopupProps) {
             className="px-5 py-2 rounded-lg border text-sm font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed"
             style={{
               borderColor: 'rgba(57, 255, 20, 0.3)',
-              color: 'var(--neon-green)',
-              fontFamily: "'Space Grotesk', system-ui, sans-serif",
+              color: 'var(--color-accent)',
+              fontFamily: "var(--font-sans)",
             }}
           >
             Voltar
           </button>
-          <span className="text-xs" style={{ color: 'var(--color-tertiary)' }}>
+          <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
             Etapa {state.currentStep + 1} de 7
           </span>
           <button
@@ -273,9 +273,9 @@ export default function ConfigPopup({ onClose, onSaved }: ConfigPopupProps) {
             disabled={!canAdvance()}
             className="px-5 py-2 rounded-lg text-sm font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
             style={{
-              backgroundColor: canAdvance() ? 'var(--neon-green)' : 'rgba(57, 255, 20, 0.3)',
-              color: 'var(--bg-deepest)',
-              fontFamily: "'Space Grotesk', system-ui, sans-serif",
+              backgroundColor: canAdvance() ? 'var(--color-accent)' : 'rgba(57, 255, 20, 0.3)',
+              color: 'var(--color-bg-base)',
+              fontFamily: "var(--font-sans)",
               letterSpacing: '0.03em',
               boxShadow: canAdvance() ? '0 0 12px rgba(57, 255, 20, 0.3)' : 'none',
             }}
@@ -291,19 +291,19 @@ export default function ConfigPopup({ onClose, onSaved }: ConfigPopupProps) {
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)' }} onClick={() => setShowConfirmClose(false)} />
           <div
             className="relative rounded-xl p-6 border shadow-xl max-w-md"
-            style={{ backgroundColor: '#1a1a2e', borderColor: 'var(--border-light)' }}
+            style={{ backgroundColor: '#1a1a2e', borderColor: 'var(--color-border)' }}
           >
-            <p className="text-lg font-medium mb-2" style={{ color: 'var(--color-primary)' }}>
+            <p className="text-lg font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
               Sair da configuração?
             </p>
-            <p className="text-sm mb-6" style={{ color: 'var(--color-secondary)' }}>
+            <p className="text-sm mb-6" style={{ color: 'var(--color-text-secondary)' }}>
               Seu progresso será salvo como rascunho. Deseja sair?
             </p>
             <div className="flex gap-3 justify-end">
               <button
                 onClick={() => setShowConfirmClose(false)}
                 className="px-4 py-2 rounded-lg border text-sm"
-                style={{ borderColor: 'var(--border-light)', color: 'var(--color-secondary)' }}
+                style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-secondary)' }}
               >
                 Cancelar
               </button>

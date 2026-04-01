@@ -65,11 +65,11 @@ export default function CreativePoolStep() {
       <div>
         <h3
           className="text-lg font-bold"
-          style={{ color: 'var(--color-primary)', fontFamily: "'Space Grotesk', system-ui, sans-serif" }}
+          style={{ color: 'var(--color-text-primary)', fontFamily: "var(--font-sans)" }}
         >
           Pool de Criativos
         </h3>
-        <p className="text-sm" style={{ color: 'var(--color-secondary)' }}>
+        <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
           Carregue criativos de uma pasta do Google Drive e defina como distribuir entre campanhas
         </p>
       </div>
@@ -79,7 +79,7 @@ export default function CreativePoolStep() {
         className="p-4 rounded-lg"
         style={{ backgroundColor: 'rgba(57, 255, 20, 0.03)', border: '1px solid rgba(57, 255, 20, 0.1)' }}
       >
-        <label className="block text-xs font-medium mb-2" style={{ color: 'var(--color-secondary)' }}>
+        <label className="block text-xs font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
           Link da pasta do Google Drive
         </label>
         <div className="flex gap-2">
@@ -92,7 +92,7 @@ export default function CreativePoolStep() {
             style={{
               backgroundColor: 'rgba(255, 255, 255, 0.05)',
               border: '1px solid rgba(57, 255, 20, 0.2)',
-              color: 'var(--color-primary)',
+              color: 'var(--color-text-primary)',
               outline: 'none',
             }}
             onKeyDown={(e) => e.key === 'Enter' && handleFetch()}
@@ -102,9 +102,9 @@ export default function CreativePoolStep() {
             disabled={isLoading || !linkInput.trim()}
             className="px-4 py-2 rounded-lg text-sm font-medium transition-all disabled:opacity-40"
             style={{
-              backgroundColor: 'var(--neon-green)',
-              color: 'var(--bg-deepest)',
-              fontFamily: "'Space Grotesk', system-ui, sans-serif",
+              backgroundColor: 'var(--color-accent)',
+              color: 'var(--color-bg-base)',
+              fontFamily: "var(--font-sans)",
             }}
           >
             {isLoading ? 'Buscando...' : 'Buscar'}
@@ -116,7 +116,7 @@ export default function CreativePoolStep() {
           </p>
         )}
         {result?.diagnostics && (
-          <p className="text-xs mt-2" style={{ color: 'var(--color-tertiary)' }}>
+          <p className="text-xs mt-2" style={{ color: 'var(--color-text-tertiary)' }}>
             Pasta: {result.folderName} · {result.diagnostics.mediaFiles} arquivos de midia
             {result.diagnostics.images ? ` (${result.diagnostics.images} imagens` : ''}
             {result.diagnostics.videos ? `, ${result.diagnostics.videos} videos)` : result.diagnostics.images ? ')' : ''}
@@ -128,7 +128,7 @@ export default function CreativePoolStep() {
       {files.length > 0 && (
         <div>
           <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-medium" style={{ color: 'var(--color-primary)' }}>
+            <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
               {files.length} arquivo{files.length !== 1 ? 's' : ''} encontrado{files.length !== 1 ? 's' : ''}
             </span>
             <button
@@ -137,7 +137,7 @@ export default function CreativePoolStep() {
               style={{
                 backgroundColor: 'rgba(57, 255, 20, 0.1)',
                 border: '1px solid rgba(57, 255, 20, 0.3)',
-                color: 'var(--neon-green)',
+                color: 'var(--color-accent)',
               }}
             >
               Importar todos ({files.length})
@@ -154,7 +154,7 @@ export default function CreativePoolStep() {
                   className="relative rounded-lg overflow-hidden cursor-pointer transition-all group"
                   style={{
                     border: isSelected
-                      ? '2px solid var(--neon-green)'
+                      ? '2px solid var(--color-accent)'
                       : '2px solid rgba(255, 255, 255, 0.1)',
                     boxShadow: isSelected ? '0 0 12px rgba(57, 255, 20, 0.2)' : 'none',
                   }}
@@ -178,9 +178,9 @@ export default function CreativePoolStep() {
                   {isSelected && (
                     <div
                       className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full flex items-center justify-center"
-                      style={{ backgroundColor: 'var(--neon-green)' }}
+                      style={{ backgroundColor: 'var(--color-accent)' }}
                     >
-                      <svg width="12" height="12" fill="var(--bg-deepest)" viewBox="0 0 20 20">
+                      <svg width="12" height="12" fill="var(--color-bg-base)" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                     </div>
@@ -191,7 +191,7 @@ export default function CreativePoolStep() {
                     className="px-2 py-1.5 text-xs truncate"
                     style={{
                       backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                      color: 'var(--color-secondary)',
+                      color: 'var(--color-text-secondary)',
                     }}
                   >
                     {file.fileName}
@@ -209,7 +209,7 @@ export default function CreativePoolStep() {
           className="flex items-center justify-between p-3 rounded-lg"
           style={{ backgroundColor: 'rgba(57, 255, 20, 0.06)', border: '1px solid rgba(57, 255, 20, 0.15)' }}
         >
-          <span className="text-sm" style={{ color: 'var(--neon-green)' }}>
+          <span className="text-sm" style={{ color: 'var(--color-accent)' }}>
             {creativePool.length} criativo{creativePool.length !== 1 ? 's' : ''} selecionado{creativePool.length !== 1 ? 's' : ''}
           </span>
           <button
@@ -226,7 +226,7 @@ export default function CreativePoolStep() {
       <div>
         <h4
           className="text-sm font-bold mb-3"
-          style={{ color: 'var(--color-primary)', fontFamily: "'Space Grotesk', system-ui, sans-serif" }}
+          style={{ color: 'var(--color-text-primary)', fontFamily: "var(--font-sans)" }}
         >
           Modo de Distribuicao
         </h4>
@@ -249,11 +249,11 @@ export default function CreativePoolStep() {
                 <div>
                   <span
                     className="block text-sm font-medium"
-                    style={{ color: isActive ? 'var(--neon-green)' : 'var(--color-primary)' }}
+                    style={{ color: isActive ? 'var(--color-accent)' : 'var(--color-text-primary)' }}
                   >
                     {dm.label}
                   </span>
-                  <span className="block text-xs" style={{ color: 'var(--color-tertiary)' }}>
+                  <span className="block text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
                     {dm.desc}
                   </span>
                 </div>
@@ -271,30 +271,30 @@ export default function CreativePoolStep() {
         >
           <h4
             className="text-sm font-bold mb-3"
-            style={{ color: 'var(--color-primary)', fontFamily: "'Space Grotesk', system-ui, sans-serif" }}
+            style={{ color: 'var(--color-text-primary)', fontFamily: "var(--font-sans)" }}
           >
             Preview de Distribuicao
           </h4>
           <div className="space-y-2">
             {distributionMode === 'per_campaign' && (
-              <p className="text-xs" style={{ color: 'var(--color-secondary)' }}>
+              <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
                 {creativePool.length} criativo{creativePool.length !== 1 ? 's' : ''} → {creativePool.length} campanha{creativePool.length !== 1 ? 's' : ''} (1:1).
                 {creativePool.length < totalCampaigns &&
                   ` Campanhas sobrando: ${totalCampaigns - creativePool.length} ficarao sem criativo.`}
               </p>
             )}
             {distributionMode === 'sequential' && (
-              <p className="text-xs" style={{ color: 'var(--color-secondary)' }}>
+              <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
                 {creativePool.length} criativo{creativePool.length !== 1 ? 's' : ''} distribuido{creativePool.length !== 1 ? 's' : ''} em ordem ciclica pelos {totalCampaigns} conjuntos.
               </p>
             )}
             {distributionMode === 'random' && (
-              <p className="text-xs" style={{ color: 'var(--color-secondary)' }}>
+              <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
                 {creativePool.length} criativo{creativePool.length !== 1 ? 's' : ''} distribuido{creativePool.length !== 1 ? 's' : ''} aleatoriamente entre {totalCampaigns} conjuntos.
               </p>
             )}
             {distributionMode === 'manual' && (
-              <p className="text-xs" style={{ color: 'var(--color-secondary)' }}>
+              <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
                 Voce escolhera manualmente qual criativo vai em cada campanha na etapa de preview.
               </p>
             )}
@@ -322,7 +322,7 @@ export default function CreativePoolStep() {
               {creativePool.length > 8 && (
                 <div
                   className="w-8 h-8 rounded flex items-center justify-center text-xs"
-                  style={{ backgroundColor: 'rgba(255,255,255,0.05)', color: 'var(--color-tertiary)' }}
+                  style={{ backgroundColor: 'rgba(255,255,255,0.05)', color: 'var(--color-text-tertiary)' }}
                 >
                   +{creativePool.length - 8}
                 </div>

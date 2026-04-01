@@ -71,29 +71,29 @@ export function EditCampaignDrawer({
       />
 
       {/* Drawer */}
-      <div className="absolute right-0 top-0 bottom-0 w-96 shadow-lg overflow-y-auto" style={{ backgroundColor: 'var(--bg-card)' }}>
+      <div className="absolute right-0 top-0 bottom-0 w-96 shadow-lg overflow-y-auto" style={{ backgroundColor: 'var(--color-bg-surface)' }}>
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold font-display" style={{ color: 'var(--color-brand)' }}>
+            <h2 className="text-xl font-bold font-display" style={{ color: 'var(--color-accent-dark)' }}>
               Edit Campaign
             </h2>
             <button
               onClick={onClose}
-              style={{ color: 'var(--color-secondary)' }}
+              style={{ color: 'var(--color-text-secondary)' }}
             >
               ✕
             </button>
           </div>
 
           {error && (
-            <div className="mb-4 rounded-lg border p-3" style={{ backgroundColor: 'var(--color-danger-bg)', borderColor: 'var(--color-danger)' }}>
+            <div className="mb-4 rounded-lg border p-3" style={{ backgroundColor: 'rgba(255,45,120,0.06)', borderColor: 'var(--color-danger)' }}>
               <p className="text-sm" style={{ color: 'var(--color-danger)' }}>{error}</p>
             </div>
           )}
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-secondary)' }}>
+              <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
                 Status
               </label>
               <select
@@ -109,7 +109,7 @@ export function EditCampaignDrawer({
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-secondary)' }}>
+              <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
                 Daily Budget (USD)
               </label>
               <input
@@ -129,7 +129,7 @@ export function EditCampaignDrawer({
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-secondary)' }}>
+              <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
                 Start Date
               </label>
               <input
@@ -143,7 +143,7 @@ export function EditCampaignDrawer({
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-secondary)' }}>
+              <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
                 End Date
               </label>
               <input
@@ -161,7 +161,7 @@ export function EditCampaignDrawer({
             <button
               onClick={onClose}
               className="flex-1 rounded-lg border px-4 py-2 font-medium transition-colors"
-              style={{ borderColor: 'var(--color-tertiary)', color: 'var(--color-primary)' }}
+              style={{ borderColor: 'var(--color-text-tertiary)', color: 'var(--color-text-primary)' }}
             >
               Cancel
             </button>
@@ -169,7 +169,7 @@ export function EditCampaignDrawer({
               onClick={handleSave}
               disabled={updateMutation.isPending}
               className="flex-1 rounded-lg px-4 py-2 font-medium text-white disabled:opacity-50 transition-colors"
-              style={{ backgroundColor: 'var(--color-brand)' }}
+              style={{ backgroundColor: 'var(--color-accent-dark)' }}
             >
               {updateMutation.isPending ? 'Saving...' : 'Save'}
             </button>

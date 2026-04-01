@@ -199,7 +199,7 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
           strokeWidth={2}
           className="flex-shrink-0 transition-transform duration-200"
           style={{
-            color: 'var(--color-tertiary)',
+            color: 'var(--color-text-tertiary)',
             transform: batch.isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
           }}
         >
@@ -214,8 +214,8 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
           onClick={(e) => e.stopPropagation()}
           className="bg-transparent border-none outline-none text-sm font-semibold flex-1 min-w-0"
           style={{
-            color: isActive ? 'var(--neon-green)' : 'var(--color-primary)',
-            fontFamily: "'Space Grotesk', system-ui, sans-serif",
+            color: isActive ? 'var(--color-accent)' : 'var(--color-text-primary)',
+            fontFamily: "var(--font-sans)",
             letterSpacing: '0.03em',
           }}
         />
@@ -228,7 +228,7 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
               ? 'rgba(0, 255, 136, 0.15)'
               : 'rgba(255, 183, 3, 0.15)',
             color: isValid ? 'var(--color-success)' : 'var(--color-warning)',
-            fontFamily: "'Space Grotesk', system-ui, sans-serif",
+            fontFamily: "var(--font-sans)",
           }}
         >
           {isValid ? 'Completo' : 'Incompleto'}
@@ -240,7 +240,7 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
             onClick={(e) => { e.stopPropagation(); duplicateBatch(batch.id); }}
             className="p-1.5 rounded-md hover:bg-white/5 cursor-pointer focus:outline-none"
             title="Duplicar lote"
-            style={{ color: 'var(--color-tertiary)', transition: 'all 150ms cubic-bezier(0.16, 1, 0.3, 1)' }}
+            style={{ color: 'var(--color-text-tertiary)', transition: 'all 150ms cubic-bezier(0.16, 1, 0.3, 1)' }}
           >
             <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" />
@@ -264,7 +264,7 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
       {/* Summary — collapsed view */}
       {!batch.isExpanded && (
         <div className="px-4 pb-3">
-          <p className="text-xs" style={{ color: 'var(--color-tertiary)' }}>
+          <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
             {summary}
           </p>
         </div>
@@ -278,8 +278,8 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
             <label
               className="block text-xs font-medium mb-2"
               style={{
-                color: 'var(--color-secondary)',
-                fontFamily: "'Space Grotesk', system-ui, sans-serif",
+                color: 'var(--color-text-secondary)',
+                fontFamily: "var(--font-sans)",
               }}
             >
               Contas de Anuncio
@@ -298,8 +298,8 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
                     className="px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer focus:outline-none"
                     style={{
                       backgroundColor: isSelected ? 'rgba(57, 255, 20, 0.08)' : 'rgba(255, 255, 255, 0.03)',
-                      border: isSelected ? '1px solid rgba(57, 255, 20, 0.35)' : '1px solid var(--border-subtle)',
-                      color: isSelected ? 'var(--neon-green)' : 'var(--color-secondary)',
+                      border: isSelected ? '1px solid rgba(57, 255, 20, 0.35)' : '1px solid var(--color-border-subtle)',
+                      color: isSelected ? 'var(--color-accent)' : 'var(--color-text-secondary)',
                       transition: 'all 150ms cubic-bezier(0.16, 1, 0.3, 1)',
                     }}
                   >
@@ -321,8 +321,8 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
               <label
                 className="block text-xs font-medium mb-2"
                 style={{
-                  color: 'var(--color-secondary)',
-                  fontFamily: "'Space Grotesk', system-ui, sans-serif",
+                  color: 'var(--color-text-secondary)',
+                  fontFamily: "var(--font-sans)",
                 }}
               >
                 Paginas Facebook
@@ -342,8 +342,8 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
                         className="px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer focus:outline-none"
                         style={{
                           backgroundColor: isSelected ? 'rgba(0, 212, 255, 0.08)' : 'rgba(255, 255, 255, 0.03)',
-                          border: isSelected ? '1px solid rgba(0, 212, 255, 0.35)' : '1px solid var(--border-subtle)',
-                          color: isSelected ? 'var(--color-info)' : 'var(--color-secondary)',
+                          border: isSelected ? '1px solid rgba(0, 212, 255, 0.35)' : '1px solid var(--color-border-subtle)',
+                          color: isSelected ? 'var(--color-info)' : 'var(--color-text-secondary)',
                           transition: 'all 150ms cubic-bezier(0.16, 1, 0.3, 1)',
                         }}
                       >
@@ -358,7 +358,7 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
                   })}
                 </div>
               ) : (
-                <p className="text-xs" style={{ color: 'var(--color-tertiary)' }}>
+                <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
                   {batch.accounts.length > 0 ? 'Carregando paginas...' : 'Selecione uma conta primeiro'}
                 </p>
               )}
@@ -370,7 +370,7 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
             <div>
               <label
                 className="block text-xs font-medium mb-1"
-                style={{ color: 'var(--color-secondary)', fontFamily: "'Space Grotesk', system-ui, sans-serif" }}
+                style={{ color: 'var(--color-text-secondary)', fontFamily: "var(--font-sans)" }}
               >
                 Campanhas
               </label>
@@ -380,13 +380,13 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
                 value={batch.totalCampaigns}
                 onChange={(e) => handleVolumeChange('totalCampaigns', parseInt(e.target.value) || 1)}
                 className="input w-full text-sm"
-                style={{ fontFamily: "'Space Grotesk', system-ui, sans-serif" }}
+                style={{ fontFamily: "var(--font-sans)" }}
               />
             </div>
             <div>
               <label
                 className="block text-xs font-medium mb-1"
-                style={{ color: 'var(--color-secondary)', fontFamily: "'Space Grotesk', system-ui, sans-serif" }}
+                style={{ color: 'var(--color-text-secondary)', fontFamily: "var(--font-sans)" }}
               >
                 Adsets por campanha
               </label>
@@ -397,7 +397,7 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
                 value={batch.adsetsPerCampaign}
                 onChange={(e) => handleVolumeChange('adsetsPerCampaign', Math.min(250, parseInt(e.target.value) || 1))}
                 className="input w-full text-sm"
-                style={{ fontFamily: "'Space Grotesk', system-ui, sans-serif" }}
+                style={{ fontFamily: "var(--font-sans)" }}
               />
             </div>
           </div>
@@ -410,14 +410,14 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
               border: '1px solid rgba(57, 255, 20, 0.1)',
             }}
           >
-            <span className="text-xs" style={{ color: 'var(--color-secondary)' }}>
+            <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
               Total:
             </span>
             <span
               className="text-xs font-semibold"
               style={{
-                color: 'var(--neon-green)',
-                fontFamily: "'Space Grotesk', system-ui, sans-serif",
+                color: 'var(--color-accent)',
+                fontFamily: "var(--font-sans)",
               }}
             >
               {batch.totalCampaigns} campanha{batch.totalCampaigns !== 1 ? 's' : ''}
@@ -434,8 +434,8 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
               <label
                 className="block text-xs font-medium"
                 style={{
-                  color: 'var(--color-secondary)',
-                  fontFamily: "'Space Grotesk', system-ui, sans-serif",
+                  color: 'var(--color-text-secondary)',
+                  fontFamily: "var(--font-sans)",
                 }}
               >
                 Tipos de Conjunto (Ad Sets)
@@ -446,7 +446,7 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
                 style={{
                   backgroundColor: 'rgba(57, 255, 20, 0.08)',
                   border: '1px solid rgba(57, 255, 20, 0.25)',
-                  color: 'var(--neon-green)',
+                  color: 'var(--color-accent)',
                   transition: 'all 150ms cubic-bezier(0.16, 1, 0.3, 1)',
                 }}
               >
@@ -488,7 +488,7 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
                       value={adset.name}
                       onChange={(e) => updateBatchAdsetType(batch.id, adset.id, { name: e.target.value })}
                       className="bg-transparent border-none outline-none text-xs font-semibold"
-                      style={{ color: 'var(--color-primary)' }}
+                      style={{ color: 'var(--color-text-primary)' }}
                     />
                     <button
                       onClick={() => removeBatchAdsetType(batch.id, adset.id)}
@@ -505,7 +505,7 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
                   <div className="grid grid-cols-2 gap-2">
                     {/* Pixel */}
                     <div>
-                      <label className="block text-[10px] mb-1" style={{ color: 'var(--color-tertiary)' }}>Pixel</label>
+                      <label className="block text-[10px] mb-1" style={{ color: 'var(--color-text-tertiary)' }}>Pixel</label>
                       <select
                         value={adset.pixelId}
                         onChange={(e) => updateBatchAdsetType(batch.id, adset.id, { pixelId: e.target.value })}
@@ -521,7 +521,7 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
 
                     {/* Conversion Event */}
                     <div>
-                      <label className="block text-[10px] mb-1" style={{ color: 'var(--color-tertiary)' }}>Evento de Conversao</label>
+                      <label className="block text-[10px] mb-1" style={{ color: 'var(--color-text-tertiary)' }}>Evento de Conversao</label>
                       <select
                         value={adset.conversionEvent}
                         onChange={(e) => updateBatchAdsetType(batch.id, adset.id, { conversionEvent: e.target.value })}
@@ -536,7 +536,7 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
 
                     {/* Conversion Location */}
                     <div>
-                      <label className="block text-[10px] mb-1" style={{ color: 'var(--color-tertiary)' }}>Local de Conversao</label>
+                      <label className="block text-[10px] mb-1" style={{ color: 'var(--color-text-tertiary)' }}>Local de Conversao</label>
                       <select
                         value={adset.conversionLocation}
                         onChange={(e) => updateBatchAdsetType(batch.id, adset.id, { conversionLocation: e.target.value })}
@@ -551,7 +551,7 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
 
                     {/* Target Countries */}
                     <div>
-                      <label className="block text-[10px] mb-1" style={{ color: 'var(--color-tertiary)' }}>Paises</label>
+                      <label className="block text-[10px] mb-1" style={{ color: 'var(--color-text-tertiary)' }}>Paises</label>
                       <input
                         type="text"
                         value={adset.targetCountries.join(', ')}
@@ -566,7 +566,7 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
 
                     {/* Status */}
                     <div>
-                      <label className="block text-[10px] mb-1" style={{ color: 'var(--color-tertiary)' }}>Status</label>
+                      <label className="block text-[10px] mb-1" style={{ color: 'var(--color-text-tertiary)' }}>Status</label>
                       <div className="flex gap-1">
                         {(['PAUSED', 'ACTIVE'] as const).map((status) => (
                           <button
@@ -576,7 +576,7 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
                             style={{
                               backgroundColor: adset.adsetStatus === status ? 'rgba(57, 255, 20, 0.1)' : 'rgba(255,255,255,0.03)',
                               border: adset.adsetStatus === status ? '1px solid rgba(57, 255, 20, 0.4)' : '1px solid rgba(255,255,255,0.08)',
-                              color: adset.adsetStatus === status ? 'var(--neon-green)' : 'var(--color-tertiary)',
+                              color: adset.adsetStatus === status ? 'var(--color-accent)' : 'var(--color-text-tertiary)',
                             }}
                           >
                             {status === 'PAUSED' ? 'Pausado' : 'Ativo'}
@@ -587,7 +587,7 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
 
                     {/* Start Date */}
                     <div>
-                      <label className="block text-[10px] mb-1" style={{ color: 'var(--color-tertiary)' }}>Data de Inicio</label>
+                      <label className="block text-[10px] mb-1" style={{ color: 'var(--color-text-tertiary)' }}>Data de Inicio</label>
                       <input
                         type="date"
                         value={adset.startDate}
@@ -606,14 +606,14 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
           <div className="space-y-3">
             <label
               className="block text-xs font-medium"
-              style={{ color: 'var(--color-secondary)', fontFamily: "'Space Grotesk', system-ui, sans-serif" }}
+              style={{ color: 'var(--color-text-secondary)', fontFamily: "var(--font-sans)" }}
             >
               Configuracao da Campanha
             </label>
 
             {/* Objective */}
             <div>
-              <label className="block text-[10px] mb-1.5" style={{ color: 'var(--color-tertiary)' }}>Objetivo</label>
+              <label className="block text-[10px] mb-1.5" style={{ color: 'var(--color-text-tertiary)' }}>Objetivo</label>
               <div className="grid grid-cols-3 gap-1.5">
                 {OBJECTIVES.map((obj) => {
                   const isObj = batch.campaignConfig.objective === obj.value;
@@ -624,8 +624,8 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
                       className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-[10px] font-medium cursor-pointer focus:outline-none"
                       style={{
                         backgroundColor: isObj ? 'rgba(57, 255, 20, 0.1)' : 'rgba(255,255,255,0.03)',
-                        border: isObj ? '1px solid rgba(57, 255, 20, 0.35)' : '1px solid var(--border-subtle)',
-                        color: isObj ? 'var(--neon-green)' : 'var(--color-secondary)',
+                        border: isObj ? '1px solid rgba(57, 255, 20, 0.35)' : '1px solid var(--color-border-subtle)',
+                        color: isObj ? 'var(--color-accent)' : 'var(--color-text-secondary)',
                         transition: 'all 150ms cubic-bezier(0.16, 1, 0.3, 1)',
                       }}
                     >
@@ -640,7 +640,7 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
             {/* Budget Type + Value */}
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-[10px] mb-1" style={{ color: 'var(--color-tertiary)' }}>Orcamento</label>
+                <label className="block text-[10px] mb-1" style={{ color: 'var(--color-text-tertiary)' }}>Orcamento</label>
                 <div className="flex gap-1">
                   {(['CBO', 'ABO'] as const).map((bt) => (
                     <button
@@ -650,7 +650,7 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
                       style={{
                         backgroundColor: batch.campaignConfig.budgetType === bt ? 'rgba(57, 255, 20, 0.1)' : 'rgba(255,255,255,0.03)',
                         border: batch.campaignConfig.budgetType === bt ? '1px solid rgba(57, 255, 20, 0.4)' : '1px solid rgba(255,255,255,0.08)',
-                        color: batch.campaignConfig.budgetType === bt ? 'var(--neon-green)' : 'var(--color-tertiary)',
+                        color: batch.campaignConfig.budgetType === bt ? 'var(--color-accent)' : 'var(--color-text-tertiary)',
                       }}
                     >
                       {bt}
@@ -659,7 +659,7 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
                 </div>
               </div>
               <div>
-                <label className="block text-[10px] mb-1" style={{ color: 'var(--color-tertiary)' }}>
+                <label className="block text-[10px] mb-1" style={{ color: 'var(--color-text-tertiary)' }}>
                   Valor ({batch.campaignConfig.budgetType === 'CBO' ? 'por campanha' : 'por conjunto'})
                 </label>
                 <input
@@ -678,7 +678,7 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
             {/* Bid Strategy + Campaign Status */}
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-[10px] mb-1" style={{ color: 'var(--color-tertiary)' }}>Estrategia de Lance</label>
+                <label className="block text-[10px] mb-1" style={{ color: 'var(--color-text-tertiary)' }}>Estrategia de Lance</label>
                 <select
                   value={batch.campaignConfig.bidStrategy}
                   onChange={(e) => updateCampaignConfig({ bidStrategy: e.target.value })}
@@ -691,7 +691,7 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
                 </select>
               </div>
               <div>
-                <label className="block text-[10px] mb-1" style={{ color: 'var(--color-tertiary)' }}>Status da Campanha</label>
+                <label className="block text-[10px] mb-1" style={{ color: 'var(--color-text-tertiary)' }}>Status da Campanha</label>
                 <div className="flex gap-1">
                   {(['PAUSED', 'ACTIVE'] as const).map((status) => (
                     <button
@@ -701,7 +701,7 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
                       style={{
                         backgroundColor: batch.campaignConfig.campaignStatus === status ? 'rgba(57, 255, 20, 0.1)' : 'rgba(255,255,255,0.03)',
                         border: batch.campaignConfig.campaignStatus === status ? '1px solid rgba(57, 255, 20, 0.4)' : '1px solid rgba(255,255,255,0.08)',
-                        color: batch.campaignConfig.campaignStatus === status ? 'var(--neon-green)' : 'var(--color-tertiary)',
+                        color: batch.campaignConfig.campaignStatus === status ? 'var(--color-accent)' : 'var(--color-text-tertiary)',
                       }}
                     >
                       {status === 'PAUSED' ? 'Pausado' : 'Ativo'}
@@ -714,7 +714,7 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
             {/* Naming Pattern */}
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-[10px] mb-1" style={{ color: 'var(--color-tertiary)' }}>Numero da Leva</label>
+                <label className="block text-[10px] mb-1" style={{ color: 'var(--color-text-tertiary)' }}>Numero da Leva</label>
                 <input
                   type="text"
                   value={batch.campaignConfig.namingPattern.levaNumber}
@@ -724,12 +724,12 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
                   style={{
                     backgroundColor: 'rgba(255,255,255,0.05)',
                     border: '1px solid rgba(57, 255, 20, 0.15)',
-                    color: 'var(--color-primary)',
+                    color: 'var(--color-text-primary)',
                   }}
                 />
               </div>
               <div>
-                <label className="block text-[10px] mb-1" style={{ color: 'var(--color-tertiary)' }}>Label do Criativo</label>
+                <label className="block text-[10px] mb-1" style={{ color: 'var(--color-text-tertiary)' }}>Label do Criativo</label>
                 <input
                   type="text"
                   value={batch.campaignConfig.namingPattern.creativeLabel}
@@ -739,7 +739,7 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
                   style={{
                     backgroundColor: 'rgba(255,255,255,0.05)',
                     border: '1px solid rgba(57, 255, 20, 0.15)',
-                    color: 'var(--color-primary)',
+                    color: 'var(--color-text-primary)',
                   }}
                 />
               </div>
@@ -751,7 +751,7 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
                 className="px-3 py-2 rounded-lg"
                 style={{ backgroundColor: 'rgba(0, 240, 255, 0.05)', border: '1px solid rgba(0, 240, 255, 0.15)' }}
               >
-                <span className="text-[10px]" style={{ color: 'var(--color-tertiary)' }}>Preview: </span>
+                <span className="text-[10px]" style={{ color: 'var(--color-text-tertiary)' }}>Preview: </span>
                 <span className="text-[10px] font-mono" style={{ color: '#00f0ff' }}>
                   [DATA][CONTA][CP 01][LEVA {batch.campaignConfig.namingPattern.levaNumber || '??'}][PAGINA] {batch.campaignConfig.namingPattern.creativeLabel || '??'}
                 </span>

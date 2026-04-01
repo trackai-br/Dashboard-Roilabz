@@ -175,12 +175,12 @@ export default function Tab5Ads() {
   }, [destinationUrl, utmSource, utmMedium, utmCampaign, utmContent, utmTerm]);
 
   const inputStyle = {
-    backgroundColor: 'var(--bg-input)',
-    borderColor: 'var(--border-light)',
-    color: 'var(--color-primary)',
+    backgroundColor: 'var(--color-bg-input)',
+    borderColor: 'var(--color-border)',
+    color: 'var(--color-text-primary)',
   };
 
-  const headingFont = { fontFamily: "'Space Grotesk', system-ui, sans-serif" };
+  const headingFont = { fontFamily: "var(--font-sans)" };
 
   // Blur handler to sync on field exit
   const handleBlur = () => syncToContext();
@@ -192,14 +192,14 @@ export default function Tab5Ads() {
         className="flex items-start gap-3 p-4 rounded-lg"
         style={{ backgroundColor: 'rgba(0, 240, 255, 0.08)', border: '1px solid rgba(0, 240, 255, 0.3)' }}
       >
-        <svg width="20" height="20" className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} style={{ color: 'var(--neon-cyan)' }}>
+        <svg width="20" height="20" className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} style={{ color: 'var(--color-info)' }}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
         </svg>
         <div>
-          <p className="text-sm" style={{ color: 'var(--neon-cyan)' }}>
+          <p className="text-sm" style={{ color: 'var(--color-info)' }}>
             O nome de cada anuncio sera o mesmo do seu conjunto (adset) correspondente.
           </p>
-          <p className="text-xs mt-1" style={{ color: 'var(--color-secondary)' }}>
+          <p className="text-xs mt-1" style={{ color: 'var(--color-text-secondary)' }}>
             As paginas empresariais foram definidas automaticamente na Etapa 2 — o sistema distribui as paginas entre as campanhas.
           </p>
         </div>
@@ -207,7 +207,7 @@ export default function Tab5Ads() {
 
       {/* Section 1 — URL de Destino */}
       <div>
-        <h3 className="text-sm font-bold mb-2" style={{ color: 'var(--color-primary)', ...headingFont }}>
+        <h3 className="text-sm font-bold mb-2" style={{ color: 'var(--color-text-primary)', ...headingFont }}>
           URL de Destino
         </h3>
         <input
@@ -219,7 +219,7 @@ export default function Tab5Ads() {
           className="w-full px-3 py-2 rounded-lg border text-sm outline-none"
           style={{
             ...inputStyle,
-            borderColor: showUrlError ? 'var(--color-danger)' : 'var(--border-light)',
+            borderColor: showUrlError ? 'var(--color-danger)' : 'var(--color-border)',
           }}
         />
         {showUrlError && (
@@ -231,7 +231,7 @@ export default function Tab5Ads() {
 
       {/* Section 2 — Formato do Criativo */}
       <div>
-        <h3 className="text-sm font-bold mb-2" style={{ color: 'var(--color-primary)', ...headingFont }}>
+        <h3 className="text-sm font-bold mb-2" style={{ color: 'var(--color-text-primary)', ...headingFont }}>
           Formato do Criativo
         </h3>
         <div className="grid grid-cols-3 gap-3">
@@ -244,12 +244,12 @@ export default function Tab5Ads() {
                 className="p-3 rounded-lg border text-center transition-all"
                 style={{
                   backgroundColor: isSelected ? 'rgba(57, 255, 20, 0.06)' : 'rgba(255, 255, 255, 0.02)',
-                  borderColor: isSelected ? 'rgba(57, 255, 20, 0.5)' : 'var(--border-light)',
+                  borderColor: isSelected ? 'rgba(57, 255, 20, 0.5)' : 'var(--color-border)',
                   boxShadow: isSelected ? '0 0 12px rgba(57, 255, 20, 0.15)' : 'none',
                 }}
               >
                 <FormatIcon type={opt.icon} selected={isSelected} />
-                <p className="text-sm font-medium mt-1" style={{ color: isSelected ? 'var(--neon-green)' : 'var(--color-primary)' }}>
+                <p className="text-sm font-medium mt-1" style={{ color: isSelected ? 'var(--color-accent)' : 'var(--color-text-primary)' }}>
                   {opt.label}
                 </p>
               </button>
@@ -260,7 +260,7 @@ export default function Tab5Ads() {
 
       {/* Section 3 — Criativos (Google Drive) */}
       <div>
-        <h3 className="text-sm font-bold mb-2" style={{ color: 'var(--color-primary)', ...headingFont }}>
+        <h3 className="text-sm font-bold mb-2" style={{ color: 'var(--color-text-primary)', ...headingFont }}>
           Upload de Criativos via Google Drive
         </h3>
 
@@ -281,7 +281,7 @@ export default function Tab5Ads() {
             className="px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap disabled:opacity-30"
             style={{
               backgroundColor: 'rgba(57, 255, 20, 0.15)',
-              color: 'var(--neon-green)',
+              color: 'var(--color-accent)',
               border: '1px solid rgba(57, 255, 20, 0.3)',
             }}
           >
@@ -292,11 +292,11 @@ export default function Tab5Ads() {
         {/* Loading state */}
         {driveLoading && (
           <div className="flex items-center gap-2 p-3 rounded-lg mb-3" style={{ backgroundColor: 'rgba(57, 255, 20, 0.05)', border: '1px solid rgba(57, 255, 20, 0.2)' }}>
-            <svg className="animate-spin h-4 w-4" style={{ color: 'var(--neon-green)' }} viewBox="0 0 24 24" fill="none">
+            <svg className="animate-spin h-4 w-4" style={{ color: 'var(--color-accent)' }} viewBox="0 0 24 24" fill="none">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
             </svg>
-            <span className="text-sm" style={{ color: 'var(--neon-green)' }}>Buscando arquivos do Drive...</span>
+            <span className="text-sm" style={{ color: 'var(--color-accent)' }}>Buscando arquivos do Drive...</span>
           </div>
         )}
 
@@ -306,11 +306,11 @@ export default function Tab5Ads() {
         {/* Drive files list (from fetch) */}
         {driveFiles.length > 0 && !driveLoading && (
           <div className="mb-3">
-            <p className="text-xs font-medium mb-2" style={{ color: 'var(--neon-green)' }}>
-              {driveResult?.folderName && (<span style={{ color: 'var(--color-secondary)' }}>Pasta: {driveResult.folderName} — </span>)}
+            <p className="text-xs font-medium mb-2" style={{ color: 'var(--color-accent)' }}>
+              {driveResult?.folderName && (<span style={{ color: 'var(--color-text-secondary)' }}>Pasta: {driveResult.folderName} — </span>)}
               {driveFiles.length} criativos encontrados
               {driveResult?.diagnostics && (
-                <span style={{ color: 'var(--color-tertiary)' }}>
+                <span style={{ color: 'var(--color-text-tertiary)' }}>
                   {' '}({driveResult.diagnostics.images || 0} img, {driveResult.diagnostics.videos || 0} vid)
                 </span>
               )}
@@ -324,7 +324,7 @@ export default function Tab5Ads() {
                     className="flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-all"
                     style={{
                       backgroundColor: isChecked ? 'rgba(57, 255, 20, 0.04)' : 'rgba(255, 255, 255, 0.02)',
-                      border: `1px solid ${isChecked ? 'rgba(57, 255, 20, 0.25)' : 'var(--border-light)'}`,
+                      border: `1px solid ${isChecked ? 'rgba(57, 255, 20, 0.25)' : 'var(--color-border)'}`,
                     }}
                   >
                     <input
@@ -332,21 +332,21 @@ export default function Tab5Ads() {
                       checked={isChecked}
                       onChange={() => toggleDriveFile(file.id)}
                       className="rounded"
-                      style={{ accentColor: 'var(--neon-green)' }}
+                      style={{ accentColor: 'var(--color-accent)' }}
                     />
                     <span
                       className="px-2 py-0.5 rounded text-xs font-medium"
                       style={{
                         backgroundColor: file.type === 'video' ? 'rgba(139, 92, 246, 0.15)' : 'rgba(0, 240, 255, 0.1)',
-                        color: file.type === 'video' ? '#a78bfa' : 'var(--neon-cyan)',
+                        color: file.type === 'video' ? '#a78bfa' : 'var(--color-info)',
                       }}
                     >
                       {file.type === 'video' ? 'VID' : 'IMG'}
                     </span>
-                    <span className="flex-1 text-sm truncate" style={{ color: 'var(--color-primary)' }}>
+                    <span className="flex-1 text-sm truncate" style={{ color: 'var(--color-text-primary)' }}>
                       {file.fileName}
                     </span>
-                    <span className="text-xs" style={{ color: 'var(--color-tertiary)' }}>
+                    <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
                       {formatFileSize(file.size)}
                     </span>
                   </label>
@@ -358,34 +358,34 @@ export default function Tab5Ads() {
 
         {/* Separator */}
         <div className="flex items-center gap-3 my-4" style={{ opacity: 0.5 }}>
-          <div className="flex-1 h-px" style={{ backgroundColor: 'var(--border-light)' }} />
-          <span className="text-xs" style={{ color: 'var(--color-tertiary)' }}>OU adicione manualmente</span>
-          <div className="flex-1 h-px" style={{ backgroundColor: 'var(--border-light)' }} />
+          <div className="flex-1 h-px" style={{ backgroundColor: 'var(--color-border)' }} />
+          <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>OU adicione manualmente</span>
+          <div className="flex-1 h-px" style={{ backgroundColor: 'var(--color-border)' }} />
         </div>
 
         {/* Existing creative files list (selected from Drive + manual) */}
-        <p className="text-xs font-medium mb-2" style={{ color: 'var(--color-secondary)' }}>
+        <p className="text-xs font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
           Criativos selecionados ({creativeFiles.length})
         </p>
 
         {creativeFiles.length > 0 && (
           <div className="space-y-2 mb-3">
             {creativeFiles.map((file) => (
-              <div key={file.id} className="flex items-center gap-2 p-2 rounded-lg" style={{ backgroundColor: 'rgba(255, 255, 255, 0.03)', border: '1px solid var(--border-light)' }}>
+              <div key={file.id} className="flex items-center gap-2 p-2 rounded-lg" style={{ backgroundColor: 'rgba(255, 255, 255, 0.03)', border: '1px solid var(--color-border)' }}>
                 <span
                   className="px-2 py-0.5 rounded text-xs font-medium"
                   style={{
                     backgroundColor: file.type === 'video' ? 'rgba(139, 92, 246, 0.15)' : 'rgba(0, 240, 255, 0.1)',
-                    color: file.type === 'video' ? '#a78bfa' : 'var(--neon-cyan)',
+                    color: file.type === 'video' ? '#a78bfa' : 'var(--color-info)',
                   }}
                 >
                   {file.type === 'video' ? 'VID' : 'IMG'}
                 </span>
-                <span className="flex-1 text-sm truncate" style={{ color: 'var(--color-primary)' }}>
+                <span className="flex-1 text-sm truncate" style={{ color: 'var(--color-text-primary)' }}>
                   {file.fileName}
                 </span>
                 {file.driveUrl ? (
-                  <span className="text-xs px-1.5 py-0.5 rounded" style={{ backgroundColor: 'rgba(57, 255, 20, 0.1)', color: 'var(--neon-green)' }}>
+                  <span className="text-xs px-1.5 py-0.5 rounded" style={{ backgroundColor: 'rgba(57, 255, 20, 0.1)', color: 'var(--color-accent)' }}>
                     Drive
                   </span>
                 ) : (
@@ -424,7 +424,7 @@ export default function Tab5Ads() {
             style={{
               backgroundColor: newFileType === 'video' ? 'rgba(139, 92, 246, 0.15)' : 'rgba(0, 240, 255, 0.1)',
               borderColor: newFileType === 'video' ? 'rgba(139, 92, 246, 0.3)' : 'rgba(0, 240, 255, 0.3)',
-              color: newFileType === 'video' ? '#a78bfa' : 'var(--neon-cyan)',
+              color: newFileType === 'video' ? '#a78bfa' : 'var(--color-info)',
             }}
           >
             {newFileType === 'video' ? 'VID' : 'IMG'}
@@ -433,7 +433,7 @@ export default function Tab5Ads() {
             onClick={addCreative}
             disabled={!newFileName.trim()}
             className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all disabled:opacity-30"
-            style={{ backgroundColor: 'rgba(57, 255, 20, 0.15)', color: 'var(--neon-green)', border: '1px solid rgba(57, 255, 20, 0.3)' }}
+            style={{ backgroundColor: 'rgba(57, 255, 20, 0.15)', color: 'var(--color-accent)', border: '1px solid rgba(57, 255, 20, 0.3)' }}
           >
             + Adicionar
           </button>
@@ -456,14 +456,14 @@ export default function Tab5Ads() {
 
       {/* Section 4 — Textos do Anuncio */}
       <div>
-        <h3 className="text-sm font-bold mb-2" style={{ color: 'var(--color-primary)', ...headingFont }}>
+        <h3 className="text-sm font-bold mb-2" style={{ color: 'var(--color-text-primary)', ...headingFont }}>
           Textos do Anuncio
         </h3>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Fields */}
           <div className="space-y-3">
             <div>
-              <label className="block text-xs mb-1" style={{ color: 'var(--color-secondary)' }}>Texto Principal</label>
+              <label className="block text-xs mb-1" style={{ color: 'var(--color-text-secondary)' }}>Texto Principal</label>
               <textarea
                 value={primaryText}
                 onChange={(e) => setPrimaryText(e.target.value)}
@@ -475,7 +475,7 @@ export default function Tab5Ads() {
               />
             </div>
             <div>
-              <label className="block text-xs mb-1" style={{ color: 'var(--color-secondary)' }}>Titulo (Headline)</label>
+              <label className="block text-xs mb-1" style={{ color: 'var(--color-text-secondary)' }}>Titulo (Headline)</label>
               <input
                 type="text"
                 value={headline}
@@ -487,7 +487,7 @@ export default function Tab5Ads() {
               />
             </div>
             <div>
-              <label className="block text-xs mb-1" style={{ color: 'var(--color-secondary)' }}>Descricao</label>
+              <label className="block text-xs mb-1" style={{ color: 'var(--color-text-secondary)' }}>Descricao</label>
               <input
                 type="text"
                 value={description}
@@ -502,37 +502,37 @@ export default function Tab5Ads() {
 
           {/* Ad Preview */}
           <div>
-            <label className="block text-xs mb-1" style={{ color: 'var(--color-secondary)' }}>Preview do Anuncio</label>
-            <div className="rounded-lg overflow-hidden" style={{ backgroundColor: '#242436', border: '1px solid var(--border-light)' }}>
+            <label className="block text-xs mb-1" style={{ color: 'var(--color-text-secondary)' }}>Preview do Anuncio</label>
+            <div className="rounded-lg overflow-hidden" style={{ backgroundColor: '#242436', border: '1px solid var(--color-border)' }}>
               {/* Preview header */}
               <div className="flex items-center gap-2 px-3 py-2">
                 <div className="w-8 h-8 rounded-full" style={{ backgroundColor: 'rgba(57, 255, 20, 0.2)' }} />
                 <div>
-                  <p className="text-xs font-medium" style={{ color: 'var(--color-primary)' }}>Sua Pagina</p>
-                  <p className="text-xs" style={{ color: 'var(--color-tertiary)' }}>Patrocinado</p>
+                  <p className="text-xs font-medium" style={{ color: 'var(--color-text-primary)' }}>Sua Pagina</p>
+                  <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>Patrocinado</p>
                 </div>
               </div>
               {/* Primary text */}
               <div className="px-3 pb-2">
-                <p className="text-sm whitespace-pre-wrap" style={{ color: 'var(--color-primary)' }}>
+                <p className="text-sm whitespace-pre-wrap" style={{ color: 'var(--color-text-primary)' }}>
                   {primaryText || 'Texto principal do anuncio...'}
                 </p>
               </div>
               {/* Image placeholder */}
               <div className="w-full h-32 flex items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.05)' }}>
-                <span className="text-xs" style={{ color: 'var(--color-tertiary)' }}>
+                <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
                   [{creativeFormat === 'video' ? 'Video' : creativeFormat === 'carousel' ? 'Carrossel' : 'Imagem'}]
                 </span>
               </div>
               {/* Headline + description */}
-              <div className="px-3 py-2" style={{ borderTop: '1px solid var(--border-light)' }}>
-                <p className="text-xs truncate" style={{ color: 'var(--color-tertiary)' }}>
+              <div className="px-3 py-2" style={{ borderTop: '1px solid var(--color-border)' }}>
+                <p className="text-xs truncate" style={{ color: 'var(--color-text-tertiary)' }}>
                   {destinationUrl || 'meusite.com'}
                 </p>
-                <p className="text-sm font-semibold truncate" style={{ color: 'var(--color-primary)' }}>
+                <p className="text-sm font-semibold truncate" style={{ color: 'var(--color-text-primary)' }}>
                   {headline || 'Titulo do anuncio'}
                 </p>
-                <p className="text-xs truncate" style={{ color: 'var(--color-secondary)' }}>
+                <p className="text-xs truncate" style={{ color: 'var(--color-text-secondary)' }}>
                   {description || 'Descricao do anuncio'}
                 </p>
               </div>
@@ -543,10 +543,10 @@ export default function Tab5Ads() {
 
       {/* Section 5 — UTMs */}
       <div>
-        <h3 className="text-sm font-bold mb-1" style={{ color: 'var(--color-primary)', ...headingFont }}>
+        <h3 className="text-sm font-bold mb-1" style={{ color: 'var(--color-text-primary)', ...headingFont }}>
           Parametros de URL (UTMs)
         </h3>
-        <p className="text-xs mb-3" style={{ color: 'var(--color-tertiary)' }}>
+        <p className="text-xs mb-3" style={{ color: 'var(--color-text-tertiary)' }}>
           Mesmos para todos os anuncios. Todos os campos sao opcionais.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -558,7 +558,7 @@ export default function Tab5Ads() {
             { label: 'utm_term', value: utmTerm, setter: setUtmTerm, placeholder: 'oferta' },
           ].map((field) => (
             <div key={field.label}>
-              <label className="block text-xs mb-1" style={{ color: 'var(--color-secondary)' }}>{field.label}</label>
+              <label className="block text-xs mb-1" style={{ color: 'var(--color-text-secondary)' }}>{field.label}</label>
               <input
                 type="text"
                 value={field.value}
@@ -574,8 +574,8 @@ export default function Tab5Ads() {
 
         {/* URL Preview */}
         <div className="mt-3 p-3 rounded-lg" style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}>
-          <p className="text-xs mb-1" style={{ color: 'var(--color-tertiary)' }}>Preview da URL final:</p>
-          <p className="text-xs font-mono break-all" style={{ color: 'var(--neon-cyan)' }}>
+          <p className="text-xs mb-1" style={{ color: 'var(--color-text-tertiary)' }}>Preview da URL final:</p>
+          <p className="text-xs font-mono break-all" style={{ color: 'var(--color-info)' }}>
             {utmPreview}
           </p>
         </div>
@@ -611,7 +611,7 @@ function DriveErrorBox({ error }: { error: DriveError }) {
       {error.diagnostics?.fileTypesFound && (
         <div className="flex flex-wrap gap-1 mt-2 pl-6">
           {error.diagnostics.fileTypesFound.map((ext: string, i: number) => (
-            <span key={i} className="text-xs px-1.5 py-0.5 rounded" style={{ backgroundColor: 'rgba(255,255,255,0.06)', color: 'var(--color-tertiary)' }}>
+            <span key={i} className="text-xs px-1.5 py-0.5 rounded" style={{ backgroundColor: 'rgba(255,255,255,0.06)', color: 'var(--color-text-tertiary)' }}>
               .{ext}
             </span>
           ))}
@@ -661,7 +661,7 @@ function ErrorIcon({ type, color }: { type: string; color: string }) {
 
 // --- Format Icons ---
 function FormatIcon({ type, selected }: { type: string; selected: boolean }) {
-  const color = selected ? 'var(--neon-green)' : 'var(--color-secondary)';
+  const color = selected ? 'var(--color-accent)' : 'var(--color-text-secondary)';
   if (type === 'img') {
     return (
       <svg width="24" height="24" className="w-6 h-6 mx-auto" fill="none" viewBox="0 0 24 24" stroke={color} strokeWidth={1.5}>

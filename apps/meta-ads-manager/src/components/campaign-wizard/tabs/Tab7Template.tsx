@@ -12,7 +12,7 @@ export default function Tab7Template({ onSaved }: Tab7TemplateProps) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const headingFont = { fontFamily: "'Space Grotesk', system-ui, sans-serif" };
+  const headingFont = { fontFamily: "var(--font-sans)" };
 
   const totalAdsets = state.adsetTypes.reduce((s, t) => s + t.adsetCount * t.campaignsCount, 0);
   const totalCreatives = state.adConfig?.creativeFiles?.length ?? 0;
@@ -64,17 +64,17 @@ export default function Tab7Template({ onSaved }: Tab7TemplateProps) {
       <div className="max-w-lg w-full space-y-6">
         {/* Header */}
         <div className="text-center">
-          <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--neon-green)', ...headingFont }}>
+          <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--color-accent)', ...headingFont }}>
             Salvar Template
           </h2>
-          <p className="text-sm" style={{ color: 'var(--color-secondary)' }}>
+          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
             Escolha um nome descritivo para reutilizar esta configuracao no futuro.
           </p>
         </div>
 
         {/* Template Name Input */}
         <div>
-          <label className="block text-xs mb-1.5" style={{ color: 'var(--color-secondary)' }}>
+          <label className="block text-xs mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
             Nome do template
           </label>
           <input
@@ -84,17 +84,17 @@ export default function Tab7Template({ onSaved }: Tab7TemplateProps) {
             placeholder="Ex: Escala 5 contas - 50 adsets CBO"
             className="w-full px-4 py-3 rounded-lg border text-base outline-none"
             style={{
-              backgroundColor: 'var(--bg-input)',
-              borderColor: templateName.trim() ? 'rgba(57, 255, 20, 0.3)' : 'var(--border-light)',
-              color: 'var(--color-primary)',
+              backgroundColor: 'var(--color-bg-input)',
+              borderColor: templateName.trim() ? 'rgba(57, 255, 20, 0.3)' : 'var(--color-border)',
+              color: 'var(--color-text-primary)',
               ...headingFont,
             }}
           />
         </div>
 
         {/* Summary */}
-        <div className="p-4 rounded-lg" style={{ backgroundColor: 'rgba(255, 255, 255, 0.03)', border: '1px solid var(--border-light)' }}>
-          <p className="text-xs font-medium mb-2" style={{ color: 'var(--color-secondary)' }}>
+        <div className="p-4 rounded-lg" style={{ backgroundColor: 'rgba(255, 255, 255, 0.03)', border: '1px solid var(--color-border)' }}>
+          <p className="text-xs font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
             Este template inclui:
           </p>
           <div className="grid grid-cols-2 gap-2 text-sm">
@@ -122,8 +122,8 @@ export default function Tab7Template({ onSaved }: Tab7TemplateProps) {
           disabled={!templateName.trim() || saving}
           className="w-full py-3 rounded-lg text-base font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
           style={{
-            backgroundColor: templateName.trim() ? 'var(--neon-green)' : 'rgba(57, 255, 20, 0.3)',
-            color: 'var(--bg-deepest)',
+            backgroundColor: templateName.trim() ? 'var(--color-accent)' : 'rgba(57, 255, 20, 0.3)',
+            color: 'var(--color-bg-base)',
             ...headingFont,
             letterSpacing: '0.04em',
             boxShadow: templateName.trim() ? '0 0 20px rgba(57, 255, 20, 0.4)' : 'none',
@@ -139,8 +139,8 @@ export default function Tab7Template({ onSaved }: Tab7TemplateProps) {
 function SummaryItem({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <span className="text-xs" style={{ color: 'var(--color-tertiary)' }}>{label}: </span>
-      <span className="text-sm font-medium" style={{ color: 'var(--color-primary)' }}>{value}</span>
+      <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>{label}: </span>
+      <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>{value}</span>
     </div>
   );
 }

@@ -47,12 +47,12 @@ export default function CampaignDetailPage() {
       />
 
       <div className="p-6">
-        <h1 className="mb-6 text-2xl font-bold" style={{ color: 'var(--color-primary)' }}>
+        <h1 className="mb-6 text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
           Ad Sets for Campaign {campaignId?.toString().slice(0, 8)}...
         </h1>
 
         {error && (
-          <div className="mb-6 rounded-lg border p-4" style={{ backgroundColor: 'var(--color-danger-bg)', borderColor: 'var(--color-danger)' }}>
+          <div className="mb-6 rounded-lg border p-4" style={{ backgroundColor: 'rgba(255,45,120,0.06)', borderColor: 'var(--color-danger)' }}>
             <p className="text-sm font-medium" style={{ color: 'var(--color-danger)' }}>
               Error loading ad sets: {error instanceof Error ? error.message : 'Unknown error'}
             </p>
@@ -60,34 +60,34 @@ export default function CampaignDetailPage() {
         )}
 
         {/* Ad Sets Table */}
-        <div className="overflow-x-auto rounded-lg border" style={{ borderColor: 'var(--color-tertiary)' }}>
-          <table className="min-w-full divide-y" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--color-tertiary)' }}>
-            <thead style={{ backgroundColor: 'var(--bg-table-header)' }}>
+        <div className="overflow-x-auto rounded-lg border" style={{ borderColor: 'var(--color-text-tertiary)' }}>
+          <table className="min-w-full divide-y" style={{ backgroundColor: 'var(--color-bg-surface)', borderColor: 'var(--color-text-tertiary)' }}>
+            <thead style={{ backgroundColor: 'var(--color-bg-sidebar)' }}>
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase" style={{ color: 'var(--color-secondary)' }}>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase" style={{ color: 'var(--color-text-secondary)' }}>
                   Ad Set Name
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase" style={{ color: 'var(--color-secondary)' }}>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase" style={{ color: 'var(--color-text-secondary)' }}>
                   Status
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium uppercase" style={{ color: 'var(--color-secondary)' }}>
+                <th className="px-6 py-3 text-right text-xs font-medium uppercase" style={{ color: 'var(--color-text-secondary)' }}>
                   Daily Budget
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium uppercase" style={{ color: 'var(--color-secondary)' }}>
+                <th className="px-6 py-3 text-right text-xs font-medium uppercase" style={{ color: 'var(--color-text-secondary)' }}>
                   Lifetime Budget
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase" style={{ color: 'var(--color-secondary)' }}>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase" style={{ color: 'var(--color-text-secondary)' }}>
                   Created
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y" style={{ borderColor: 'var(--color-tertiary)' }}>
+            <tbody className="divide-y" style={{ borderColor: 'var(--color-text-tertiary)' }}>
               {isLoading ? (
                 <tr>
                   <td
                     colSpan={5}
                     className="px-6 py-4 text-center"
-                    style={{ color: 'var(--color-secondary)' }}
+                    style={{ color: 'var(--color-text-secondary)' }}
                   >
                     Loading ad sets...
                   </td>
@@ -97,7 +97,7 @@ export default function CampaignDetailPage() {
                   <td
                     colSpan={5}
                     className="px-6 py-4 text-center"
-                    style={{ color: 'var(--color-secondary)' }}
+                    style={{ color: 'var(--color-text-secondary)' }}
                   >
                     No ad sets found for this campaign
                   </td>
@@ -113,27 +113,27 @@ export default function CampaignDetailPage() {
                       )
                     }
                   >
-                    <td className="px-6 py-4 text-sm font-medium hover:underline" style={{ color: 'var(--color-brand)' }}>
+                    <td className="px-6 py-4 text-sm font-medium hover:underline" style={{ color: 'var(--color-accent-dark)' }}>
                       {adset.name}
                     </td>
                     <td className="px-6 py-4 text-sm">
                       <span
                         className="inline-flex rounded-full px-3 py-1 text-xs font-medium"
                         style={{
-                          backgroundColor: adset.status === 'ACTIVE' ? 'var(--color-success-bg)' : 'var(--bg-tertiary)',
-                          color: adset.status === 'ACTIVE' ? 'var(--color-success)' : 'var(--color-secondary)'
+                          backgroundColor: adset.status === 'ACTIVE' ? 'rgba(57,255,20,0.06)' : 'var(--color-bg-input)',
+                          color: adset.status === 'ACTIVE' ? 'var(--color-success)' : 'var(--color-text-secondary)'
                         }}
                       >
                         {adset.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-right text-sm" style={{ color: 'var(--color-primary)' }}>
+                    <td className="px-6 py-4 text-right text-sm" style={{ color: 'var(--color-text-primary)' }}>
                       {adset.daily_budget ? `$${(adset.daily_budget / 100).toFixed(2)}` : '—'}
                     </td>
-                    <td className="px-6 py-4 text-right text-sm" style={{ color: 'var(--color-primary)' }}>
+                    <td className="px-6 py-4 text-right text-sm" style={{ color: 'var(--color-text-primary)' }}>
                       {adset.lifetime_budget ? `$${(adset.lifetime_budget / 100).toFixed(2)}` : '—'}
                     </td>
-                    <td className="px-6 py-4 text-sm" style={{ color: 'var(--color-primary)' }}>
+                    <td className="px-6 py-4 text-sm" style={{ color: 'var(--color-text-primary)' }}>
                       {adset.created_at
                         ? new Date(adset.created_at).toLocaleDateString()
                         : '—'}
@@ -146,8 +146,8 @@ export default function CampaignDetailPage() {
         </div>
 
         {adsets.length > 0 && (
-          <div className="mt-6 rounded-lg p-4" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--color-tertiary)', borderWidth: '1px' }}>
-            <p className="text-sm" style={{ color: 'var(--color-primary)' }}>
+          <div className="mt-6 rounded-lg p-4" style={{ backgroundColor: 'var(--color-bg-surface)', borderColor: 'var(--color-text-tertiary)', borderWidth: '1px' }}>
+            <p className="text-sm" style={{ color: 'var(--color-text-primary)' }}>
               Showing <strong>{adsets.length}</strong> ad set
               {adsets.length !== 1 ? 's' : ''} for this campaign
             </p>

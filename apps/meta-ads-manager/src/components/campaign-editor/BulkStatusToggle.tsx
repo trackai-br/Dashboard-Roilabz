@@ -44,11 +44,11 @@ export function BulkStatusToggle({
   return (
     <div
       className="rounded-lg border p-4"
-      style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--color-tertiary)' }}
+      style={{ backgroundColor: 'var(--color-bg-surface)', borderColor: 'var(--color-text-tertiary)' }}
     >
       <div className="flex items-center justify-between">
         <div>
-          <p className="font-medium" style={{ color: 'var(--color-primary)' }}>
+          <p className="font-medium" style={{ color: 'var(--color-text-primary)' }}>
             {selectedIds.length} campaign{selectedIds.length !== 1 ? 's' : ''} selected
           </p>
           {error && (
@@ -77,7 +77,7 @@ export function BulkStatusToggle({
             onClick={onClear}
             disabled={loading}
             className="rounded-lg border px-4 py-2 font-medium disabled:opacity-50"
-            style={{ borderColor: 'var(--color-tertiary)', color: 'var(--color-primary)' }}
+            style={{ borderColor: 'var(--color-text-tertiary)', color: 'var(--color-text-primary)' }}
           >
             Clear
           </button>

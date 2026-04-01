@@ -27,8 +27,8 @@ export function NotificationBell() {
       <button
         onClick={() => setIsDrawerOpen(true)}
         className="relative rounded-lg p-2 transition-colors"
-        style={{ color: 'var(--color-secondary)' }}
-        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)'}
+        style={{ color: 'var(--color-text-secondary)' }}
+        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-bg-input)'}
         onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
         title="Notificações"
       >

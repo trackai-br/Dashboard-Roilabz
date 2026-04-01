@@ -24,8 +24,8 @@ export default function ChecklistSidebar() {
       <h4
         className="text-xs font-semibold uppercase tracking-wider mb-3"
         style={{
-          color: 'var(--color-tertiary)',
-          fontFamily: "'Space Grotesk', system-ui, sans-serif",
+          color: 'var(--color-text-tertiary)',
+          fontFamily: "var(--font-sans)",
           letterSpacing: '0.1em',
         }}
       >
@@ -35,14 +35,14 @@ export default function ChecklistSidebar() {
       {/* Progress Bar */}
       <div className="mb-4">
         <div className="flex items-center justify-between mb-1">
-          <span className="text-xs" style={{ color: 'var(--color-secondary)' }}>
+          <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
             {progress.done}/{progress.total}
           </span>
           <span
             className="text-xs font-medium"
             style={{
-              color: progress.percent === 100 ? 'var(--color-success)' : 'var(--neon-green)',
-              fontFamily: "'Space Grotesk', system-ui, sans-serif",
+              color: progress.percent === 100 ? 'var(--color-success)' : 'var(--color-accent)',
+              fontFamily: "var(--font-sans)",
             }}
           >
             {progress.percent}%
@@ -56,7 +56,7 @@ export default function ChecklistSidebar() {
             className="h-full rounded-full transition-all duration-500"
             style={{
               width: `${progress.percent}%`,
-              backgroundColor: progress.percent === 100 ? 'var(--color-success)' : 'var(--neon-green)',
+              backgroundColor: progress.percent === 100 ? 'var(--color-success)' : 'var(--color-accent)',
               boxShadow: progress.percent > 0 ? '0 0 8px rgba(57, 255, 20, 0.4)' : 'none',
             }}
           />
@@ -86,7 +86,7 @@ export default function ChecklistSidebar() {
                 <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
                   <path
                     d="M2 5L4 7L8 3"
-                    stroke="var(--neon-green)"
+                    stroke="var(--color-accent)"
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -99,9 +99,9 @@ export default function ChecklistSidebar() {
             <span
               className="text-xs"
               style={{
-                color: item.isComplete ? 'var(--color-primary)' : 'var(--color-tertiary)',
+                color: item.isComplete ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)',
                 textDecoration: item.isComplete ? 'none' : 'none',
-                fontFamily: "'Space Grotesk', system-ui, sans-serif",
+                fontFamily: "var(--font-sans)",
               }}
             >
               {item.label}
@@ -123,7 +123,7 @@ export default function ChecklistSidebar() {
             className="text-xs font-medium"
             style={{
               color: 'var(--color-success)',
-              fontFamily: "'Space Grotesk', system-ui, sans-serif",
+              fontFamily: "var(--font-sans)",
             }}
           >
             Pronto para publicar

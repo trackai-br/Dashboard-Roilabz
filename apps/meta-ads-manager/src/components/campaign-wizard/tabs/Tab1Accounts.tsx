@@ -13,7 +13,7 @@ export default function Tab1Accounts() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="animate-pulse text-sm" style={{ color: 'var(--color-secondary)' }}>
+        <div className="animate-pulse text-sm" style={{ color: 'var(--color-text-secondary)' }}>
           Carregando contas...
         </div>
       </div>
@@ -46,11 +46,11 @@ export default function Tab1Accounts() {
     <div>
       <h3
         className="text-lg font-bold mb-1"
-        style={{ color: 'var(--color-primary)', fontFamily: "'Space Grotesk', system-ui, sans-serif" }}
+        style={{ color: 'var(--color-text-primary)', fontFamily: "var(--font-sans)" }}
       >
         Selecione as Contas de Anúncio
       </h3>
-      <p className="text-sm mb-4" style={{ color: 'var(--color-secondary)' }}>
+      <p className="text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>
         Escolha as contas onde as campanhas serão publicadas
       </p>
 
@@ -61,8 +61,8 @@ export default function Tab1Accounts() {
             ? 'rgba(57, 255, 20, 0.1)'
             : 'rgba(112, 112, 128, 0.1)',
           border: `1px solid ${state.selectedAccountIds.length > 0 ? 'rgba(57, 255, 20, 0.3)' : 'rgba(112, 112, 128, 0.3)'}`,
-          color: state.selectedAccountIds.length > 0 ? 'var(--neon-green)' : 'var(--color-tertiary)',
-          fontFamily: "'Space Grotesk', system-ui, sans-serif",
+          color: state.selectedAccountIds.length > 0 ? 'var(--color-accent)' : 'var(--color-text-tertiary)',
+          fontFamily: "var(--font-sans)",
         }}
       >
         {state.selectedAccountIds.length} {state.selectedAccountIds.length === 1 ? 'conta selecionada' : 'contas selecionadas'}
@@ -78,7 +78,7 @@ export default function Tab1Accounts() {
               className="p-4 rounded-lg border text-left transition-all duration-150"
               style={{
                 backgroundColor: isSelected ? 'rgba(57, 255, 20, 0.06)' : 'rgba(255, 255, 255, 0.02)',
-                borderColor: isSelected ? 'rgba(57, 255, 20, 0.5)' : 'var(--border-light)',
+                borderColor: isSelected ? 'rgba(57, 255, 20, 0.5)' : 'var(--color-border)',
                 boxShadow: isSelected ? '0 0 12px rgba(57, 255, 20, 0.15)' : 'none',
               }}
             >
@@ -86,19 +86,19 @@ export default function Tab1Accounts() {
                 <div className="min-w-0 flex-1">
                   <p
                     className="text-sm font-medium truncate"
-                    style={{ color: isSelected ? 'var(--neon-green)' : 'var(--color-primary)' }}
+                    style={{ color: isSelected ? 'var(--color-accent)' : 'var(--color-text-primary)' }}
                   >
                     {account.meta_account_name || 'Sem nome'}
                   </p>
-                  <p className="text-xs mt-1 truncate" style={{ color: 'var(--color-tertiary)' }}>
+                  <p className="text-xs mt-1 truncate" style={{ color: 'var(--color-text-tertiary)' }}>
                     {account.meta_account_id}
                   </p>
-                  <p className="text-xs mt-0.5" style={{ color: 'var(--color-tertiary)' }}>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
                     {account.currency || 'USD'}
                   </p>
                 </div>
                 {isSelected && (
-                  <svg width="20" height="20" className="w-5 h-5 flex-shrink-0 ml-2" style={{ color: 'var(--neon-green)' }} fill="currentColor" viewBox="0 0 20 20">
+                  <svg width="20" height="20" className="w-5 h-5 flex-shrink-0 ml-2" style={{ color: 'var(--color-accent)' }} fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
                 )}

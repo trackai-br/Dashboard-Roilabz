@@ -239,21 +239,21 @@ export default function PreviewPublishStep({ onSaved }: PreviewPublishStepProps)
             key={kpi.label}
             className="p-3 rounded-xl text-center"
             style={{
-              backgroundColor: 'var(--bg-card-hover)',
-              border: '1px solid var(--border-subtle)',
+              backgroundColor: 'var(--color-bg-surface-hover)',
+              border: '1px solid var(--color-border-subtle)',
               boxShadow: 'var(--shadow-card)',
             }}
           >
-            <div className="flex justify-center mb-1" style={{ color: 'var(--color-tertiary)' }}>
+            <div className="flex justify-center mb-1" style={{ color: 'var(--color-text-tertiary)' }}>
               {kpi.icon}
             </div>
             <p
               className="text-lg font-bold font-mono"
-              style={{ color: 'var(--neon-green)' }}
+              style={{ color: 'var(--color-accent)' }}
             >
               {kpi.value}
             </p>
-            <p className="text-[10px] uppercase tracking-wider mt-0.5" style={{ color: 'var(--color-tertiary)' }}>{kpi.label}</p>
+            <p className="text-[10px] uppercase tracking-wider mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>{kpi.label}</p>
           </div>
         ))}
       </div>
@@ -303,7 +303,7 @@ export default function PreviewPublishStep({ onSaved }: PreviewPublishStepProps)
       <div>
         <h4
           className="text-sm font-bold mb-3"
-          style={{ color: 'var(--color-primary)', fontFamily: "'Space Grotesk', system-ui, sans-serif" }}
+          style={{ color: 'var(--color-text-primary)', fontFamily: "var(--font-sans)" }}
         >
           Distribuicao por Lote
         </h4>
@@ -322,17 +322,17 @@ export default function PreviewPublishStep({ onSaved }: PreviewPublishStepProps)
                   style={{ backgroundColor: 'rgba(57, 255, 20, 0.04)' }}
                 >
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium" style={{ color: 'var(--color-primary)' }}>
+                    <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
                       {batch.name}
                     </span>
                     <span className="text-xs px-2 py-0.5 rounded-full" style={{
                       backgroundColor: 'rgba(57, 255, 20, 0.1)',
-                      color: 'var(--neon-green)',
+                      color: 'var(--color-accent)',
                     }}>
                       {batch.totalCampaigns} camp · {batch.accounts.length} contas · {batch.pages.length} pag
                     </span>
                   </div>
-                  <span className="text-xs" style={{ color: 'var(--color-tertiary)' }}>
+                  <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
                     {OBJECTIVE_LABELS[batch.campaignConfig.objective] || batch.campaignConfig.objective}
                     {' · '}R$ {(batch.campaignConfig.budgetValue / 100).toFixed(2)} {batch.campaignConfig.budgetType}
                   </span>
@@ -342,7 +342,7 @@ export default function PreviewPublishStep({ onSaved }: PreviewPublishStepProps)
                 <div className="px-4 py-2">
                   <table className="w-full text-xs">
                     <thead>
-                      <tr style={{ color: 'var(--color-tertiary)' }}>
+                      <tr style={{ color: 'var(--color-text-tertiary)' }}>
                         <th className="text-left py-1">Conta</th>
                         <th className="text-left py-1">Pagina</th>
                         <th className="text-right py-1">Adsets</th>
@@ -353,9 +353,9 @@ export default function PreviewPublishStep({ onSaved }: PreviewPublishStepProps)
                       {batch.accounts.map((acc) =>
                         batch.pages.map((page) => (
                           <tr key={`${acc.accountId}-${page.pageId}`}>
-                            <td className="py-1" style={{ color: 'var(--color-secondary)' }}>{acc.accountName}</td>
-                            <td className="py-1" style={{ color: 'var(--color-secondary)' }}>{page.pageName}</td>
-                            <td className="py-1 text-right" style={{ color: 'var(--color-primary)' }}>
+                            <td className="py-1" style={{ color: 'var(--color-text-secondary)' }}>{acc.accountName}</td>
+                            <td className="py-1" style={{ color: 'var(--color-text-secondary)' }}>{page.pageName}</td>
+                            <td className="py-1 text-right" style={{ color: 'var(--color-text-primary)' }}>
                               {batch.adsetTypes.reduce((s, t) => s + t.adsetCount, 0)}
                             </td>
                             <td className="py-1 text-center">
@@ -363,7 +363,7 @@ export default function PreviewPublishStep({ onSaved }: PreviewPublishStepProps)
                                 className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full"
                                 style={{
                                   backgroundColor: batch.campaignConfig.campaignStatus === 'PAUSED' ? 'rgba(255,184,0,0.1)' : 'rgba(57,255,20,0.1)',
-                                  color: batch.campaignConfig.campaignStatus === 'PAUSED' ? 'var(--color-warning)' : 'var(--neon-green)',
+                                  color: batch.campaignConfig.campaignStatus === 'PAUSED' ? 'var(--color-warning)' : 'var(--color-accent)',
                                 }}
                               >
                                 {batch.campaignConfig.campaignStatus === 'PAUSED' ? 'Pausado' : 'Ativo'}
@@ -383,8 +383,8 @@ export default function PreviewPublishStep({ onSaved }: PreviewPublishStepProps)
                       <span className="text-xs" style={{
                         color: batchPublish.status === 'completed' ? 'var(--color-success)'
                           : batchPublish.status === 'failed' ? 'var(--color-danger)'
-                          : batchPublish.status === 'publishing' ? 'var(--neon-green)'
-                          : 'var(--color-tertiary)',
+                          : batchPublish.status === 'publishing' ? 'var(--color-accent)'
+                          : 'var(--color-text-tertiary)',
                       }}>
                         {batchPublish.status === 'pending' && 'Aguardando...'}
                         {batchPublish.status === 'publishing' && `Publicando ${batchPublish.completedCampaigns}/${batchPublish.totalCampaigns}...`}
@@ -396,7 +396,7 @@ export default function PreviewPublishStep({ onSaved }: PreviewPublishStepProps)
                           onClick={() => handleRetryBatch(batch.id)}
                           className="text-xs px-2 py-0.5 rounded-lg cursor-pointer focus:outline-none"
                           style={{
-                            color: 'var(--neon-green)',
+                            color: 'var(--color-accent)',
                             border: '1px solid rgba(57, 255, 20, 0.3)',
                             transition: 'all 150ms cubic-bezier(0.16, 1, 0.3, 1)',
                           }}
@@ -411,7 +411,7 @@ export default function PreviewPublishStep({ onSaved }: PreviewPublishStepProps)
                         className="h-full rounded-full transition-all"
                         style={{
                           width: `${batchPublish.totalCampaigns > 0 ? (batchPublish.completedCampaigns / batchPublish.totalCampaigns) * 100 : 0}%`,
-                          backgroundColor: batchPublish.status === 'failed' ? 'var(--color-danger)' : 'var(--neon-green)',
+                          backgroundColor: batchPublish.status === 'failed' ? 'var(--color-danger)' : 'var(--color-accent)',
                         }}
                       />
                     </div>
@@ -446,7 +446,7 @@ export default function PreviewPublishStep({ onSaved }: PreviewPublishStepProps)
           className="p-4 rounded-lg"
           style={{ backgroundColor: 'rgba(57, 255, 20, 0.04)', border: '1px solid rgba(57, 255, 20, 0.15)' }}
         >
-          <h4 className="text-sm font-bold mb-2" style={{ color: 'var(--color-primary)' }}>
+          <h4 className="text-sm font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>
             Salvar como Template
           </h4>
           <div className="flex gap-2">

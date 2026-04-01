@@ -108,11 +108,11 @@ export default function CampaignConfigStep() {
       <div>
         <h3
           className="text-lg font-bold"
-          style={{ color: 'var(--color-primary)', fontFamily: "'Space Grotesk', system-ui, sans-serif" }}
+          style={{ color: 'var(--color-text-primary)', fontFamily: "var(--font-sans)" }}
         >
           Configuracao de Campanha
         </h3>
-        <p className="text-sm" style={{ color: 'var(--color-secondary)' }}>
+        <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
           {perLoteCustom ? `Configurando: ${batch.name}` : 'Config compartilhada entre todos os lotes'}
         </p>
       </div>
@@ -124,7 +124,7 @@ export default function CampaignConfigStep() {
             onClick={() => setPerLoteCustom(!perLoteCustom)}
             className="relative w-10 h-5 rounded-full transition-all"
             style={{
-              backgroundColor: perLoteCustom ? 'var(--neon-green)' : 'rgba(255,255,255,0.15)',
+              backgroundColor: perLoteCustom ? 'var(--color-accent)' : 'rgba(255,255,255,0.15)',
             }}
           >
             <span
@@ -132,7 +132,7 @@ export default function CampaignConfigStep() {
               style={{ left: perLoteCustom ? '22px' : '2px' }}
             />
           </button>
-          <span className="text-sm" style={{ color: 'var(--color-secondary)' }}>
+          <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
             Personalizar por lote
           </span>
         </div>
@@ -149,7 +149,7 @@ export default function CampaignConfigStep() {
               style={{
                 backgroundColor: b.id === batch.id ? 'rgba(57, 255, 20, 0.15)' : 'rgba(255,255,255,0.05)',
                 border: b.id === batch.id ? '1px solid rgba(57, 255, 20, 0.4)' : '1px solid rgba(255,255,255,0.1)',
-                color: b.id === batch.id ? 'var(--neon-green)' : 'var(--color-secondary)',
+                color: b.id === batch.id ? 'var(--color-accent)' : 'var(--color-text-secondary)',
               }}
             >
               {b.name}
@@ -160,7 +160,7 @@ export default function CampaignConfigStep() {
 
       {/* Objective */}
       <div>
-        <label className="block text-xs font-medium mb-2" style={{ color: 'var(--color-secondary)' }}>
+        <label className="block text-xs font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
           Objetivo
         </label>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -177,7 +177,7 @@ export default function CampaignConfigStep() {
                 }}
               >
                 <span>{obj.icon}</span>
-                <span className="text-sm" style={{ color: isSelected ? 'var(--neon-green)' : 'var(--color-primary)' }}>
+                <span className="text-sm" style={{ color: isSelected ? 'var(--color-accent)' : 'var(--color-text-primary)' }}>
                   {obj.label}
                 </span>
               </button>
@@ -192,13 +192,13 @@ export default function CampaignConfigStep() {
         style={{ backgroundColor: 'rgba(57, 255, 20, 0.03)', border: '1px solid rgba(57, 255, 20, 0.1)' }}
       >
         <div className="flex items-center justify-between mb-3">
-          <label className="text-xs font-medium" style={{ color: 'var(--color-secondary)' }}>
+          <label className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>
             Nomenclatura (arraste para reordenar)
           </label>
           <button
             onClick={handleAddTextTag}
             className="text-xs px-2 py-1 rounded transition-all"
-            style={{ color: 'var(--neon-green)', border: '1px solid rgba(57, 255, 20, 0.3)' }}
+            style={{ color: 'var(--color-accent)', border: '1px solid rgba(57, 255, 20, 0.3)' }}
           >
             + Texto customizado
           </button>
@@ -246,7 +246,7 @@ export default function CampaignConfigStep() {
         {/* Leva + Creative label inputs (legacy compat) */}
         <div className="grid grid-cols-2 gap-3 mb-3">
           <div>
-            <label className="block text-xs mb-1" style={{ color: 'var(--color-tertiary)' }}>Numero da Leva</label>
+            <label className="block text-xs mb-1" style={{ color: 'var(--color-text-tertiary)' }}>Numero da Leva</label>
             <input
               type="text"
               value={config.namingPattern.levaNumber}
@@ -256,13 +256,13 @@ export default function CampaignConfigStep() {
               style={{
                 backgroundColor: 'rgba(255,255,255,0.05)',
                 border: '1px solid rgba(57, 255, 20, 0.2)',
-                color: 'var(--color-primary)',
+                color: 'var(--color-text-primary)',
                 outline: 'none',
               }}
             />
           </div>
           <div>
-            <label className="block text-xs mb-1" style={{ color: 'var(--color-tertiary)' }}>Label do Criativo</label>
+            <label className="block text-xs mb-1" style={{ color: 'var(--color-text-tertiary)' }}>Label do Criativo</label>
             <input
               type="text"
               value={config.namingPattern.creativeLabel}
@@ -272,7 +272,7 @@ export default function CampaignConfigStep() {
               style={{
                 backgroundColor: 'rgba(255,255,255,0.05)',
                 border: '1px solid rgba(57, 255, 20, 0.2)',
-                color: 'var(--color-primary)',
+                color: 'var(--color-text-primary)',
                 outline: 'none',
               }}
             />
@@ -284,8 +284,8 @@ export default function CampaignConfigStep() {
           className="p-3 rounded-lg"
           style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)', border: '1px solid rgba(57, 255, 20, 0.1)' }}
         >
-          <p className="text-xs mb-1" style={{ color: 'var(--color-tertiary)' }}>Preview do nome:</p>
-          <p className="text-sm font-mono break-all" style={{ color: 'var(--neon-green)' }}>
+          <p className="text-xs mb-1" style={{ color: 'var(--color-text-tertiary)' }}>Preview do nome:</p>
+          <p className="text-sm font-mono break-all" style={{ color: 'var(--color-accent)' }}>
             {namingPreview}
           </p>
         </div>
@@ -294,7 +294,7 @@ export default function CampaignConfigStep() {
       {/* Budget */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs font-medium mb-2" style={{ color: 'var(--color-secondary)' }}>
+          <label className="block text-xs font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
             Tipo de Orcamento
           </label>
           <div className="flex gap-2">
@@ -306,7 +306,7 @@ export default function CampaignConfigStep() {
                 style={{
                   backgroundColor: config.budgetType === type ? 'rgba(57, 255, 20, 0.1)' : 'rgba(255,255,255,0.03)',
                   border: config.budgetType === type ? '1px solid rgba(57, 255, 20, 0.4)' : '1px solid rgba(255,255,255,0.08)',
-                  color: config.budgetType === type ? 'var(--neon-green)' : 'var(--color-secondary)',
+                  color: config.budgetType === type ? 'var(--color-accent)' : 'var(--color-text-secondary)',
                 }}
               >
                 {type}
@@ -315,7 +315,7 @@ export default function CampaignConfigStep() {
           </div>
         </div>
         <div>
-          <label className="block text-xs font-medium mb-2" style={{ color: 'var(--color-secondary)' }}>
+          <label className="block text-xs font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
             Valor (centavos)
           </label>
           <input
@@ -327,12 +327,12 @@ export default function CampaignConfigStep() {
             style={{
               backgroundColor: 'rgba(255,255,255,0.05)',
               border: '1px solid rgba(57, 255, 20, 0.2)',
-              color: 'var(--color-primary)',
+              color: 'var(--color-text-primary)',
               outline: 'none',
             }}
           />
           {config.budgetValue > 0 && (
-            <p className="text-xs mt-1" style={{ color: 'var(--color-tertiary)' }}>
+            <p className="text-xs mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
               = R$ {budgetDisplay.toFixed(2)} por {config.budgetType === 'CBO' ? 'campanha' : 'adset'}
             </p>
           )}
@@ -341,7 +341,7 @@ export default function CampaignConfigStep() {
 
       {/* Bid Strategy */}
       <div>
-        <label className="block text-xs font-medium mb-2" style={{ color: 'var(--color-secondary)' }}>
+        <label className="block text-xs font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
           Estrategia de Lance
         </label>
         <div className="grid grid-cols-2 gap-2">
@@ -353,7 +353,7 @@ export default function CampaignConfigStep() {
               style={{
                 backgroundColor: config.bidStrategy === bs.value ? 'rgba(57, 255, 20, 0.08)' : 'rgba(255,255,255,0.02)',
                 border: config.bidStrategy === bs.value ? '1px solid rgba(57, 255, 20, 0.4)' : '1px solid rgba(255,255,255,0.08)',
-                color: config.bidStrategy === bs.value ? 'var(--neon-green)' : 'var(--color-secondary)',
+                color: config.bidStrategy === bs.value ? 'var(--color-accent)' : 'var(--color-text-secondary)',
               }}
             >
               {bs.label}
@@ -364,7 +364,7 @@ export default function CampaignConfigStep() {
 
       {/* Status */}
       <div>
-        <label className="block text-xs font-medium mb-2" style={{ color: 'var(--color-secondary)' }}>
+        <label className="block text-xs font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
           Status Inicial
         </label>
         <div className="flex gap-2">
@@ -376,7 +376,7 @@ export default function CampaignConfigStep() {
               style={{
                 backgroundColor: config.campaignStatus === status ? 'rgba(57, 255, 20, 0.1)' : 'rgba(255,255,255,0.03)',
                 border: config.campaignStatus === status ? '1px solid rgba(57, 255, 20, 0.4)' : '1px solid rgba(255,255,255,0.08)',
-                color: config.campaignStatus === status ? 'var(--neon-green)' : 'var(--color-secondary)',
+                color: config.campaignStatus === status ? 'var(--color-accent)' : 'var(--color-text-secondary)',
               }}
             >
               {status === 'PAUSED' ? 'Pausada' : 'Ativa'}

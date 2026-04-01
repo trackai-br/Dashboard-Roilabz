@@ -46,11 +46,11 @@ export default function AdCopyStep() {
       <div>
         <h3
           className="text-lg font-bold"
-          style={{ color: 'var(--color-primary)', fontFamily: "'Space Grotesk', system-ui, sans-serif" }}
+          style={{ color: 'var(--color-text-primary)', fontFamily: "var(--font-sans)" }}
         >
           Copy do Anuncio
         </h3>
-        <p className="text-sm" style={{ color: 'var(--color-secondary)' }}>
+        <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
           Texto e URL de destino dos anuncios
         </p>
       </div>
@@ -61,14 +61,14 @@ export default function AdCopyStep() {
           <button
             onClick={() => setPerLoteCopy(!perLoteCopy)}
             className="relative w-10 h-5 rounded-full transition-all"
-            style={{ backgroundColor: perLoteCopy ? 'var(--neon-green)' : 'rgba(255,255,255,0.15)' }}
+            style={{ backgroundColor: perLoteCopy ? 'var(--color-accent)' : 'rgba(255,255,255,0.15)' }}
           >
             <span
               className="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all"
               style={{ left: perLoteCopy ? '22px' : '2px' }}
             />
           </button>
-          <span className="text-sm" style={{ color: 'var(--color-secondary)' }}>
+          <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
             Copy diferente por lote
           </span>
         </div>
@@ -76,7 +76,7 @@ export default function AdCopyStep() {
 
       {/* Destination URL */}
       <div>
-        <label className="block text-xs font-medium mb-2" style={{ color: 'var(--color-secondary)' }}>
+        <label className="block text-xs font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
           URL de Destino
         </label>
         <input
@@ -88,7 +88,7 @@ export default function AdCopyStep() {
           style={{
             backgroundColor: 'rgba(255,255,255,0.05)',
             border: '1px solid rgba(57, 255, 20, 0.2)',
-            color: 'var(--color-primary)',
+            color: 'var(--color-text-primary)',
             outline: 'none',
           }}
         />
@@ -96,7 +96,7 @@ export default function AdCopyStep() {
 
       {/* Primary Text */}
       <div>
-        <label className="block text-xs font-medium mb-2" style={{ color: 'var(--color-secondary)' }}>
+        <label className="block text-xs font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
           Texto Principal
         </label>
         <textarea
@@ -108,18 +108,18 @@ export default function AdCopyStep() {
           style={{
             backgroundColor: 'rgba(255,255,255,0.05)',
             border: '1px solid rgba(57, 255, 20, 0.2)',
-            color: 'var(--color-primary)',
+            color: 'var(--color-text-primary)',
             outline: 'none',
           }}
         />
-        <p className="text-xs mt-1" style={{ color: 'var(--color-tertiary)' }}>
+        <p className="text-xs mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
           {config.primaryText.length}/125 caracteres (recomendado)
         </p>
       </div>
 
       {/* Headline */}
       <div>
-        <label className="block text-xs font-medium mb-2" style={{ color: 'var(--color-secondary)' }}>
+        <label className="block text-xs font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
           Titulo (Headline)
         </label>
         <input
@@ -131,18 +131,18 @@ export default function AdCopyStep() {
           style={{
             backgroundColor: 'rgba(255,255,255,0.05)',
             border: '1px solid rgba(57, 255, 20, 0.2)',
-            color: 'var(--color-primary)',
+            color: 'var(--color-text-primary)',
             outline: 'none',
           }}
         />
-        <p className="text-xs mt-1" style={{ color: 'var(--color-tertiary)' }}>
+        <p className="text-xs mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
           {config.headline.length}/40 caracteres (recomendado)
         </p>
       </div>
 
       {/* Description */}
       <div>
-        <label className="block text-xs font-medium mb-2" style={{ color: 'var(--color-secondary)' }}>
+        <label className="block text-xs font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
           Descricao
         </label>
         <input
@@ -154,7 +154,7 @@ export default function AdCopyStep() {
           style={{
             backgroundColor: 'rgba(255,255,255,0.05)',
             border: '1px solid rgba(57, 255, 20, 0.2)',
-            color: 'var(--color-primary)',
+            color: 'var(--color-text-primary)',
             outline: 'none',
           }}
         />
@@ -165,7 +165,7 @@ export default function AdCopyStep() {
         className="p-4 rounded-lg"
         style={{ backgroundColor: 'rgba(57, 255, 20, 0.03)', border: '1px solid rgba(57, 255, 20, 0.1)' }}
       >
-        <label className="block text-xs font-medium mb-3" style={{ color: 'var(--color-secondary)' }}>
+        <label className="block text-xs font-medium mb-3" style={{ color: 'var(--color-text-secondary)' }}>
           Parametros UTM
         </label>
         <div className="grid grid-cols-2 gap-3">
@@ -177,7 +177,7 @@ export default function AdCopyStep() {
             { key: 'utm_term', placeholder: 'interesse' },
           ].map(({ key, placeholder }) => (
             <div key={key}>
-              <label className="block text-xs mb-1" style={{ color: 'var(--color-tertiary)' }}>
+              <label className="block text-xs mb-1" style={{ color: 'var(--color-text-tertiary)' }}>
                 {key}
               </label>
               <input
@@ -189,7 +189,7 @@ export default function AdCopyStep() {
                 style={{
                   backgroundColor: 'rgba(255,255,255,0.05)',
                   border: '1px solid rgba(57, 255, 20, 0.15)',
-                  color: 'var(--color-primary)',
+                  color: 'var(--color-text-primary)',
                   outline: 'none',
                 }}
               />
@@ -203,8 +203,8 @@ export default function AdCopyStep() {
             className="mt-4 p-3 rounded-lg"
             style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)', border: '1px solid rgba(57, 255, 20, 0.1)' }}
           >
-            <p className="text-xs mb-1" style={{ color: 'var(--color-tertiary)' }}>URL final:</p>
-            <p className="text-xs font-mono break-all" style={{ color: 'var(--neon-green)' }}>
+            <p className="text-xs mb-1" style={{ color: 'var(--color-text-tertiary)' }}>URL final:</p>
+            <p className="text-xs font-mono break-all" style={{ color: 'var(--color-accent)' }}>
               {fullUrlPreview}
             </p>
           </div>

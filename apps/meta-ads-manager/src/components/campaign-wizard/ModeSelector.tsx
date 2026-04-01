@@ -61,13 +61,13 @@ export default function ModeSelector() {
       <h3
         className="text-lg font-bold mb-1"
         style={{
-          color: 'var(--color-primary)',
-          fontFamily: "'Space Grotesk', system-ui, sans-serif",
+          color: 'var(--color-text-primary)',
+          fontFamily: "var(--font-sans)",
         }}
       >
         Como voce quer subir?
       </h3>
-      <p className="text-sm mb-6" style={{ color: 'var(--color-secondary)' }}>
+      <p className="text-sm mb-6" style={{ color: 'var(--color-text-secondary)' }}>
         Escolha o modo de configuracao das campanhas
       </p>
 
@@ -81,7 +81,7 @@ export default function ModeSelector() {
               className="relative p-6 rounded-xl border text-left cursor-pointer focus:outline-none group"
               style={{
                 backgroundColor: isSelected ? 'rgba(57, 255, 20, 0.06)' : 'rgba(255, 255, 255, 0.02)',
-                borderColor: isSelected ? 'rgba(57, 255, 20, 0.4)' : 'var(--border-subtle)',
+                borderColor: isSelected ? 'rgba(57, 255, 20, 0.4)' : 'var(--color-border-subtle)',
                 boxShadow: isSelected ? '0 0 0 3px rgba(57, 255, 20, 0.08), var(--shadow-card)' : 'var(--shadow-card)',
                 transition: 'all 150ms cubic-bezier(0.16, 1, 0.3, 1)',
               }}
@@ -91,8 +91,8 @@ export default function ModeSelector() {
                   className="absolute top-3 right-3 text-[10px] font-semibold px-2 py-0.5 rounded-full"
                   style={{
                     backgroundColor: 'rgba(57, 255, 20, 0.15)',
-                    color: 'var(--neon-green)',
-                    fontFamily: "'Space Grotesk', system-ui, sans-serif",
+                    color: 'var(--color-accent)',
+                    fontFamily: "var(--font-sans)",
                     letterSpacing: '0.05em',
                   }}
                 >
@@ -104,7 +104,7 @@ export default function ModeSelector() {
                 className="w-10 h-10 rounded-lg flex items-center justify-center mb-4"
                 style={{
                   backgroundColor: isSelected ? 'rgba(57, 255, 20, 0.15)' : 'rgba(255, 255, 255, 0.05)',
-                  color: isSelected ? 'var(--neon-green)' : 'var(--color-secondary)',
+                  color: isSelected ? 'var(--color-accent)' : 'var(--color-text-secondary)',
                 }}
               >
                 {option.icon}
@@ -113,8 +113,8 @@ export default function ModeSelector() {
               <h4
                 className="text-sm font-semibold mb-2"
                 style={{
-                  color: 'var(--color-primary)',
-                  fontFamily: "'Space Grotesk', system-ui, sans-serif",
+                  color: 'var(--color-text-primary)',
+                  fontFamily: "var(--font-sans)",
                   letterSpacing: '-0.01em',
                 }}
               >
@@ -123,7 +123,7 @@ export default function ModeSelector() {
 
               <p
                 className="text-xs leading-relaxed"
-                style={{ color: 'var(--color-tertiary)' }}
+                style={{ color: 'var(--color-text-tertiary)' }}
               >
                 {option.description}
               </p>
@@ -132,7 +132,7 @@ export default function ModeSelector() {
                 <div
                   className="absolute bottom-0 left-0 right-0 h-0.5 rounded-b-xl"
                   style={{
-                    backgroundColor: 'var(--neon-green)',
+                    backgroundColor: 'var(--color-accent)',
                     boxShadow: '0 0 8px rgba(57, 255, 20, 0.5)',
                   }}
                 />

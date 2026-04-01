@@ -119,13 +119,13 @@ export default function ConfigPopupV2({ onClose, onSaved, draftState, draftId, t
                 <h3
                   className="text-lg font-bold"
                   style={{
-                    color: 'var(--color-primary)',
-                    fontFamily: "'Space Grotesk', system-ui, sans-serif",
+                    color: 'var(--color-text-primary)',
+                    fontFamily: "var(--font-sans)",
                   }}
                 >
                   Engenharia de Lotes
                 </h3>
-                <p className="text-sm" style={{ color: 'var(--color-secondary)' }}>
+                <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                   Cada lote gera uma chamada independente ao bulk-publish
                 </p>
               </div>
@@ -136,8 +136,8 @@ export default function ConfigPopupV2({ onClose, onSaved, draftState, draftId, t
                   style={{
                     backgroundColor: 'rgba(57, 255, 20, 0.08)',
                     border: '1px solid rgba(57, 255, 20, 0.25)',
-                    color: 'var(--neon-green)',
-                    fontFamily: "'Space Grotesk', system-ui, sans-serif",
+                    color: 'var(--color-accent)',
+                    fontFamily: "var(--font-sans)",
                     transition: 'all 150ms cubic-bezier(0.16, 1, 0.3, 1)',
                   }}
                 >
@@ -218,9 +218,9 @@ export default function ConfigPopupV2({ onClose, onSaved, draftState, draftId, t
           flexDirection: 'column',
           width: '95vw',
           height: '95vh',
-          backgroundColor: 'var(--bg-card)',
+          backgroundColor: 'var(--color-bg-surface)',
           borderRadius: 'var(--radius-lg)',
-          border: '1px solid var(--border-subtle)',
+          border: '1px solid var(--color-border-subtle)',
           boxShadow: '0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)',
           overflow: 'hidden',
         }}
@@ -233,8 +233,8 @@ export default function ConfigPopupV2({ onClose, onSaved, draftState, draftId, t
           <h2
             className="text-xl font-bold"
             style={{
-              color: 'var(--color-primary)',
-              fontFamily: "'Space Grotesk', system-ui, sans-serif",
+              color: 'var(--color-text-primary)',
+              fontFamily: "var(--font-sans)",
               letterSpacing: '-0.02em',
             }}
           >
@@ -244,7 +244,7 @@ export default function ConfigPopupV2({ onClose, onSaved, draftState, draftId, t
                 className="ml-3 text-xs font-normal px-2 py-0.5 rounded-full"
                 style={{
                   backgroundColor: 'rgba(57, 255, 20, 0.1)',
-                  color: 'var(--neon-green)',
+                  color: 'var(--color-accent)',
                   border: '1px solid rgba(57, 255, 20, 0.2)',
                 }}
               >
@@ -254,8 +254,8 @@ export default function ConfigPopupV2({ onClose, onSaved, draftState, draftId, t
           </h2>
           <button
             onClick={handleClose}
-            className="p-2 rounded-lg transition-all hover:bg-white/5 cursor-pointer focus:outline-none focus:ring-2 focus:ring-neon-green/20"
-            style={{ color: 'var(--color-secondary)', transitionDuration: '150ms' }}
+            className="p-2 rounded-lg transition-all hover:bg-white/5 cursor-pointer focus:outline-none focus:ring-2 focus:ring-2"
+            style={{ color: 'var(--color-text-secondary)', transitionDuration: '150ms' }}
             aria-label="Fechar"
           >
             <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -281,12 +281,12 @@ export default function ConfigPopupV2({ onClose, onSaved, draftState, draftId, t
                 className="flex items-center gap-1.5 px-4 py-3 text-sm font-medium whitespace-nowrap transition-all relative disabled:cursor-not-allowed cursor-pointer focus:outline-none"
                 style={{
                   color: isActive
-                    ? 'var(--neon-green)'
+                    ? 'var(--color-accent)'
                     : isCompleted
                     ? 'var(--color-success)'
-                    : 'var(--color-secondary)',
+                    : 'var(--color-text-secondary)',
                   opacity: isDisabled ? 0.3 : isActive || isCompleted ? 1 : 0.7,
-                  fontFamily: "'Space Grotesk', system-ui, sans-serif",
+                  fontFamily: "var(--font-sans)",
                   letterSpacing: '0.01em',
                   transitionDuration: '150ms',
                 }}
@@ -301,7 +301,7 @@ export default function ConfigPopupV2({ onClose, onSaved, draftState, draftId, t
                   <span
                     className="absolute bottom-0 left-0 right-0 h-0.5"
                     style={{
-                      backgroundColor: 'var(--neon-green)',
+                      backgroundColor: 'var(--color-accent)',
                       boxShadow: '0 0 8px rgba(57, 255, 20, 0.5)',
                     }}
                   />
@@ -330,19 +330,19 @@ export default function ConfigPopupV2({ onClose, onSaved, draftState, draftId, t
           <button
             onClick={handleBack}
             disabled={currentStep === 0}
-            className="px-5 py-2 rounded-xl border text-sm font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer focus:outline-none focus:ring-2 focus:ring-neon-green/20"
+            className="px-5 py-2 rounded-xl border text-sm font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer focus:outline-none focus:ring-2 focus:ring-2"
             style={{
-              borderColor: 'var(--border-default)',
-              color: 'var(--color-secondary)',
-              fontFamily: "'Space Grotesk', system-ui, sans-serif",
+              borderColor: 'var(--color-border)',
+              color: 'var(--color-text-secondary)',
+              fontFamily: "var(--font-sans)",
               transitionDuration: '150ms',
             }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border-hover)'; (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--bg-row-hover)'; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border-default)'; (e.currentTarget as HTMLButtonElement).style.backgroundColor = ''; }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--color-border-hover)'; (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--color-bg-row-hover)'; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--color-border)'; (e.currentTarget as HTMLButtonElement).style.backgroundColor = ''; }}
           >
             Voltar
           </button>
-          <span className="text-xs" style={{ color: 'var(--color-tertiary)' }}>
+          <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
             Etapa {currentStep + 1} de 6
             {batches.length > 0 && ` · ${batches.length} lote${batches.length !== 1 ? 's' : ''}`}
           </span>
@@ -363,16 +363,16 @@ export default function ConfigPopupV2({ onClose, onSaved, draftState, draftId, t
           <div
             className="relative p-6 shadow-xl max-w-md w-full mx-4"
             style={{
-              backgroundColor: 'var(--bg-card-hover)',
+              backgroundColor: 'var(--color-bg-surface-hover)',
               borderRadius: 'var(--radius-lg)',
-              border: '1px solid var(--border-default)',
+              border: '1px solid var(--color-border)',
               boxShadow: 'var(--shadow-elevated)',
             }}
           >
-            <p className="text-base font-semibold mb-2" style={{ color: 'var(--color-primary)', fontFamily: "'Space Grotesk', system-ui, sans-serif" }}>
+            <p className="text-base font-semibold mb-2" style={{ color: 'var(--color-text-primary)', fontFamily: "var(--font-sans)" }}>
               Sair da configuracao?
             </p>
-            <p className="text-sm mb-6 leading-relaxed" style={{ color: 'var(--color-secondary)' }}>
+            <p className="text-sm mb-6 leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
               Seu progresso sera salvo automaticamente. Deseja sair?
             </p>
             <div className="flex gap-3 justify-end">

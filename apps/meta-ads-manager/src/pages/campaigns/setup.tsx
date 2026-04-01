@@ -25,7 +25,7 @@ export default function CampaignSetupPage() {
   const [templateToLoad, setTemplateToLoad] = useState<any>(null);
   const [deletingTemplateId, setDeletingTemplateId] = useState<string | null>(null);
 
-  const headingFont = { fontFamily: "'Space Grotesk', system-ui, sans-serif" };
+  const headingFont = { fontFamily: "var(--font-sans)" };
 
   const fetchTemplates = async () => {
     try {
@@ -170,14 +170,14 @@ export default function CampaignSetupPage() {
           <h1
             className="text-3xl font-bold mb-3"
             style={{
-              color: 'var(--neon-green)',
+              color: 'var(--color-accent)',
               ...headingFont,
               textShadow: '0 0 20px rgba(57, 255, 20, 0.3)',
             }}
           >
             Subir Campanhas
           </h1>
-          <p className="text-sm mb-8" style={{ color: 'var(--color-secondary)' }}>
+          <p className="text-sm mb-8" style={{ color: 'var(--color-text-secondary)' }}>
             Configure e publique campanhas em múltiplas contas e páginas de uma vez.
           </p>
 
@@ -189,10 +189,10 @@ export default function CampaignSetupPage() {
               className="px-6 py-2 rounded-lg border text-sm font-medium transition-all disabled:opacity-50"
               style={{
                 borderColor: 'rgba(0, 240, 255, 0.3)',
-                color: 'var(--neon-cyan)',
+                color: 'var(--color-info)',
                 ...headingFont,
               }}
-              onMouseEnter={(e) => { if (!syncing) { e.currentTarget.style.borderColor = 'var(--neon-cyan)'; e.currentTarget.style.boxShadow = '0 0 12px rgba(0, 240, 255, 0.2)'; } }}
+              onMouseEnter={(e) => { if (!syncing) { e.currentTarget.style.borderColor = 'var(--color-info)'; e.currentTarget.style.boxShadow = '0 0 12px rgba(0, 240, 255, 0.2)'; } }}
               onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(0, 240, 255, 0.3)'; e.currentTarget.style.boxShadow = 'none'; }}
             >
               {syncing ? 'Sincronizando...' : 'Sincronizar Contas'}
@@ -209,8 +209,8 @@ export default function CampaignSetupPage() {
               onClick={openNewWizard}
               className="px-8 py-3 rounded-lg font-semibold text-sm transition-all"
               style={{
-                backgroundColor: 'var(--neon-green)',
-                color: 'var(--bg-deepest)',
+                backgroundColor: 'var(--color-accent)',
+                color: 'var(--color-bg-base)',
                 ...headingFont,
                 letterSpacing: '0.05em',
                 boxShadow: '0 0 20px rgba(57, 255, 20, 0.3)',
@@ -232,10 +232,10 @@ export default function CampaignSetupPage() {
                 className="px-6 py-2 rounded-lg border text-sm font-medium transition-all"
                 style={{
                   borderColor: 'rgba(0, 240, 255, 0.3)',
-                  color: 'var(--neon-cyan)',
+                  color: 'var(--color-info)',
                   ...headingFont,
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--neon-cyan)'; e.currentTarget.style.boxShadow = '0 0 12px rgba(0, 240, 255, 0.2)'; }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--color-info)'; e.currentTarget.style.boxShadow = '0 0 12px rgba(0, 240, 255, 0.2)'; }}
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(0, 240, 255, 0.3)'; e.currentTarget.style.boxShadow = 'none'; }}
               >
                 Editar Rascunho
@@ -249,7 +249,7 @@ export default function CampaignSetupPage() {
           <div className="w-full max-w-3xl">
             <h2
               className="text-lg font-bold mb-4"
-              style={{ color: 'var(--neon-green)', ...headingFont }}
+              style={{ color: 'var(--color-accent)', ...headingFont }}
             >
               Seus Templates
             </h2>
@@ -267,13 +267,13 @@ export default function CampaignSetupPage() {
                     className="p-4 rounded-lg border"
                     style={{
                       backgroundColor: 'rgba(255, 255, 255, 0.03)',
-                      borderColor: 'var(--border-light)',
+                      borderColor: 'var(--color-border)',
                     }}
                   >
                     <div className="flex items-start justify-between mb-2">
                       <h3
                         className="text-sm font-semibold truncate flex-1 mr-2"
-                        style={{ color: 'var(--color-primary)', ...headingFont }}
+                        style={{ color: 'var(--color-text-primary)', ...headingFont }}
                       >
                         {tpl.name}
                       </h3>
@@ -289,7 +289,7 @@ export default function CampaignSetupPage() {
                         </svg>
                       </button>
                     </div>
-                    <div className="flex items-center gap-3 text-xs mb-3" style={{ color: 'var(--color-tertiary)' }}>
+                    <div className="flex items-center gap-3 text-xs mb-3" style={{ color: 'var(--color-text-tertiary)' }}>
                       <span>{accounts} contas</span>
                       <span>{pages} páginas</span>
                       <span>{campaigns} campanhas</span>
@@ -300,10 +300,10 @@ export default function CampaignSetupPage() {
                       className="w-full py-2 rounded-lg border text-xs font-medium transition-all"
                       style={{
                         borderColor: 'rgba(57, 255, 20, 0.3)',
-                        color: 'var(--neon-green)',
+                        color: 'var(--color-accent)',
                         ...headingFont,
                       }}
-                      onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--neon-green)'; e.currentTarget.style.boxShadow = '0 0 8px rgba(57, 255, 20, 0.2)'; }}
+                      onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--color-accent)'; e.currentTarget.style.boxShadow = '0 0 8px rgba(57, 255, 20, 0.2)'; }}
                       onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(57, 255, 20, 0.3)'; e.currentTarget.style.boxShadow = 'none'; }}
                     >
                       Usar Template

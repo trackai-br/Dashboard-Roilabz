@@ -85,17 +85,17 @@ export function NotificationDrawer({
       />
 
       {/* Drawer */}
-      <div className="absolute right-0 top-0 bottom-0 w-96 shadow-lg overflow-y-auto" style={{ backgroundColor: 'var(--bg-card)' }}>
+      <div className="absolute right-0 top-0 bottom-0 w-96 shadow-lg overflow-y-auto" style={{ backgroundColor: 'var(--color-bg-surface)' }}>
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="border-b px-6 py-4" style={{ borderBottomColor: 'var(--color-tertiary)' }}>
+          <div className="border-b px-6 py-4" style={{ borderBottomColor: 'var(--color-text-tertiary)' }}>
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold font-display" style={{ color: 'var(--color-brand)' }}>
+              <h2 className="text-xl font-bold font-display" style={{ color: 'var(--color-accent-dark)' }}>
                 Notificações
               </h2>
               <button
                 onClick={onClose}
-                style={{ color: 'var(--color-secondary)' }}
+                style={{ color: 'var(--color-text-secondary)' }}
               >
                 ✕
               </button>
@@ -105,7 +105,7 @@ export function NotificationDrawer({
           {/* Content */}
           <div className="flex-1 overflow-y-auto">
             {error && (
-              <div className="m-4 rounded-lg border p-3" style={{ backgroundColor: 'var(--color-danger-bg)', borderColor: 'var(--color-danger)' }}>
+              <div className="m-4 rounded-lg border p-3" style={{ backgroundColor: 'rgba(255,45,120,0.06)', borderColor: 'var(--color-danger)' }}>
                 <p className="text-sm" style={{ color: 'var(--color-danger)' }}>
                   Erro ao carregar notificações
                 </p>
@@ -113,11 +113,11 @@ export function NotificationDrawer({
             )}
 
             {isLoading ? (
-              <div className="p-6 text-center" style={{ color: 'var(--color-secondary)' }}>
+              <div className="p-6 text-center" style={{ color: 'var(--color-text-secondary)' }}>
                 Carregando...
               </div>
             ) : notifications.length === 0 ? (
-              <div className="p-6 text-center" style={{ color: 'var(--color-secondary)' }}>
+              <div className="p-6 text-center" style={{ color: 'var(--color-text-secondary)' }}>
                 <p className="text-lg">📭</p>
                 <p>Sem notificações</p>
               </div>
@@ -128,8 +128,8 @@ export function NotificationDrawer({
                     key={notification.id}
                     className="rounded-lg p-4 border transition-colors"
                     style={{
-                      backgroundColor: notification.read ? 'var(--bg-page)' : 'var(--color-info-bg)',
-                      borderColor: notification.read ? 'var(--color-tertiary)' : 'var(--color-info)'
+                      backgroundColor: notification.read ? 'var(--color-bg-base)' : 'rgba(0,212,255,0.05)',
+                      borderColor: notification.read ? 'var(--color-text-tertiary)' : 'var(--color-info)'
                     }}
                   >
                     <div className="flex items-start gap-3">
@@ -148,14 +148,14 @@ export function NotificationDrawer({
                         className="mt-1"
                       />
                       <div className="flex-1">
-                        <p className="font-medium text-sm" style={{ color: 'var(--color-primary)' }}>
+                        <p className="font-medium text-sm" style={{ color: 'var(--color-text-primary)' }}>
                           {notification.message.split('\n')[0]}
                         </p>
-                        <p className="text-xs mt-1" style={{ color: 'var(--color-secondary)' }}>
+                        <p className="text-xs mt-1" style={{ color: 'var(--color-text-secondary)' }}>
                           {new Date(notification.created_at).toLocaleString('pt-BR')}
                         </p>
                         {!notification.read && (
-                          <span className="mt-2 inline-block h-2 w-2 rounded-full" style={{ backgroundColor: 'var(--color-brand)' }}></span>
+                          <span className="mt-2 inline-block h-2 w-2 rounded-full" style={{ backgroundColor: 'var(--color-accent-dark)' }}></span>
                         )}
                       </div>
                     </div>
@@ -167,14 +167,14 @@ export function NotificationDrawer({
 
           {/* Footer */}
           {notifications.length > 0 && (
-            <div className="border-t p-4 space-y-2" style={{ borderTopColor: 'var(--color-tertiary)' }}>
+            <div className="border-t p-4 space-y-2" style={{ borderTopColor: 'var(--color-text-tertiary)' }}>
               {selectedIds.length > 0 && (
                 <div className="flex gap-2">
                   <button
                     onClick={() => markReadMutation.mutate(selectedIds)}
                     disabled={markReadMutation.isPending}
                     className="flex-1 rounded-lg px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
-                    style={{ backgroundColor: 'var(--color-brand)' }}
+                    style={{ backgroundColor: 'var(--color-accent-dark)' }}
                   >
                     Marcar como Lida
                   </button>
@@ -193,14 +193,14 @@ export function NotificationDrawer({
                 <button
                   onClick={() => setSelectedIds(notifications.map((n: Notification) => n.id))}
                   className="flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors"
-                  style={{ borderColor: 'var(--color-tertiary)', color: 'var(--color-primary)' }}
+                  style={{ borderColor: 'var(--color-text-tertiary)', color: 'var(--color-text-primary)' }}
                 >
                   Selecionar Tudo
                 </button>
                 <button
                   onClick={() => setSelectedIds([])}
                   className="flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors"
-                  style={{ borderColor: 'var(--color-tertiary)', color: 'var(--color-primary)' }}
+                  style={{ borderColor: 'var(--color-text-tertiary)', color: 'var(--color-text-primary)' }}
                 >
                   Limpar
                 </button>
