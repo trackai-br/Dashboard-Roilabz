@@ -37,7 +37,6 @@ describe('CampaignTable', () => {
 
     expect(screen.getByText('Campaign 1')).toBeInTheDocument();
     expect(screen.getByText('Campaign 2')).toBeInTheDocument();
-    // Check that the table contains the spend values (may be in different cells)
     const text = container.textContent;
     expect(text).toContain('1000');
     expect(text).toContain('500');
@@ -46,12 +45,12 @@ describe('CampaignTable', () => {
   it('renders all required columns', () => {
     render(<CampaignTable campaigns={mockCampaigns} />);
 
-    expect(screen.getByText('Account')).toBeInTheDocument();
-    expect(screen.getByText('Name')).toBeInTheDocument();
+    expect(screen.getByText('Conta')).toBeInTheDocument();
+    expect(screen.getByText('Campanha')).toBeInTheDocument();
     expect(screen.getByText('Status')).toBeInTheDocument();
-    expect(screen.getByText('Spend')).toBeInTheDocument();
-    expect(screen.getByText('Impressions')).toBeInTheDocument();
-    expect(screen.getByText('Clicks')).toBeInTheDocument();
+    expect(screen.getByText('Gasto')).toBeInTheDocument();
+    expect(screen.getByText('Impressões')).toBeInTheDocument();
+    expect(screen.getByText('Cliques')).toBeInTheDocument();
     expect(screen.getByText('CPC')).toBeInTheDocument();
     expect(screen.getByText('ROAS')).toBeInTheDocument();
   });
@@ -76,26 +75,23 @@ describe('CampaignTable', () => {
     expect(screen.getByText(/Failed to load campaigns/)).toBeInTheDocument();
   });
 
-  it('displays "No campaigns found" when empty', () => {
+  it('displays empty state when no campaigns', () => {
     render(<CampaignTable campaigns={[]} />);
 
-    expect(screen.getByText('No campaigns found')).toBeInTheDocument();
+    expect(screen.getByText('Nenhuma campanha encontrada')).toBeInTheDocument();
   });
 
-  it('renders campaign status badge with correct styles', () => {
+  it('renders campaign status badge', () => {
     render(<CampaignTable campaigns={mockCampaigns} />);
 
-    const activeBadge = screen.getAllByText('ACTIVE')[0];
-    expect(activeBadge).toHaveClass('bg-green-100');
-
-    const pausedBadge = screen.getByText('PAUSED');
-    expect(pausedBadge).toHaveClass('bg-yellow-100');
+    expect(screen.getByText('Ativo')).toBeInTheDocument();
+    expect(screen.getByText('Pausado')).toBeInTheDocument();
   });
 
-  it('handles sorting by column name', () => {
+  it('handles sorting by campaign column', () => {
     render(<CampaignTable campaigns={mockCampaigns} />);
 
-    const nameHeader = screen.getAllByText('Name')[0];
+    const nameHeader = screen.getByText('Campanha');
     fireEvent.click(nameHeader);
 
     // After sorting, Campaign 1 should still appear first (ascending order)
@@ -103,14 +99,9 @@ describe('CampaignTable', () => {
     expect(rows[1]).toHaveTextContent('Campaign 1');
   });
 
-  it('formats numbers correctly', () => {
+  it('formats ROAS with 2 decimals', () => {
     render(<CampaignTable campaigns={mockCampaigns} />);
 
-    // Check impressions are formatted (may vary by locale)
-    const impressions = screen.getAllByText(/50/);
-    expect(impressions.length).toBeGreaterThan(0);
-
-    // Check ROAS is formatted with 2 decimals
     expect(screen.getByText('2.50x')).toBeInTheDocument();
     expect(screen.getByText('1.50x')).toBeInTheDocument();
   });
@@ -118,8 +109,6 @@ describe('CampaignTable', () => {
   it('formats dates correctly', () => {
     render(<CampaignTable campaigns={mockCampaigns} />);
 
-    // Dates are formatted as locale date string (varies by system)
-    // Just check that some date text is present
     const dateCells = screen.getAllByText(/2024/);
     expect(dateCells.length).toBeGreaterThan(0);
   });

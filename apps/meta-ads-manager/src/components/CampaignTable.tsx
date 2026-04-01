@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
 
 interface Campaign {
   id: string;
@@ -25,6 +26,18 @@ interface CampaignTableProps {
 type SortColumn = 'name' | 'status' | 'spend' | 'impressions' | 'clicks' | 'cpc' | 'roas' | null;
 type SortDirection = 'asc' | 'desc';
 
+const statusBadge: Record<string, string> = {
+  ACTIVE:   'badge-active',
+  PAUSED:   'badge-paused',
+  ARCHIVED: 'badge-off',
+};
+
+const statusLabel: Record<string, string> = {
+  ACTIVE:   'Ativo',
+  PAUSED:   'Pausado',
+  ARCHIVED: 'Arquivado',
+};
+
 export const CampaignTable: React.FC<CampaignTableProps> = ({
   campaigns,
   loading = false,
@@ -36,53 +49,36 @@ export const CampaignTable: React.FC<CampaignTableProps> = ({
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
   const sortedCampaigns = useMemo(() => {
-    if (!sortColumn || campaigns.length === 0) {
-      return campaigns;
-    }
-
-    const sorted = [...campaigns].sort((a, b) => {
+    if (!sortColumn || campaigns.length === 0) return campaigns;
+    return [...campaigns].sort((a, b) => {
       const aVal = a[sortColumn as keyof Campaign];
       const bVal = b[sortColumn as keyof Campaign];
-
       if (aVal === bVal) return 0;
-      if (aVal === undefined || aVal === null) return 1;
-      if (bVal === undefined || bVal === null) return -1;
-
-      const comparison = aVal < bVal ? -1 : 1;
-      return sortDirection === 'asc' ? comparison : -comparison;
+      if (aVal == null) return 1;
+      if (bVal == null) return -1;
+      const cmp = aVal < bVal ? -1 : 1;
+      return sortDirection === 'asc' ? cmp : -cmp;
     });
-
-    return sorted;
   }, [campaigns, sortColumn, sortDirection]);
 
   const handleSort = (column: SortColumn) => {
-    if (sortColumn === column) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortColumn(column);
-      setSortDirection('asc');
-    }
-
-    if (onSort && column) {
-      onSort(column, sortDirection === 'asc' ? 'desc' : 'asc');
-    }
+    const nextDir = sortColumn === column && sortDirection === 'asc' ? 'desc' : 'asc';
+    setSortColumn(column);
+    setSortDirection(nextDir);
+    if (onSort && column) onSort(column, nextDir);
   };
 
   const SortIcon = ({ column }: { column: SortColumn }) => {
-    if (sortColumn !== column) {
-      return <span className="text-gray-400">⇅</span>;
-    }
-    return (
-      <span className="text-blue-600 dark:text-blue-400">
-        {sortDirection === 'asc' ? '↑' : '↓'}
-      </span>
-    );
+    if (sortColumn !== column) return <ChevronsUpDown size={12} style={{ color: 'var(--color-text-tertiary)' }} />;
+    return sortDirection === 'asc'
+      ? <ChevronUp size={12} style={{ color: 'var(--color-accent)' }} />
+      : <ChevronDown size={12} style={{ color: 'var(--color-accent)' }} />;
   };
 
-  const TableHeader = ({ label, column }: { label: string; column: SortColumn }) => (
+  const ColHeader = ({ label, column }: { label: string; column: SortColumn }) => (
     <button
       onClick={() => handleSort(column)}
-      className="flex items-center gap-2 font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+      className="flex items-center gap-1 col-header cursor-pointer transition-colors hover:text-white focus:outline-none"
     >
       {label}
       <SortIcon column={column} />
@@ -91,105 +87,107 @@ export const CampaignTable: React.FC<CampaignTableProps> = ({
 
   if (error) {
     return (
-      <div className="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-4">
-        <p className="text-sm font-medium text-red-800 dark:text-red-200">
-          Error loading campaigns: {error}
-        </p>
+      <div className="rounded-lg p-4" style={{ border: '1px solid var(--color-danger)', backgroundColor: 'rgba(255,45,120,0.06)' }}>
+        <p className="text-sm" style={{ color: 'var(--color-danger)' }}>Erro ao carregar campanhas: {error}</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      {accountSelector && <div className="flex items-center gap-4">{accountSelector}</div>}
+    <div className="space-y-3">
+      {accountSelector && <div className="flex items-center gap-3">{accountSelector}</div>}
 
-      <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
-        <table className="w-full text-sm">
-          <thead className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-            <tr>
-              <th className="px-6 py-3 text-left">
-                <TableHeader label="Account" column={null} />
-              </th>
-              <th className="px-6 py-3 text-left">
-                <TableHeader label="Name" column="name" />
-              </th>
-              <th className="px-6 py-3 text-left">
-                <TableHeader label="Status" column="status" />
-              </th>
-              <th className="px-6 py-3 text-right">
-                <TableHeader label="Spend" column="spend" />
-              </th>
-              <th className="px-6 py-3 text-right">
-                <TableHeader label="Impressions" column="impressions" />
-              </th>
-              <th className="px-6 py-3 text-right">
-                <TableHeader label="Clicks" column="clicks" />
-              </th>
-              <th className="px-6 py-3 text-right">
-                <TableHeader label="CPC" column="cpc" />
-              </th>
-              <th className="px-6 py-3 text-right">
-                <TableHeader label="ROAS" column="roas" />
-              </th>
-              <th className="px-6 py-3 text-left">Last Modified</th>
+      <div
+        className="overflow-x-auto"
+        style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', backgroundColor: 'var(--color-bg-surface)' }}
+      >
+        <table className="w-full">
+          <thead>
+            <tr style={{ borderBottom: '1px solid var(--color-border)' }}>
+              {[
+                { label: 'Conta',      column: null as SortColumn,        align: 'left'  },
+                { label: 'Campanha',   column: 'name' as SortColumn,      align: 'left'  },
+                { label: 'Status',     column: 'status' as SortColumn,    align: 'left'  },
+                { label: 'Gasto',      column: 'spend' as SortColumn,     align: 'right' },
+                { label: 'Impressões', column: 'impressions' as SortColumn, align: 'right' },
+                { label: 'Cliques',    column: 'clicks' as SortColumn,    align: 'right' },
+                { label: 'CPC',        column: 'cpc' as SortColumn,       align: 'right' },
+                { label: 'ROAS',       column: 'roas' as SortColumn,      align: 'right' },
+                { label: 'Atualizado', column: null as SortColumn,        align: 'left'  },
+              ].map(({ label, column, align }) => (
+                <th
+                  key={label}
+                  className={`px-4 text-${align}`}
+                  style={{ height: '36px', verticalAlign: 'middle', backgroundColor: 'var(--color-bg-sidebar)' }}
+                >
+                  <ColHeader label={label} column={column} />
+                </th>
+              ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody>
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
-                <tr key={i} className="bg-white dark:bg-gray-800">
+                <tr key={i}>
                   {Array.from({ length: 9 }).map((_, j) => (
-                    <td key={j} className="px-6 py-4">
-                      <div className="h-4 w-full animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
+                    <td key={j} className="px-4" style={{ height: '44px' }}>
+                      <div className="h-3 w-full animate-pulse rounded" style={{ backgroundColor: 'var(--color-bg-input)' }} />
                     </td>
                   ))}
                 </tr>
               ))
             ) : sortedCampaigns.length === 0 ? (
               <tr>
-                <td colSpan={9} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
-                  No campaigns found
+                <td colSpan={9} className="px-4 py-10 text-center text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                  Nenhuma campanha encontrada
                 </td>
               </tr>
             ) : (
-              sortedCampaigns.map((campaign) => (
-                <tr key={campaign.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                  <td className="px-6 py-4 text-gray-900 dark:text-white">
-                    {campaign.account_name || campaign.account_id}
+              sortedCampaigns.map((c) => (
+                <tr
+                  key={c.id}
+                  style={{ borderBottom: '1px solid var(--color-border)', height: '44px' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--color-bg-row-hover)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
+                >
+                  <td className="px-4 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                    {c.account_name || c.account_id}
                   </td>
-                  <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
-                    {campaign.name}
+                  <td className="px-4 text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                    {c.name}
                   </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${
-                        campaign.status === 'ACTIVE'
-                          ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200'
-                          : campaign.status === 'PAUSED'
-                          ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200'
-                          : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
-                      }`}
-                    >
-                      {campaign.status}
+                  <td className="px-4">
+                    <span className={statusBadge[c.status] || 'badge-off'}>
+                      {statusLabel[c.status] || c.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-right text-gray-900 dark:text-white">
-                    ${campaign.spend.toFixed(2)}
+                  <td className="px-4 text-right">
+                    <span className="value-mono" style={{ color: 'var(--color-text-primary)' }}>
+                      R${c.spend.toFixed(2)}
+                    </span>
                   </td>
-                  <td className="px-6 py-4 text-right text-gray-900 dark:text-white">
-                    {campaign.impressions.toLocaleString()}
+                  <td className="px-4 text-right">
+                    <span className="value-mono" style={{ color: 'var(--color-text-primary)' }}>
+                      {c.impressions.toLocaleString('pt-BR')}
+                    </span>
                   </td>
-                  <td className="px-6 py-4 text-right text-gray-900 dark:text-white">
-                    {campaign.clicks.toLocaleString()}
+                  <td className="px-4 text-right">
+                    <span className="value-mono" style={{ color: 'var(--color-text-primary)' }}>
+                      {c.clicks.toLocaleString('pt-BR')}
+                    </span>
                   </td>
-                  <td className="px-6 py-4 text-right text-gray-900 dark:text-white">
-                    ${campaign.cpc.toFixed(2)}
+                  <td className="px-4 text-right">
+                    <span className="value-mono" style={{ color: 'var(--color-text-primary)' }}>
+                      R${c.cpc.toFixed(2)}
+                    </span>
                   </td>
-                  <td className="px-6 py-4 text-right text-gray-900 dark:text-white">
-                    {campaign.roas.toFixed(2)}x
+                  <td className="px-4 text-right">
+                    <span className="value-mono" style={{ color: 'var(--color-text-primary)' }}>
+                      {c.roas.toFixed(2)}x
+                    </span>
                   </td>
-                  <td className="px-6 py-4 text-gray-600 dark:text-gray-400">
-                    {new Date(campaign.updated_at).toLocaleDateString()}
+                  <td className="px-4 text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
+                    {new Date(c.updated_at).toLocaleDateString('pt-BR')}
                   </td>
                 </tr>
               ))
