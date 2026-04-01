@@ -6,6 +6,32 @@ atualizado: 2026-04-01
 
 # Checkpoints
 
+## [2026-04-01] — Fix bugs críticos de publicação em massa (TDD, distribuição, optimization_goal)
+- **O que mudou:**
+  - BUG-DIST: novo algoritmo `buildDistributionMap` — distribui N campanhas por conta (campaignCount), sem multiplicar por páginas
+  - BUG-2490487: `getOptimizationGoalForObjective` corrigido — OUTCOME_SALES → LINK_CLICKS (não OFFSITE_CONVERSIONS) quando sem pixel
+  - TDD com 35 regras de negócio (BR-001 a BR-035): 50 novos testes todos GREEN
+  - Distribuição em blocos proporcionais: 6 camp + 2 tipos = [3,3]; sobra vai pro primeiro
+  - `BatchAdsetType.campaignsCount` removido — substituído por block distribution
+  - `BatchAccountEntry.campaignCount` adicionado — controla campanhas por conta
+  - Código morto removido: `distribution.test.ts` (V1), `Tab2PagesVolume.tsx` (V1)
+- **Arquivos criados:**
+  - `src/lib/distribution.ts` (reescrito)
+  - `src/lib/meta-ad-rules.ts`
+  - `src/__tests__/distribution-algorithm.test.ts`
+  - `src/__tests__/meta-ad-rules.test.ts`
+- **Arquivos alterados:**
+  - `src/stores/wizard-store.ts`, `src/lib/batch-schemas.ts`
+  - `src/components/campaign-wizard/BatchCard.tsx`, `PreviewPublishStep.tsx`
+  - `src/pages/api/meta/bulk-publish.ts`, `retry-publish.ts`
+- **Testes passando:** 339/339
+- **Estado do projeto:** Deployed — commit 6c2c4c7
+- **Próximo passo se a sessão acabar aqui:**
+  1. Testar publicação em produção com 2 contas + 2 páginas — confirmar 6 campanhas (não 24)
+  2. Testar OUTCOME_SALES com pixel — confirmar sem erro 2490487
+  3. Conectar BatchCard com input de `campaignCount` por conta no UI
+  4. Conectar PreviewPublishStep com API de contagem de adsets por página (pageCurrentAdsets)
+
 ## [2026-04-01] — Auditoria UI/UX: remoção de código morto e ícones SVG
 - **O que mudou:**
   - Removidos 3 arquivos de código morto do wizard V1: ConfigPopup.tsx, Step1Assets.tsx, Step5Review.tsx (nunca importados após migração para V2)
