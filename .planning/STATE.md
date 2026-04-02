@@ -4,16 +4,16 @@
 Phase 1
 
 ## Status
-Ready to execute
+In progress — Phase 1 Plan 1 complete
 
 ## Overall Progress
-0% — All phases pending, no implementation started
+14% — Phase 1 complete (1/7 phases)
 
 ## Phase Summary
 
 | Phase | Name | Status | Requirements | ETA |
 |-------|------|--------|--------------|-----|
-| 1 | Diagnose & Fix Campaign Distribution (BUG-1a) | 🔴 Not started | BUG-1a | — |
+| 1 | Diagnose & Fix Campaign Distribution (BUG-1a) | ✅ Complete | BUG-1a | 2026-04-02 |
 | 2 | Add Guard Assertion Before Publish (BUG-1b) | 🔴 Not started | BUG-1b | — |
 | 3 | Add Structured Logging for Campaign Counts (BUG-1c) | 🔴 Not started | BUG-1c | — |
 | 4 | Add Granular Try-Catch for AdSet Creation (BUG-2a, BUG-2b) | 🔴 Not started | BUG-2a, BUG-2b | — |
@@ -65,6 +65,23 @@ None — Ready to start Phase 1 immediately
 - Fine granularity: each phase has single clear goal
 - BUG-1 before BUG-2 (multiplication masking structure issues)
 - Phase 7 is integration testing, not implementation
+
+## Decisions
+
+| Phase | Decision | Date |
+|-------|----------|------|
+| 01 | Use floor+remainder adapter (not Math.ceil) so total distribution entries = batch.totalCampaigns exactly | 2026-04-02 |
+| 01 | Delete local buildDistributionMap rather than rename to eliminate shadowing ambiguity | 2026-04-02 |
+| 01 | Cast BatchAdsetType as unknown as AdsetTypeForDist[] — types share required fields but lack index signature | 2026-04-02 |
+
+## Performance Metrics
+
+| Phase | Plan | Duration | Tasks | Files | Completed |
+|-------|------|----------|-------|-------|-----------|
+| 01 | 01 | 8 min | 7 | 1 | 2026-04-02 |
+
+## Last Session
+Stopped at: Completed 01-01-PLAN.md — BUG-1a fixed (2026-04-02)
 
 ## Last Updated
 2026-04-02
