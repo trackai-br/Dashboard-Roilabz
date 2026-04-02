@@ -130,6 +130,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // --- Helper: create full campaign + adsets + ads ---
     const createFullCampaign = async () => {
+      const statsPerCampaign = { adsetsCreated: 0, adsetsFailed: 0, adsCreated: 0, adsFailed: 0 };
+
       // 1. Create Campaign
       const campaignBody: any = {
         name: campaignName,
@@ -169,6 +171,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const adsetType = getAdsetTypeForCampaign(adsetTypes, entry.campaignIndex, distribution.length);
 
       for (let a = 0; a < adsetType.adsetCount; a++) {
+        let metaAdsetId: string | null = null;
+        try {
           const adsetSuffix = adsetType.adsetCount > 1 ? ` ${String(a + 1).padStart(2, '0')}` : '';
           const adsetBaseName = adsetType.name || `Conjunto ${a + 1}`;
           const adsetName = `${adsetBaseName}${adsetSuffix}`;
@@ -199,12 +203,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           Object.assign(adsetBody, extras);
 
           const adsetResult = await metaAPI.createAdSet(metaAccountId, metaCampaignId, adsetBody, user.id);
-          const metaAdsetId = adsetResult!.id;
+          metaAdsetId = adsetResult?.id || null;
+
+          if (!metaAdsetId) {
+            console.error(`[bulk-publish] AdSet ${a} returned no ID for campaign ${metaCampaignId}`);
+            statsPerCampaign.adsetsFailed++;
+            continue;
+          }
+
+          statsPerCampaign.adsetsCreated++;
           await humanDelay();
 
-          // Store adset in DB
+          // Store adset in DB — with error check
           if (storedAccount) {
-            await supabase.from('meta_ad_sets').insert({
+            const { error: dbErr } = await supabase.from('meta_ad_sets').insert({
               meta_account_id: (storedAccount as any).id,
               campaign_id: metaCampaignId,
               adset_id: metaAdsetId,
@@ -215,6 +227,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               bid_strategy: campaignConfig.bidStrategy,
               last_synced: new Date(),
             } as any);
+            if (dbErr) {
+              console.error(`[bulk-publish] DB insert adset failed for campaign ${metaCampaignId}, adset ${a}:`, dbErr);
+            }
           }
 
           // 3. Create Ads (1 per creative in adset type)
@@ -297,19 +312,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               } as any);
             }
           }
+        } catch (adsetErr: any) {
+          console.error(
+            `[bulk-publish] AdSet ${a} failed for campaign ${metaCampaignId}:`,
+            adsetErr?.message || adsetErr
+          );
+          statsPerCampaign.adsetsFailed++;
+          continue;
         }
+      }
 
-      return metaCampaignId;
+      return { metaCampaignId, stats: statsPerCampaign };
     };
 
     // --- Execute with retry on rate limit ---
     try {
-      const metaCampaignId = await createFullCampaign();
+      const { metaCampaignId, stats } = await createFullCampaign();
+      const hasFailures = stats.adsetsFailed > 0 || stats.adsFailed > 0;
       results.push({
         campaignIndex: entry.campaignIndex,
-        status: 'success',
+        status: hasFailures ? 'partial' : 'success',
         meta_campaign_id: metaCampaignId,
         campaignName,
+        stats,
       });
     } catch (err: any) {
       console.error(`[bulk-publish] Erro campanha ${i} (conta ${entry.accountId}):`, err instanceof MetaAPIError ? err.toJSON() : err.message);
@@ -327,12 +352,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
           try {
             // Retry cria campanha + adsets + ads completo (nao so campanha)
-            const retryMetaCampaignId = await createFullCampaign();
+            const { metaCampaignId: retryMetaCampaignId, stats: retryStats } = await createFullCampaign();
+            const retryHasFailures = retryStats.adsetsFailed > 0 || retryStats.adsFailed > 0;
             results.push({
               campaignIndex: entry.campaignIndex,
-              status: 'success',
+              status: retryHasFailures ? 'partial' : 'success',
               meta_campaign_id: retryMetaCampaignId,
               campaignName,
+              stats: retryStats,
             });
             retrySuccess = true;
             break;
