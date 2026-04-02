@@ -49,6 +49,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
+  // Structured logging for bulk-publish diagnostics
+  const bulkPublishTimestamp = new Date().toISOString();
+  console.log(
+    `[bulk-publish] [bulk-publish.ts] [${bulkPublishTimestamp}] ` +
+    `POST /api/meta/bulk-publish received with ${distribution.length} campaign entries`
+  );
+  distribution.forEach((entry: any, index: number) => {
+    console.log(
+      `[bulk-publish] [bulk-publish.ts] [${bulkPublishTimestamp}] ` +
+      `  Entry ${index + 1}/${distribution.length}: ` +
+      `account=${entry.accountId || 'unknown'}, ` +
+      `page=${entry.pageId || 'unknown'}, ` +
+      `campaign=${entry.campaignName || entry.name || 'unnamed'}`
+    );
+  });
+
   // Get user accounts via user_account_access join (meta_accounts has no user_id column)
   let userAccounts: any[];
   try {

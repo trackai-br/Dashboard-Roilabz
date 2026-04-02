@@ -143,6 +143,12 @@ export default function PreviewPublishStep({ onSaved }: PreviewPublishStepProps)
             continue;
           }
 
+          console.log(
+            `[bulk-publish] [PreviewPublishStep] [${new Date().toISOString()}] ` +
+            `Distribution plan: ${batch.accounts.length} accounts x ${batch.pages.length} pages x ${batch.totalCampaigns} campaigns = ` +
+            `${distribution.length} entries (expected ${expectedCount}) ${distribution.length === expectedCount ? '\u2713' : '\u2717'}`
+          );
+
           const res = await authenticatedFetch('/api/meta/bulk-publish', {
             method: 'POST',
             body: JSON.stringify({
