@@ -1,0 +1,60 @@
+Claude, atue como um Arquiteto de Software Sênior. Preciso que você 
+analise este projeto atual para preenchermos o meu arquivo CLAUDE.md 
+local.
+
+Siga rigorosamente estas etapas:
+
+Exploração Técnica: Analise a estrutura de arquivos, arquivos de 
+configuração (como package.json, requirements.txt, go.mod, Dockerfile, 
+etc.) e o README.md atual.
+
+Identificação da Stack: Identifique as linguagens, frameworks, banco de 
+dados e as principais bibliotecas utilizadas.
+
+Mapeamento de Comandos: Descubra quais são os comandos exatos para: 
+instalar dependências, rodar o ambiente de desenvolvimento, realizar o 
+build e executar os testes.
+
+Resumo de Negócio: Com base no código, descreva o que este projeto faz e 
+qual o seu objetivo principal em linguagem simples (conforme minhas Regras 
+Globais).
+
+Diagnóstico do Estado Atual: Identifique em quais arquivos você percebe 
+atividade recente ou o que parece ser a funcionalidade principal que está 
+sendo desenvolvida agora.
+
+O RESULTADO FINAL deve ser o conteúdo formatado para o meu CLAUDE.md 
+local, seguindo este template:
+
+Projeto: [Nome Detectado]
+Contexto e Objetivo
+O que é: [Explicação detalhada e simples do propósito do projeto]
+
+Público-alvo: [Quem usa este sistema?]
+
+Funcionalidades Principais: [Lista de 3 a 5 pontos principais]
+
+Stack: [Lista técnica detalhada]
+
+Como Rodar e Testar
+Setup Inicial: [Comando de instalação]
+
+Desenvolvimento: [Comando para rodar localmente]
+
+Testes: [Comando para rodar a suíte de testes]
+
+Build/Deploy: [Comando de produção, se houver]
+
+Guia de Arquitetura (Resumo)
+Pastas Principais: [Explicação de onde fica o que no projeto]
+
+Padrões de Código: [Ex: Usa Clean Architecture, MVC, ou apenas Scripts?]
+
+Contexto Ativo (Sessão Atual)
+Trabalhando em: [O que parece ser o foco atual baseado nos arquivos]
+
+Próximo passo: [Sugerir uma melhoria ou continuação lógica]
+
+Após gerar o texto, aguarde minha confirmação antes de criar o arquivo 
+CLAUDE.md na raiz.claude
+
