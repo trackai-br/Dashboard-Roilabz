@@ -3,7 +3,7 @@ import { useWizardStore, selectBatches, selectCreativePool, selectAdConfig } fro
 import type { PublishBatchResult, BatchConfig } from '@/stores/wizard-store';
 import { authenticatedFetch } from '@/lib/api-client';
 import { validateAllBatches } from '@/lib/batch-schemas';
-import { calculateCampaignsPerType } from '@/lib/distribution';
+import { calculateCampaignsPerType, buildDistributionMap, type AdsetTypeForDist } from '@/lib/distribution';
 
 const OBJECTIVE_LABELS: Record<string, string> = {
   OUTCOME_SALES: 'Vendas',
@@ -109,8 +109,29 @@ export default function PreviewPublishStep({ onSaved }: PreviewPublishStepProps)
         updatePublishBatch(batch.id, { status: 'publishing' });
 
         try {
-          // Build distribution map for this batch
-          const distribution = buildDistributionMap(batch);
+          // Build distribution map for this batch using the correct algorithm from distribution.ts
+          // Distribute totalCampaigns evenly across accounts (floor + remainder pattern)
+          const baseCount = Math.floor(batch.totalCampaigns / batch.accounts.length);
+          const remainder = batch.totalCampaigns % batch.accounts.length;
+          const distributionResult = buildDistributionMap({
+            accounts: batch.accounts.map((a, i) => ({
+              accountId: a.accountId,
+              accountName: a.accountName,
+              campaignCount: baseCount + (i < remainder ? 1 : 0),
+            })),
+            pages: batch.pages,
+            adsetTypes: batch.adsetTypes as unknown as AdsetTypeForDist[],
+          });
+
+          if (distributionResult.error) {
+            updatePublishBatch(batch.id, {
+              status: 'failed',
+              results: [{ campaignIndex: 0, status: 'failed', error: distributionResult.error }],
+            });
+            continue;
+          }
+
+          const distribution = distributionResult.entries;
 
           const res = await authenticatedFetch('/api/meta/bulk-publish', {
             method: 'POST',
@@ -158,7 +179,28 @@ export default function PreviewPublishStep({ onSaved }: PreviewPublishStepProps)
     updatePublishBatch(batchId, { status: 'publishing', results: [], completedCampaigns: 0 });
 
     try {
-      const distribution = buildDistributionMap(batch);
+      // Build distribution map using the correct algorithm from distribution.ts
+      const baseCount = Math.floor(batch.totalCampaigns / batch.accounts.length);
+      const remainder = batch.totalCampaigns % batch.accounts.length;
+      const distributionResult = buildDistributionMap({
+        accounts: batch.accounts.map((a, i) => ({
+          accountId: a.accountId,
+          accountName: a.accountName,
+          campaignCount: baseCount + (i < remainder ? 1 : 0),
+        })),
+        pages: batch.pages,
+        adsetTypes: batch.adsetTypes as unknown as AdsetTypeForDist[],
+      });
+
+      if (distributionResult.error) {
+        updatePublishBatch(batchId, {
+          status: 'failed',
+          results: [{ campaignIndex: 0, status: 'failed', error: distributionResult.error }],
+        });
+        return;
+      }
+
+      const distribution = distributionResult.entries;
       const res = await authenticatedFetch('/api/meta/bulk-publish', {
         method: 'POST',
         body: JSON.stringify({
@@ -476,25 +518,4 @@ export default function PreviewPublishStep({ onSaved }: PreviewPublishStepProps)
       )}
     </div>
   );
-}
-
-// Build distribution map from batch config (maps accounts x pages x campaigns)
-function buildDistributionMap(batch: BatchConfig) {
-  const entries: any[] = [];
-  let campaignIndex = 0;
-  for (const account of batch.accounts) {
-    for (const page of batch.pages) {
-      for (let i = 0; i < batch.totalCampaigns; i++) {
-        entries.push({
-          campaignIndex: campaignIndex++,
-          accountId: account.accountId,
-          accountName: account.accountName,
-          pageId: page.pageId,
-          pageName: page.pageName,
-          adsetCount: batch.adsetsPerCampaign,
-        });
-      }
-    }
-  }
-  return entries;
 }
