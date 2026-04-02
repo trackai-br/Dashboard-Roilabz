@@ -158,6 +158,10 @@ for (const adsetType of adsetTypes) {
 
 **Requirements:** BUG-2a, BUG-2b (part 2)
 
+**Plans:** 1 plan
+
+Plans:
+- [ ] 05-01-PLAN.md — Wrap ad creation in per-creative try-catch with stats tracking
 **Files to change:**
 - `apps/meta-ads-manager/src/pages/api/meta/bulk-publish.ts` — `createFullCampaign()` function (around lines 269-290)
 
