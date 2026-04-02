@@ -112,6 +112,11 @@ if (distribution.length !== expectedCount) {
 
 **Requirements:** BUG-2a, BUG-2b (part 1)
 
+**Plans:** 1 plan
+
+Plans:
+- [ ] 04-01-PLAN.md — Wrap adset creation in individual try-catch with stats tracking
+
 **Files to change:**
 - `apps/meta-ads-manager/src/pages/api/meta/bulk-publish.ts` — `createFullCampaign()` function (around lines 185-210)
 
