@@ -133,6 +133,16 @@ export default function PreviewPublishStep({ onSaved }: PreviewPublishStepProps)
 
           const distribution = distributionResult.entries;
 
+          // Guard: verify distribution count matches configured campaign count
+          const expectedCount = batch.totalCampaigns;
+          if (distribution.length !== expectedCount) {
+            updatePublishBatch(batch.id, {
+              status: 'failed',
+              results: [{ campaignIndex: 0, status: 'failed', error: `[bulk-publish] Guard failed: expected ${expectedCount} campaigns, but distribution generated ${distribution.length} entries` }],
+            });
+            continue;
+          }
+
           const res = await authenticatedFetch('/api/meta/bulk-publish', {
             method: 'POST',
             body: JSON.stringify({
