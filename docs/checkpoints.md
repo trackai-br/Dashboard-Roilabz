@@ -6,6 +6,23 @@ atualizado: 2026-04-01
 
 # Checkpoints
 
+## [2026-04-01 20:50] — Fix completo do fluxo bulk-publish: ads criados + adsets nomeados
+- **O que mudou:**
+  - BUG-2490487-V3: `meta-ad-rules.ts` — pixel → OFFSITE_CONVERSIONS sempre; LOWEST_COST_WITHOUT_CAP → bid_strategy explícito no payload
+  - BUG-AD-NOT-CREATED: `PreviewPublishStep.tsx` — inclui `creativeFiles: creativePool` no payload; `bulk-publish.ts` — fallback para todos os criativos quando `creativesInAdset` vazio
+  - BUG-ADSET-NO-NAME: `bulk-publish.ts` — fallback `Conjunto N` quando nome do adset está vazio
+- **Arquivos alterados:**
+  - `src/lib/meta-ad-rules.ts`
+  - `src/__tests__/meta-ad-rules.test.ts` (34 testes)
+  - `src/pages/api/meta/bulk-publish.ts`
+  - `src/components/campaign-wizard/PreviewPublishStep.tsx`
+- **Testes passando:** 34/34 (meta-ad-rules)
+- **Estado do projeto:** Deployed — commits 735094c + 3de9af9
+- **Próximo passo se a sessão acabar aqui:**
+  1. Testar publicação completa em produção: campanha + adset + ad devem ser criados
+  2. Verificar que o nome do adset aparece corretamente na Meta
+  3. Débito técnico: UI para atribuir criativos específicos por tipo de adset (atualmente usa todos os criativos do pool para todos os adsets)
+
 ## [2026-04-01] — Fix bugs críticos de publicação em massa (TDD, distribuição, optimization_goal)
 - **O que mudou:**
   - BUG-DIST: novo algoritmo `buildDistributionMap` — distribui N campanhas por conta (campaignCount), sem multiplicar por páginas

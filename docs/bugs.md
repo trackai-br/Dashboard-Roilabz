@@ -4,6 +4,23 @@ projeto: Roi-Labz
 atualizado: 2026-04-01
 ---
 
+## [BUG-AD-NOT-CREATED] adConfig.creativeFiles undefined → ads nunca criados
+- **Data:** 2026-04-01
+- **Contexto:** Após correção do erro 2490487, campanhas e adsets eram criados com sucesso mas nenhum anúncio era criado.
+- **Causa raiz:** `PreviewPublishStep.tsx` enviava `adConfig` sem incluir o `creativePool`. O servidor fazia `adConfig.creativeFiles.find(...)` → `undefined.find()` → todos os criativos eram pulados silenciosamente. Adicionalmente, `creativesInAdset` em cada `BatchAdsetType` sempre inicia como `[]` (sem UI de atribuição), então o loop de criativos nunca executava.
+- **Fix em `PreviewPublishStep.tsx`:** Inclui `creativeFiles: creativePool` no adConfig enviado ao servidor (publish + retry).
+- **Fix em `bulk-publish.ts`:** Se `creativesInAdset` estiver vazio, usa todos os criativos do pool como fallback. Referência ao `adConfig.creativeFiles` agora com fallback para `[]` evitando crash.
+- **Status:** CORRIGIDO — commit 3de9af9
+- **Tags:** [[bulk-publish]] [[creativeFiles]] [[creativePool]] [[ads]]
+
+## [BUG-ADSET-NO-NAME] adsetType.name vazio → adset criado sem nome na Meta
+- **Data:** 2026-04-01
+- **Contexto:** Adset aparecia sem nome na Meta Ads Manager quando o campo de nome era apagado no wizard (estado antigo do localStorage ou edição acidental).
+- **Causa raiz:** `bulk-publish.ts` usava `adsetType.name` diretamente sem fallback. Se vazio, a Meta criava o adset com nome "".
+- **Fix:** Fallback `adsetType.name || \`Conjunto ${a + 1}\`` antes de usar o nome.
+- **Status:** CORRIGIDO — commit 3de9af9
+- **Tags:** [[bulk-publish]] [[adset]] [[nome]]
+
 ## [BUG-2490487-V3] OUTCOME_SALES + LOWEST_COST_WITHOUT_CAP: omitir bid_strategy → Meta assume ROAS → erro 2490487
 - **Data:** 2026-04-01
 - **Contexto:** Após BUG-2490487-V2 (que mudou OFFSITE_CONVERSIONS → LINK_CLICKS para LOWEST_COST_WITHOUT_CAP + pixel), o erro 2490487 PERSISTIU. Debug logs confirmaram: payload enviado tinha `optimization_goal: LINK_CLICKS` sem `bid_strategy` — e Meta rejeitava com o mesmo erro.

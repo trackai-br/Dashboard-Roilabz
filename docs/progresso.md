@@ -6,6 +6,23 @@ atualizado: 2026-04-01
 
 # Progresso
 
+## [2026-04-01] Fix BUG-AD-NOT-CREATED + BUG-ADSET-NO-NAME: ads e nomes de adset
+- **Plano:** Após BUG-2490487-V3 resolvido, publicação criava campanhas e adsets mas nenhum anúncio. Investigar fluxo de dados frontend → API para criativos.
+- **Causa raiz:** `PreviewPublishStep` não enviava `creativePool` ao servidor; `adConfig.creativeFiles` era `undefined`; `creativesInAdset` sempre `[]` por falta de UI de atribuição.
+- **Resultado:** COMPLETO — commit 3de9af9
+  - `PreviewPublishStep.tsx`: inclui `creativeFiles: creativePool` no payload (publish + retry)
+  - `bulk-publish.ts`: fallback usa todos os criativos do pool quando `creativesInAdset` está vazio; fallback de nome de adset quando `adsetType.name` está vazio
+- **O que falta:** UI para atribuir criativos específicos por tipo de adset (atualmente todos os criativos vão para todos os adsets)
+
+## [2026-04-01] Fix BUG-2490487-V3: LOWEST_COST_WITHOUT_CAP omitir bid_strategy → Meta assume ROAS
+- **Plano:** Após deploy do V2, erro 2490487 persistia. Debug logs confirmaram: payload com `optimization_goal: LINK_CLICKS` (inválido para OUTCOME_SALES) e sem `bid_strategy`.
+- **Causa raiz confirmada via debug logs:** Dois problemas: LINK_CLICKS inválido para OUTCOME_SALES, e omitir bid_strategy faz Meta assumir ROAS internamente.
+- **Resultado:** COMPLETO — commit 735094c, 34 testes passando
+  - `meta-ad-rules.ts`: pixel → sempre OFFSITE_CONVERSIONS + promoted_object; LOWEST_COST_WITHOUT_CAP → bid_strategy explícito no payload
+  - `meta-ad-rules.test.ts`: 34 testes, BR-020 e BR-022 atualizados
+  - `bulk-publish.ts`: debug logs removidos
+- **O que falta:** — (resolvido)
+
 ## [2026-04-01] Fix BUG-2490487-V2: OFFSITE_CONVERSIONS sem bid constraints (TDD)
 - **Plano:** Corrigir erro 2490487 que persistia após fix anterior: LOWEST_COST_WITHOUT_CAP + pixel → OFFSITE_CONVERSIONS sem bid_amount → Meta rejeita.
 - **Abordagem:** Ajustar `buildAdsetPayloadExtras` em `meta-ad-rules.ts` para que `OFFSITE_CONVERSIONS` + `promoted_object` só sejam usados quando bidStrategy é BID_CAP ou COST_CAP (constraints explícitas fornecidas). Para LOWEST_COST_WITHOUT_CAP, sempre usar o objetivo mapeado (LINK_CLICKS para OUTCOME_SALES), independente de pixel.
