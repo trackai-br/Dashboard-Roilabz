@@ -375,12 +375,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
       }
 
-      return { metaCampaignId, stats: statsPerCampaign };
+      // Post-publication verification: query Meta API to confirm hierarchy
+      const verification = await verifyCampaignStructure(metaCampaignId, user.id);
+
+      return { metaCampaignId, stats: statsPerCampaign, verification };
     };
 
     // --- Execute with retry on rate limit ---
     try {
-      const { metaCampaignId, stats } = await createFullCampaign();
+      const { metaCampaignId, stats, verification } = await createFullCampaign();
       const hasFailures = stats.adsetsFailed > 0 || stats.adsFailed > 0;
       results.push({
         campaignIndex: entry.campaignIndex,
@@ -388,6 +391,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         meta_campaign_id: metaCampaignId,
         campaignName,
         stats,
+        verification,
       });
     } catch (err: any) {
       console.error(`[bulk-publish] Erro campanha ${i} (conta ${entry.accountId}):`, err instanceof MetaAPIError ? err.toJSON() : err.message);
@@ -405,7 +409,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
           try {
             // Retry cria campanha + adsets + ads completo (nao so campanha)
-            const { metaCampaignId: retryMetaCampaignId, stats: retryStats } = await createFullCampaign();
+            const { metaCampaignId: retryMetaCampaignId, stats: retryStats, verification: retryVerification } = await createFullCampaign();
             const retryHasFailures = retryStats.adsetsFailed > 0 || retryStats.adsFailed > 0;
             results.push({
               campaignIndex: entry.campaignIndex,
@@ -413,6 +417,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               meta_campaign_id: retryMetaCampaignId,
               campaignName,
               stats: retryStats,
+              verification: retryVerification,
             });
             retrySuccess = true;
             break;
