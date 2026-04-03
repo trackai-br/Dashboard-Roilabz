@@ -201,6 +201,10 @@ for (const creative of validCreatives) {
 
 **Requirements:** BUG-2c
 
+**Plans:** 1 plan
+
+Plans:
+- [ ] 06-01-PLAN.md — Add verifyCampaignStructure function and wire into campaign creation flow
 **Files to change:**
 - `apps/meta-ads-manager/src/pages/api/meta/bulk-publish.ts` — add new function `verifyCampaignStructure()` and call after campaign creation
 - `apps/meta-ads-manager/src/lib/meta-api.ts` — add query method if not exists
