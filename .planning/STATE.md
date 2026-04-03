@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Executing Phase 04
-stopped_at: Completed 04-01-PLAN.md — granular try-catch for adset creation (BUG-2a, BUG-2b)
-last_updated: "2026-04-02T21:05:54.839Z"
+status: Executing Phase 05
+stopped_at: Completed 05-01-PLAN.md — per-ad try-catch with stats tracking (2026-04-02)
+last_updated: "2026-04-03T02:17:55.850Z"
 progress:
   total_phases: 7
-  completed_phases: 4
-  total_plans: 4
-  completed_plans: 4
+  completed_phases: 5
+  total_plans: 5
+  completed_plans: 5
 ---
 
 # Project State
@@ -102,6 +102,8 @@ None — Ready to start Phase 1 immediately
 
 - [Phase 02]: Use continue in handlePublish (loop) and return in handleRetryBatch (no loop) for guard exits
 - [Phase 04]: Use partial status on campaign result when any adset fails — preserves observability
+- [Phase 05]: Move humanDelay() inside try block so failed ad creations skip rate-limit delay
+- [Phase 05]: Keep rawUrl empty guard and video type skip OUTSIDE try block as pre-filters, not fallible operations
 
 ## Performance Metrics
 
@@ -110,10 +112,11 @@ None — Ready to start Phase 1 immediately
 | 01 | 01 | 8 min | 7 | 1 | 2026-04-02 |
 | Phase 02 P01 | 2 | 2 tasks | 1 files |
 | Phase 04 P01 | 12 | 2 tasks | 1 files |
+| Phase 05 P01 | 18 min | 2 tasks | 1 files |
 
 ## Last Session
 
-Stopped at: Completed 04-01-PLAN.md — granular try-catch for adset creation (BUG-2a, BUG-2b)
+Stopped at: Completed 05-01-PLAN.md — per-ad try-catch with stats tracking (2026-04-02)
 
 ## Last Updated
 
