@@ -245,71 +245,85 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
             if (!rawUrl) continue;
 
-            // Convert Google Drive download URL to direct serve URL (no redirect)
-            let creativeUrl = rawUrl;
-            const driveIdMatch = rawUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-            if (driveIdMatch) {
-              creativeUrl = `https://lh3.googleusercontent.com/d/${driveIdMatch[1]}=s0`;
-            }
-
             // Video upload não implementado — pular
             if (creativeFile?.type === 'video') continue;
 
-            // Append UTM params diretamente na URL (url_tags não funciona para inline ads com object_story_spec)
-            let urlTags = '';
-            if (adConfig.utmParams) {
-              const params = new URLSearchParams();
-              for (const [k, v] of Object.entries(adConfig.utmParams)) {
-                if (v) params.set(k, v as string);
+            try {
+              // Convert Google Drive download URL to direct serve URL (no redirect)
+              let creativeUrl = rawUrl;
+              const driveIdMatch = rawUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+              if (driveIdMatch) {
+                creativeUrl = `https://lh3.googleusercontent.com/d/${driveIdMatch[1]}=s0`;
               }
-              urlTags = params.toString();
-            }
 
-            let finalLink = adConfig.destinationUrl;
-            if (urlTags) {
-              const separator = adConfig.destinationUrl.includes('?') ? '&' : '?';
-              finalLink = `${adConfig.destinationUrl}${separator}${urlTags}`;
-            }
+              // Append UTM params diretamente na URL (url_tags não funciona para inline ads com object_story_spec)
+              let urlTags = '';
+              if (adConfig.utmParams) {
+                const params = new URLSearchParams();
+                for (const [k, v] of Object.entries(adConfig.utmParams)) {
+                  if (v) params.set(k, v as string);
+                }
+                urlTags = params.toString();
+              }
 
-            const adBody: any = {
-              name: adsetName,
-              status: adsetType.adsetStatus,
-              creative: {
-                object_story_spec: {
-                  page_id: entry.pageId,
-                  link_data: {
-                    message: adConfig.primaryText,
-                    link: finalLink,
-                    name: adConfig.headline,
-                    description: adConfig.description,
-                    picture: creativeUrl,
-                    call_to_action: {
-                      type: 'LEARN_MORE',
-                      value: { link: finalLink },
+              let finalLink = adConfig.destinationUrl;
+              if (urlTags) {
+                const separator = adConfig.destinationUrl.includes('?') ? '&' : '?';
+                finalLink = `${adConfig.destinationUrl}${separator}${urlTags}`;
+              }
+
+              const adBody: any = {
+                name: adsetName,
+                status: adsetType.adsetStatus,
+                creative: {
+                  object_story_spec: {
+                    page_id: entry.pageId,
+                    link_data: {
+                      message: adConfig.primaryText,
+                      link: finalLink,
+                      name: adConfig.headline,
+                      description: adConfig.description,
+                      picture: creativeUrl,
+                      call_to_action: {
+                        type: 'LEARN_MORE',
+                        value: { link: finalLink },
+                      },
                     },
                   },
                 },
-              },
-            };
+              };
 
-            // Tracking specs for pixel conversion tracking
-            if (adsetType.pixelId) {
-              adBody.tracking_specs = [{ 'action.type': ['offsite_conversion'], fb_pixel: [adsetType.pixelId] }];
-            }
+              // Tracking specs for pixel conversion tracking
+              if (adsetType.pixelId) {
+                adBody.tracking_specs = [{ 'action.type': ['offsite_conversion'], fb_pixel: [adsetType.pixelId] }];
+              }
 
-            const adResult = await metaAPI.createAd(metaAccountId, metaAdsetId, adBody, user.id);
-            await humanDelay();
+              const adResult = await metaAPI.createAd(metaAccountId, metaAdsetId, adBody, user.id);
 
-            if (storedAccount) {
-              await supabase.from('meta_ads').insert({
-                meta_account_id: (storedAccount as any).id,
-                adset_id: metaAdsetId,
-                ad_id: adResult.id,
-                name: adsetName,
-                status: adsetType.adsetStatus,
-                creative_spec: adBody.creative,
-                last_synced: new Date(),
-              } as any);
+              if (storedAccount && adResult?.id) {
+                const { error: dbAdErr } = await supabase.from('meta_ads').insert({
+                  meta_account_id: (storedAccount as any).id,
+                  adset_id: metaAdsetId,
+                  ad_id: adResult.id,
+                  name: adsetName,
+                  status: adsetType.adsetStatus,
+                  creative_spec: adBody.creative,
+                  last_synced: new Date(),
+                } as any);
+                if (dbAdErr) {
+                  console.error(`[bulk-publish] DB insert ad failed for adset ${metaAdsetId}, creative "${creativeName}":`, dbAdErr);
+                }
+              }
+
+              statsPerCampaign.adsCreated++;
+              await humanDelay();
+            } catch (adErr: any) {
+              console.error(
+                `[bulk-publish] Ad creation failed for creative "${creativeName}" in adset ${metaAdsetId} campaign ${metaCampaignId}:`,
+                adErr?.message || adErr
+              );
+              statsPerCampaign.adsFailed++;
+              continue;
             }
           }
         } catch (adsetErr: any) {
