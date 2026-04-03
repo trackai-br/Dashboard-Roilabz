@@ -29,6 +29,45 @@ function uniqueSuffix() {
   return Math.random().toString(16).slice(2, 6);
 }
 
+/** Post-publication verification: queries Meta API to confirm campaign hierarchy exists */
+async function verifyCampaignStructure(
+  metaCampaignId: string,
+  userId: string
+): Promise<{ campaignId: string; adsetCount: number; adCount: number; status: 'complete' | 'partial' | 'empty' }> {
+  try {
+    const { adsets } = await metaAPI.getAdSets(metaCampaignId, ['id'], 100, undefined, userId);
+    const adsetCount = adsets.length;
+
+    let adCount = 0;
+    for (const adset of adsets) {
+      const { ads } = await metaAPI.getAds(adset.id, ['id'], 100, undefined, userId);
+      adCount += ads.length;
+      await delay(200);
+    }
+
+    let status: 'complete' | 'partial' | 'empty';
+    if (adsetCount === 0) {
+      status = 'empty';
+      console.log(
+        `[bulk-publish] [verification] WARNING: Campaign ${metaCampaignId} has no adsets — verification status: empty`
+      );
+    } else if (adCount === 0) {
+      status = 'partial';
+      console.log(
+        `[bulk-publish] [verification] WARNING: Campaign ${metaCampaignId} has ${adsetCount} adsets but 0 ads — verification status: partial`
+      );
+    } else {
+      status = 'complete';
+    }
+
+    return { campaignId: metaCampaignId, adsetCount, adCount, status };
+  } catch (error: any) {
+    console.log(
+      `[bulk-publish] [verification] Verification failed for campaign ${metaCampaignId}: ${error.message}`
+    );
+    return { campaignId: metaCampaignId, adsetCount: -1, adCount: -1, status: 'empty' as const };
+  }
+}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
