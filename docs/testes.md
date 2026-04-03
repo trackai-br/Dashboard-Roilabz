@@ -1,8 +1,54 @@
 ---
 tipo: testes
 projeto: Roi-Labz
-atualizado: 2026-04-01
+atualizado: 2026-04-02
 ---
+
+## [2026-04-02] Verificação TypeScript — Fase 1 (BUG-1a)
+- **Data:** 2026-04-02
+- **Contexto:** Validação após substituição da função local por import correto de `@/lib/distribution`.
+- **Detalhes:** `npx tsc --noEmit` → exit 0. Cast `batch.adsetTypes as unknown as AdsetTypeForDist[]` necessário para satisfazer o index signature da interface. Verificação manual da matemática: floor+remainder garante `sum = totalCampaigns`.
+- **Tags:** [[TypeScript]] [[BUG-1a]] [[distribuição]]
+
+## [2026-04-02] Verificação TypeScript — Fase 2 (BUG-1b)
+- **Data:** 2026-04-02
+- **Contexto:** Validação após inserção dos guards em handlePublish e handleRetryBatch.
+- **Detalhes:** `npx tsc --noEmit` → exit 0. Grep confirmou 2 ocorrências de `Guard failed` (linhas 141 e 220). Guard em handlePublish usa `continue`, guard em handleRetryBatch usa `return`. `authenticatedFetch` permanece após cada guard (não foi movido nem removido).
+- **Tags:** [[TypeScript]] [[BUG-1b]] [[guard]]
+
+## [2026-04-02] Verificação TypeScript — Fase 3 (BUG-1c)
+- **Data:** 2026-04-02
+- **Contexto:** Validação após adição dos logs estruturados.
+- **Detalhes:** `npx tsc --noEmit` → exit 0. Grep confirmou logs nos dois arquivos com formato `[bulk-publish]`. Variáveis referenciadas nos logs (`batch.accounts.length`, `distribution.length`, `expectedCount`) estão em escopo nos pontos de inserção.
+- **Tags:** [[TypeScript]] [[BUG-1c]] [[logging]]
+
+## [2026-04-02] Verificação TypeScript + Build — Fase 4 (BUG-2a/2b adsets)
+- **Data:** 2026-04-02
+- **Contexto:** Validação após wrapping do loop de adsets em try-catch com stats tracking.
+- **Detalhes:** `npx tsc --noEmit` → exit 0. `next build` → sucesso. Grep confirmou `statsPerCampaign.adsetsFailed++` em 2 locais (catch block + null-id guard). `createFullCampaign` retorna `{ metaCampaignId, stats }` e callers desestruturados corretamente.
+- **Tags:** [[TypeScript]] [[BUG-2a]] [[BUG-2b]] [[try-catch]] [[adset]]
+
+## [2026-04-02] Verificação TypeScript + Build — Fase 5 (BUG-2a/2b ads)
+- **Data:** 2026-04-02
+- **Contexto:** Validação após wrapping do loop de criativos em try-catch individual.
+- **Detalhes:** `npx tsc --noEmit` → exit 0. Grep confirmou `statsPerCampaign.adsFailed++` em 1 local (catch do ad). Try-catch do ad é interno ao try-catch do adset — dois níveis independentes. `humanDelay()` dentro do try (não consumido em falhas).
+- **Tags:** [[TypeScript]] [[BUG-2a]] [[BUG-2b]] [[try-catch]] [[ad]]
+
+## [2026-04-02] Verificação TypeScript — Fase 6 (BUG-2c)
+- **Data:** 2026-04-02
+- **Contexto:** Validação após adição de `verifyCampaignStructure` e integração no fluxo.
+- **Detalhes:** `npx tsc --noEmit` → exit 0. Grep confirmou `verifyCampaignStructure` chamada na linha 379. Resultado `verification` presente em ambos os `results.push` (normal e retry). Função encapsulada em try-catch que nunca propaga erro.
+- **Tags:** [[TypeScript]] [[BUG-2c]] [[verificação]] [[Meta API]]
+
+## [PENDENTE] Fase 7 — Testes manuais com conta Meta real
+- **Data:** — (aguardando execução)
+- **Contexto:** Validação end-to-end dos 3 modos de publicação em massa com conta real da Meta.
+- **Detalhes:**
+  - Modo 1: 1 campanha, 1 adset, 1 criativo, 2 contas → deve criar exatamente 1 campanha
+  - Modo 2: 3 campanhas com criativos diferentes, 2 contas → deve criar exatamente 3 campanhas
+  - Modo 3: Add AdSets a campanha existente → adset count deve aumentar
+  - Verificar logs no DevTools do browser e nos server logs da Vercel
+- **Tags:** [[teste-manual]] [[Meta API]] [[bulk-publish]] [[integração]]
 
 # Testes
 

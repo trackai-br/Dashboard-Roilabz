@@ -1,8 +1,50 @@
 ---
 tipo: checkpoints
 projeto: Roi-Labz
-atualizado: 2026-04-01
+atualizado: 2026-04-02
 ---
+
+## [2026-04-02 ~02:00] Fase 1 completa — BUG-1a corrigido
+- **O que mudou:** `buildDistributionMap` local deletada. Import correto de `@/lib/distribution` com adaptador floor+remainder em `handlePublish()` e `handleRetryBatch()`. TypeScript compila sem erros.
+- **Arquivos alterados:** `apps/meta-ads-manager/src/components/campaign-wizard/PreviewPublishStep.tsx`
+- **Testes passando:** Sim (TypeScript + verificação de lógica matemática)
+- **Estado do projeto:** Funcionando — multiplicação 4x eliminada
+- **Próximo passo se a sessão acabar aqui:** Iniciar Fase 2 (guard assertion)
+
+## [2026-04-02 ~02:30] Fase 2 completa — BUG-1b corrigido
+- **O que mudou:** Guard assertion inserido em `handlePublish()` e `handleRetryBatch()`. Bloqueia chamada à Meta se `distribution.length !== batch.totalCampaigns`.
+- **Arquivos alterados:** `apps/meta-ads-manager/src/components/campaign-wizard/PreviewPublishStep.tsx`
+- **Testes passando:** Sim (TypeScript + verificação manual dos guards)
+- **Estado do projeto:** Funcionando — arrays incorretos bloqueados antes de chegar à API
+- **Próximo passo se a sessão acabar aqui:** Iniciar Fase 3 (logs estruturados)
+
+## [2026-04-02 ~03:00] Fase 3 completa — BUG-1c implementado
+- **O que mudou:** `console.log` estruturado adicionado no frontend antes de `authenticatedFetch` e no backend após parse do body. Formato `[bulk-publish] [component] [ISO]`.
+- **Arquivos alterados:** `PreviewPublishStep.tsx`, `apps/meta-ads-manager/src/pages/api/meta/bulk-publish.ts`
+- **Testes passando:** Sim (TypeScript)
+- **Estado do projeto:** Funcionando — logs visíveis no DevTools e server logs
+- **Próximo passo se a sessão acabar aqui:** Iniciar Fase 4 (try-catch adsets)
+
+## [2026-04-02 ~03:30] Fase 4 completa — try-catch granular por adset
+- **O que mudou:** Loop de adsets em `createFullCampaign()` com try-catch individual por iteração. `statsPerCampaign` tracking. `createFullCampaign` retorna `{ metaCampaignId, stats }`. Status `'partial'` quando há falhas.
+- **Arquivos alterados:** `apps/meta-ads-manager/src/pages/api/meta/bulk-publish.ts`
+- **Testes passando:** Sim (TypeScript + build)
+- **Estado do projeto:** Funcionando — falha em adset não cancela campanha
+- **Próximo passo se a sessão acabar aqui:** Iniciar Fase 5 (try-catch ads)
+
+## [2026-04-02 ~04:00] Fase 5 completa — try-catch granular por ad/criativo
+- **O que mudou:** Loop de criativos envoluto em try-catch individual dentro do loop de adsets. `adsFailed/adsCreated` incrementados. DB insert de ads com verificação de erro. `humanDelay()` movido para dentro do try.
+- **Arquivos alterados:** `apps/meta-ads-manager/src/pages/api/meta/bulk-publish.ts`
+- **Testes passando:** Sim (TypeScript + build)
+- **Estado do projeto:** Funcionando — falha em ad não cancela adset nem campanha
+- **Próximo passo se a sessão acabar aqui:** Iniciar Fase 6 (verificação pós-publicação)
+
+## [2026-04-02 ~04:30] Fase 6 completa — verificação pós-publicação (BUG-2c)
+- **O que mudou:** Função `verifyCampaignStructure(metaCampaignId, userId)` adicionada. Consulta Meta após criação e retorna `{ campaignId, adsetCount, adCount, status }`. Delay 200ms entre chamadas. Erros nunca propagam. Resultado anexado ao retorno de cada campanha.
+- **Arquivos alterados:** `apps/meta-ads-manager/src/pages/api/meta/bulk-publish.ts`
+- **Testes passando:** Sim (TypeScript + verificação manual dos pontos de integração)
+- **Estado do projeto:** Funcionando — hierarquia confirmada pós-publicação
+- **Próximo passo se a sessão acabar aqui:** Fase 7 — testes manuais com conta Meta real
 
 # Checkpoints
 

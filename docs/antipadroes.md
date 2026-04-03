@@ -1,8 +1,36 @@
 ---
 tipo: antipadroes
 projeto: Roi-Labz
-atualizado: 2026-03-25
+atualizado: 2026-04-02
 ---
+
+## NUNCA definir buildDistributionMap (ou qualquer função de distribuição) localmente em componentes
+- **Data:** 2026-04-02
+- **Contexto:** `PreviewPublishStep.tsx` tinha uma cópia local de `buildDistributionMap` que produzia produto Cartesiano (4x o esperado). A função correta já existia em `@/lib/distribution.ts`.
+- **O que aconteceu:** 1 campanha configurada virava 4 campanhas na Meta (accounts × pages × campaigns).
+- **Regra:** A função de distribuição é a fonte única da verdade. Sempre importar de `@/lib/distribution`. Qualquer nova lógica de distribuição vai nesse arquivo, não em componentes.
+- **Tags:** [[buildDistributionMap]] [[distribuição]] [[PreviewPublishStep]]
+
+## NUNCA usar Math.ceil para distribuição de inteiros entre buckets
+- **Data:** 2026-04-02
+- **Contexto:** `Math.ceil(total / n)` produz mais entradas que o total quando `total` não é divisível por `n`.
+- **O que aconteceu:** Com 1 campanha e 2 contas, `Math.ceil(1/2) = 1` por conta = 2 entradas totais ao invés de 1.
+- **Regra:** Sempre usar floor+remainder: `Math.floor(total/n) + (i < total%n ? 1 : 0)`.
+- **Tags:** [[matemática]] [[distribuição]] [[Math.ceil]]
+
+## NUNCA usar throw dentro de loops de múltiplos itens para validação de pré-condição
+- **Data:** 2026-04-02
+- **Contexto:** Um throw em guards ou validações dentro de um loop de batches cancela todos os batches restantes, mesmo os que seriam válidos.
+- **O que aconteceu:** Potencial de um único batch inválido cancelar publicações válidas.
+- **Regra:** Usar `continue` (em loops) ou `return` (sem loop). Marcar o item como `failed` com mensagem descritiva antes de pular.
+- **Tags:** [[guard]] [[bulk-publish]] [[error-handling]] [[throw]]
+
+## NUNCA usar bang operator (!) em resultados de chamadas à Meta API
+- **Data:** 2026-04-02
+- **Contexto:** `adsetResult!.id` e `adResult!.id` assumem que a API sempre retorna um objeto com `id`, o que não é verdade em casos de erro ou timeout.
+- **O que aconteceu:** Crash em runtime quando a Meta retorna resposta inesperada.
+- **Regra:** Sempre usar optional chaining + null guard: `adsetResult?.id || null` com verificação explícita antes de usar o valor.
+- **Tags:** [[TypeScript]] [[Meta API]] [[bang-operator]] [[null-safety]]
 
 # Antipadroes
 

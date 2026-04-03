@@ -1,8 +1,41 @@
 ---
 tipo: bugs
 projeto: Roi-Labz
-atualizado: 2026-04-01
+atualizado: 2026-04-02
 ---
+
+## [BUG-1a] buildDistributionMap local com lógica Cartesiana — campanhas multiplicadas por 4x
+- **Data:** 2026-04-02
+- **Contexto:** Ao publicar 1 campanha com 2 contas e 2 páginas, a Meta recebia 4 entradas ao invés de 1. O resultado era a criação de 4 campanhas duplicadas.
+- **Causa raiz:** `PreviewPublishStep.tsx` possuía uma função `buildDistributionMap` local com triplo loop aninhado (accounts × pages × campaigns), produzindo produto Cartesiano em vez de distribuição proporcional. A função correta já existia em `@/lib/distribution.ts` mas estava sendo ignorada.
+- **Fix:** Deletada a função local. Adicionado import de `buildDistributionMap` de `@/lib/distribution`. Aplicado adaptador floor+remainder para converter `batch.totalCampaigns` no argumento `campaignCount` por conta.
+- **Status:** CORRIGIDO — commit ffdee6c (Fase 1)
+- **Tags:** [[bulk-publish]] [[buildDistributionMap]] [[distribuição]] [[PreviewPublishStep]]
+
+## [BUG-1b] Ausência de guard assertion — array de distribuição incorreto chegava à Meta API
+- **Data:** 2026-04-02
+- **Contexto:** Mesmo após corrigir o cálculo, não havia nenhuma verificação antes de enviar o array para a API. Uma regressão no cálculo passaria despercebida.
+- **Causa raiz:** Nenhum assert comparando `distribution.length` com `batch.totalCampaigns` antes da chamada `authenticatedFetch`.
+- **Fix:** Inserido bloco guard em `handlePublish()` (usa `continue`) e em `handleRetryBatch()` (usa `return`). Mensagem: `[bulk-publish] Guard failed: expected N campaigns, but distribution generated M entries`. Batch marcado como `failed` e chamada à Meta cancelada.
+- **Status:** CORRIGIDO — commits 4f16bed, 788a60d (Fase 2)
+- **Tags:** [[bulk-publish]] [[guard]] [[PreviewPublishStep]] [[BUG-1b]]
+
+## [BUG-2a/2b] Falha em adset ou ad silenciava toda a campanha
+- **Data:** 2026-04-02
+- **Contexto:** Qualquer erro na criação de um adset ou ad (rate limit, payload inválido) subia pelo call stack e abortava a campanha inteira, deixando-a vazia na Meta.
+- **Causa raiz:** Sem try-catch granular por adset nem por ad. Um único erro quebrava o loop todo.
+- **Fix (Fase 4):** Cada iteração do loop de adsets envoluta em try-catch individual. Falha incrementa `statsPerCampaign.adsetsFailed`, loga com campaign ID + índice, e chama `continue`. DB insert de adset agora verifica erro. `createFullCampaign` retorna `{ metaCampaignId, stats }` e caller usa status `'partial'` quando há falhas.
+- **Fix (Fase 5):** Cada criativo envoluto em try-catch individual dentro do loop de ads. Falha incrementa `statsPerCampaign.adsFailed`, loga com creative name + adset ID + campaign ID, e chama `continue`. DB insert de ad verifica erro. `humanDelay()` movido para dentro do try para não consumir delay em ads que falham.
+- **Status:** CORRIGIDO — commits 87b47a3 (Fase 4), 297f7d8 (Fase 5)
+- **Tags:** [[bulk-publish]] [[try-catch]] [[adset]] [[ad]] [[BUG-2a]] [[BUG-2b]]
+
+## [BUG-2c] Sem verificação pós-publicação — campanhas vazias passavam sem aviso
+- **Data:** 2026-04-02
+- **Contexto:** Após criação, não havia nenhuma consulta à Meta para confirmar que a hierarquia Campanha → AdSet → Ad foi criada corretamente. Campanhas vazias podiam ser retornadas como sucesso.
+- **Causa raiz:** Ausência de step de verificação pós-criação.
+- **Fix:** Função `verifyCampaignStructure(metaCampaignId, userId)` adicionada em `bulk-publish.ts`. Consulta `metaAPI.getAdSets` e `metaAPI.getAds` com campos mínimos (`['id']`). Retorna `{ campaignId, adsetCount, adCount, status: 'complete' | 'partial' | 'empty' }`. Delay de 200ms entre chamadas. Erros nunca propagam (toda função em try-catch). Resultado anexado ao objeto de resultado da campanha.
+- **Status:** CORRIGIDO — commits 2c4821a, 38a2009 (Fase 6)
+- **Tags:** [[bulk-publish]] [[verificação]] [[Meta API]] [[BUG-2c]]
 
 ## [BUG-AD-NOT-CREATED] adConfig.creativeFiles undefined → ads nunca criados
 - **Data:** 2026-04-01

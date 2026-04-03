@@ -1,8 +1,23 @@
 ---
 tipo: progresso
 projeto: Roi-Labz
-atualizado: 2026-04-01
+atualizado: 2026-04-02
 ---
+
+## [2026-04-02] Correção completa do bulk-publish — BUG-1 e BUG-2
+- **Data:** 2026-04-02
+- **Contexto:** Sessão de correção dos dois bugs críticos no sistema de publicação em massa: multiplicação de campanhas (BUG-1) e campanhas vazias por erro silencioso (BUG-2).
+- **Detalhes:**
+  - **Fase 1 (BUG-1a):** Deletada função `buildDistributionMap` local de `PreviewPublishStep.tsx`. Substituída pelo import correto de `@/lib/distribution` com adaptador floor+remainder.
+  - **Fase 2 (BUG-1b):** Inseridos guard assertions em `handlePublish()` e `handleRetryBatch()` verificando `distribution.length === batch.totalCampaigns` antes de qualquer chamada à Meta API.
+  - **Fase 3 (BUG-1c):** Adicionados logs estruturados `[bulk-publish] [component] [timestamp]` no frontend (PreviewPublishStep) e backend (bulk-publish.ts) para diagnóstico via DevTools e server logs.
+  - **Fase 4 (BUG-2a/2b pt1):** Try-catch granular por adset em `createFullCampaign()`. Stats tracking com `adsetsFailed/adsetsCreated`. Status `'partial'` quando há falhas.
+  - **Fase 5 (BUG-2a/2b pt2):** Try-catch granular por ad/criativo. `adsFailed/adsCreated` tracking. DB inserts de ads com verificação de erro.
+  - **Fase 6 (BUG-2c):** Função `verifyCampaignStructure()` que consulta a Meta após criação e retorna `{ adsetCount, adCount, status }`. Resultado anexado ao retorno de cada campanha.
+  - **Deploy:** Push para `origin/main` → Vercel auto-deploy ativo.
+- **Estado:** BUG-1 e BUG-2 corrigidos e em produção. Fase 7 (testes manuais com conta real) pendente.
+- **Próximo passo:** Testar os 3 modos de publicação em massa com conta Meta real e validar logs no DevTools.
+- **Tags:** [[bulk-publish]] [[BUG-1]] [[BUG-2]] [[distribuição]] [[try-catch]] [[verificação]]
 
 # Progresso
 

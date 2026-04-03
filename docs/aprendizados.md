@@ -1,8 +1,26 @@
 ---
 tipo: aprendizados
 projeto: Roi-Labz
-atualizado: 2026-03-25
+atualizado: 2026-04-02
 ---
+
+## Funções utilitárias duplicadas em componentes mascaram bugs silenciosamente
+- **Data:** 2026-04-02
+- **Contexto:** `buildDistributionMap` existia em `@/lib/distribution` e também localmente em `PreviewPublishStep.tsx` com lógica diferente e incorreta. O TypeScript não alertou porque a assinatura era similar.
+- **Detalhes:** Quando uma função de lib já existe testada e correta, o componente que cria uma cópia local introduz divergência sem aviso. O bug só foi descoberto observando o comportamento em produção (4x campanhas). Aprendizado: sempre buscar se a função já existe em `src/lib/` antes de reimplementar.
+- **Tags:** [[distribuição]] [[duplicação]] [[boas-práticas]]
+
+## A Meta API não falha explicitamente quando recebe dados duplicados — cria duplicatas silenciosamente
+- **Data:** 2026-04-02
+- **Contexto:** Enviar 4 entradas de distribuição para uma campanha configurada como 1 não gerava erro 400 nem 422 — a Meta simplesmente criava 4 campanhas.
+- **Detalhes:** APIs externas como a Meta não validam a intenção do cliente, apenas a estrutura do payload. A validação de lógica de negócio (quantas campanhas deveriam ser criadas) é responsabilidade do cliente. Guards e assertions antes das chamadas são essenciais, não opcionais.
+- **Tags:** [[Meta API]] [[validação]] [[guard]] [[bulk-publish]]
+
+## Erros silenciosos em loops de criação de recursos são o pior tipo de bug
+- **Data:** 2026-04-02
+- **Contexto:** Sem try-catch granular, um erro em um adset ou ad se propagava e cancelava toda a campanha. O resultado na Meta era uma campanha vazia (sem adsets/ads) marcada como "falha" no dashboard, sem nenhuma mensagem útil.
+- **Detalhes:** Em sistemas que criam recursos em hierarquia (Campaign → AdSet → Ad), cada nível precisa de tratamento de erro independente. A falha de um filho não deve matar o pai nem os irmãos. Usar try-catch por iteração com `continue` é o padrão correto.
+- **Tags:** [[error-handling]] [[try-catch]] [[bulk-publish]] [[hierarquia]]
 
 # Aprendizados
 

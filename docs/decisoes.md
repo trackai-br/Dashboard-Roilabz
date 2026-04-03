@@ -1,8 +1,50 @@
 ---
 tipo: decisoes
 projeto: Roi-Labz
-atualizado: 2026-04-01
+atualizado: 2026-04-02
 ---
+
+## 2026-04-02 — Usar floor+remainder em vez de Math.ceil na distribuição de campanhas
+- **Contexto:** Ao converter `batch.totalCampaigns` para `campaignCount` por conta, precisávamos de um método que garantisse exatamente N entradas totais.
+- **Opções consideradas:**
+  - Opção A — `Math.ceil(total / n)` → pode produzir mais entradas que o total quando não divisível
+  - Opção B — `Math.floor(total / n) + (i < total % n ? 1 : 0)` → garante exatamente `total` entradas
+- **Decisão:** Opção B (floor+remainder). `Math.ceil` produziria `accounts.length` campanhas quando 1 é configurada, reproduzindo o bug original de multiplicação.
+- **Impacto no PRD:** Garante que `sum(campaignCount por conta) === batch.totalCampaigns` exatamente.
+- **Tags:** [[distribuição]] [[buildDistributionMap]] [[bulk-publish]]
+
+## 2026-04-02 — Cast `BatchAdsetType[] as unknown as AdsetTypeForDist[]` para compatibilidade de tipos
+- **Contexto:** `BatchAdsetType` não possui o index signature `[key: string]: unknown` exigido por `AdsetTypeForDist`, mas ambos compartilham os campos `adsetCount` e `creativesInAdset`.
+- **Opções consideradas:**
+  - Opção A — Modificar interface `BatchAdsetType` para adicionar index signature
+  - Opção B — Cast via `unknown` no ponto de uso
+- **Decisão:** Opção B. Modificar `BatchAdsetType` afetaria todas as outras partes do wizard. O cast duplo via `unknown` é cirúrgico e não altera interfaces compartilhadas.
+- **Impacto no PRD:** Zero impacto funcional — apenas satisfaz o compilador TypeScript.
+- **Tags:** [[TypeScript]] [[BatchAdsetType]] [[AdsetTypeForDist]]
+
+## 2026-04-02 — `continue` em handlePublish() e `return` em handleRetryBatch() para os guards
+- **Contexto:** Os dois métodos têm contexto diferente: `handlePublish` itera sobre múltiplos batches (loop), `handleRetryBatch` processa um único batch (sem loop).
+- **Opções consideradas:**
+  - Opção A — Usar `throw` em ambos → interromperia toda a execução
+  - Opção B — Usar `continue`/`return` conforme o contexto → pula apenas o batch afetado
+- **Decisão:** Opção B. `throw` no guard principal cancelaria todos os outros batches que poderiam ser publicados com sucesso.
+- **Tags:** [[guard]] [[bulk-publish]] [[handlePublish]] [[handleRetryBatch]]
+
+## 2026-04-02 — createFullCampaign retorna `{ metaCampaignId, stats }` em vez de só string
+- **Contexto:** Para saber se houve falhas parciais na criação, o caller precisa receber as stats junto com o ID.
+- **Opções consideradas:**
+  - Opção A — Retornar só `metaCampaignId` e expor stats via variável de escopo externo
+  - Opção B — Retornar objeto `{ metaCampaignId, stats }` e destruturar no caller
+- **Decisão:** Opção B. Mais explícito, sem efeitos colaterais de estado externo, e permite que o caller determine `'partial'` vs `'success'` de forma independente.
+- **Tags:** [[bulk-publish]] [[createFullCampaign]] [[stats]] [[TypeScript]]
+
+## 2026-04-02 — verifyCampaignStructure não recebe accountId (consulta só por campaignId)
+- **Contexto:** O roadmap descrevia a assinatura como `(metaAccountId, metaCampaignId, userId)`, mas a Meta Graph API permite consultar adsets diretamente por `campaignId` sem precisar do `accountId`.
+- **Opções consideradas:**
+  - Opção A — Manter 3 parâmetros conforme roadmap para não desviar do plano
+  - Opção B — Simplificar para `(metaCampaignId, userId)` — menos acoplamento
+- **Decisão:** Opção B. O planner verificou que `getAdSets` e `getAds` em `meta-api.ts` já existiam com a assinatura necessária, sem precisar de `accountId`.
+- **Tags:** [[bulk-publish]] [[verifyCampaignStructure]] [[Meta API]]
 
 # Decisoes
 

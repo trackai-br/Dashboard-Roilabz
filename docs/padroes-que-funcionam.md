@@ -1,8 +1,38 @@
 ---
 tipo: padroes-que-funcionam
 projeto: Roi-Labz
-atualizado: 2026-04-01
+atualizado: 2026-04-02
 ---
+
+## Padrão floor+remainder para distribuição proporcional
+- **Data:** 2026-04-02
+- **Contexto:** Distribuir N campanhas entre M contas garantindo que o total seja exatamente N.
+- **Detalhes:** `Math.floor(total / n) + (i < total % n ? 1 : 0)` onde `i` é o índice da conta. Garante que a soma de todos os `campaignCount` seja igual a `total`. Usar este padrão sempre que precisar distribuir um inteiro entre N buckets sem perda nem excesso.
+- **Tags:** [[distribuição]] [[matemática]] [[bulk-publish]]
+
+## Guard assertion com `continue`/`return` antes de chamadas externas críticas
+- **Data:** 2026-04-02
+- **Contexto:** Validar pré-condições antes de enviar dados para a Meta API, sem cancelar outros itens do batch.
+- **Detalhes:** Verificar a condição, marcar o item como `failed` com mensagem descritiva, e usar `continue` (em loops) ou `return` (sem loop) para pular apenas aquele item. Nunca usar `throw` em guards dentro de loops de múltiplos itens — cancela todos os itens restantes.
+- **Tags:** [[guard]] [[bulk-publish]] [[error-handling]]
+
+## Try-catch em dois níveis independentes (adset → ad)
+- **Data:** 2026-04-02
+- **Contexto:** Criação hierárquica de recursos na Meta API onde falha em um nível não deve cancelar os outros.
+- **Detalhes:** Nível externo (adset): try-catch por iteração, `continue` no catch, `statsPerCampaign.adsetsFailed++`. Nível interno (ad): try-catch por criativo dentro do bloco try do adset, `continue` no catch, `statsPerCampaign.adsFailed++`. Os dois níveis são independentes — falha em ad não ativa o catch de adset.
+- **Tags:** [[try-catch]] [[bulk-publish]] [[adset]] [[ad]] [[error-handling]]
+
+## Verificação pós-criação com função isolada e sem propagação de erros
+- **Data:** 2026-04-02
+- **Contexto:** Confirmar integridade de recursos criados na Meta API sem arriscar cancelar o resultado já registrado.
+- **Detalhes:** Função `verifyCampaignStructure` encapsula toda a lógica de verificação em try-catch. Em caso de erro, retorna objeto safe com `status: 'empty'` e `adsetCount: -1`. Nunca lança exceção. Delay de 200ms entre chamadas para respeitar rate limits. Resultado anexado ao objeto de resultado — não substitui o status de criação.
+- **Tags:** [[verificação]] [[Meta API]] [[bulk-publish]] [[error-handling]]
+
+## Logs estruturados com prefixo `[componente] [timestamp]`
+- **Data:** 2026-04-02
+- **Contexto:** Diagnóstico de problemas em bulk-publish tanto no frontend quanto no backend.
+- **Detalhes:** Formato `[bulk-publish] [NomeDoComponente] [ISOTimestamp] mensagem`. Timestamp compartilhado por request no backend permite correlacionar todas as linhas de um mesmo POST. Logs apenas via `console.log`/`console.error` — zero dependência de biblioteca de logging.
+- **Tags:** [[logging]] [[bulk-publish]] [[diagnóstico]]
 
 # Padroes Que Funcionam
 
