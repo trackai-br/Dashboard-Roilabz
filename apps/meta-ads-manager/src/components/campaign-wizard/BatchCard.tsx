@@ -139,6 +139,12 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
   };
 
   const handleVolumeChange = (field: 'adsetsPerCampaign' | 'totalCampaigns', value: number) => {
+    if (field === 'adsetsPerCampaign') {
+      // Sync adsetCount in all existing adset types so the publishing loop creates the correct number
+      batch.adsetTypes.forEach((t) => {
+        updateBatchAdsetType(batch.id, t.id, { adsetCount: value });
+      });
+    }
     updateBatch(batch.id, { [field]: value });
   };
 
@@ -150,7 +156,7 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
     const newAdset: BatchAdsetType = {
       id: `adset-${Date.now()}`,
       name: `Conjunto ${batch.adsetTypes.length + 1}`,
-      adsetCount: 1,
+      adsetCount: batch.adsetsPerCampaign,
       creativesInAdset: [],
       conversionLocation: 'WEBSITE',
       pixelId: pixelsForAccount?.[0]?.id || '',
@@ -161,7 +167,7 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
     };
     addBatchAdsetType(batch.id, newAdset);
     setShowAdsetForm(false);
-  }, [batch.id, batch.adsetTypes.length, batch.totalCampaigns, pixelsForAccount, addBatchAdsetType]);
+  }, [batch.id, batch.adsetTypes.length, batch.totalCampaigns, batch.adsetsPerCampaign, pixelsForAccount, addBatchAdsetType]);
 
   const summary = [
     `${batch.accounts.length} conta${batch.accounts.length !== 1 ? 's' : ''}`,
@@ -689,15 +695,15 @@ export default function BatchCard({ batch, index }: BatchCardProps) {
               </div>
               <div>
                 <label className="block text-[10px] mb-1" style={{ color: 'var(--color-text-tertiary)' }}>
-                  Valor ({batch.campaignConfig.budgetType === 'CBO' ? 'por campanha' : 'por conjunto'})
+                  Valor em R$ ({batch.campaignConfig.budgetType === 'CBO' ? 'por campanha' : 'por conjunto'})
                 </label>
                 <input
                   type="number"
                   min={0}
-                  step={100}
-                  value={batch.campaignConfig.budgetValue}
-                  onChange={(e) => updateCampaignConfig({ budgetValue: parseInt(e.target.value) || 0 })}
-                  placeholder="Ex: 5000 (centavos)"
+                  step={0.01}
+                  value={batch.campaignConfig.budgetValue > 0 ? batch.campaignConfig.budgetValue / 100 : ''}
+                  onChange={(e) => updateCampaignConfig({ budgetValue: Math.round(parseFloat(e.target.value || '0') * 100) })}
+                  placeholder="Ex: 50.00"
                   className="input-sm font-mono"
                   style={{}}
                 />
