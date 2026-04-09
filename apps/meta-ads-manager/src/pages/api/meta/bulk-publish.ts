@@ -209,6 +209,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // BR-028: cada campanha recebe exatamente UM tipo via distribuição em blocos
       const adsetType = getAdsetTypeForCampaign(adsetTypes, entry.campaignIndex, distribution.length);
 
+      console.log(
+        `[bulk-publish] Campaign ${metaCampaignId}: creating ${adsetType.adsetCount} adsets ` +
+        `(type "${adsetType.name || 'unnamed'}", campaignIndex=${entry.campaignIndex})`
+      );
+
       for (let a = 0; a < adsetType.adsetCount; a++) {
         let metaAdsetId: string | null = null;
         try {

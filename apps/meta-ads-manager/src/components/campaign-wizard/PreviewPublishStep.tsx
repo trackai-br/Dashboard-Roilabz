@@ -149,12 +149,20 @@ export default function PreviewPublishStep({ onSaved }: PreviewPublishStepProps)
             `${distribution.length} entries (expected ${expectedCount}) ${distribution.length === expectedCount ? '\u2713' : '\u2717'}`
           );
 
+          // Sync adsetCount in adsetTypes with adsetsPerCampaign before sending to server.
+          // Persisted data from older sessions may have adsetCount=1 even when adsetsPerCampaign=50,
+          // because the sync only happens via handleVolumeChange in BatchCard.
+          const adsetTypesForPublish = batch.adsetTypes.map((t) => ({
+            ...t,
+            adsetCount: batch.adsetsPerCampaign,
+          }));
+
           const res = await authenticatedFetch('/api/meta/bulk-publish', {
             method: 'POST',
             body: JSON.stringify({
               distribution,
               campaignConfig: batch.campaignConfig,
-              adsetTypes: batch.adsetTypes,
+              adsetTypes: adsetTypesForPublish,
               adConfig: { ...adConfig, creativeFiles: creativePool },
             }),
           });
@@ -228,12 +236,18 @@ export default function PreviewPublishStep({ onSaved }: PreviewPublishStepProps)
         return;
       }
 
+      // Sync adsetCount with adsetsPerCampaign before retry (same fix as handlePublishAll)
+      const adsetTypesForRetry = batch.adsetTypes.map((t) => ({
+        ...t,
+        adsetCount: batch.adsetsPerCampaign,
+      }));
+
       const res = await authenticatedFetch('/api/meta/bulk-publish', {
         method: 'POST',
         body: JSON.stringify({
           distribution,
           campaignConfig: batch.campaignConfig,
-          adsetTypes: batch.adsetTypes,
+          adsetTypes: adsetTypesForRetry,
           adConfig: { ...adConfig, creativeFiles: creativePool },
         }),
       });
