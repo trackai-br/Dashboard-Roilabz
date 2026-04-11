@@ -158,32 +158,55 @@ export default function PreviewPublishStep({ onSaved }: PreviewPublishStepProps)
             `adsetCount=${adsetTypesForDistribution[0]?.adsetCount ?? 'n/a'} (adsetsPerCampaign=${batch.adsetsPerCampaign})`
           );
 
-          // adsetTypesForDistribution already has adsetCount=adsetsPerCampaign — reuse for API payload.
-          const res = await authenticatedFetch('/api/meta/bulk-publish', {
-            method: 'POST',
-            body: JSON.stringify({
-              distribution,
-              campaignConfig: batch.campaignConfig,
-              adsetTypes: adsetTypesForDistribution,
-              adConfig: { ...adConfig, creativeFiles: creativePool },
-            }),
-          });
+          // Send one campaign at a time to avoid Vercel 60s timeout.
+          // Each request: 1 campaign × N adsets × ~200ms delay ≈ 15-25s — within limits.
+          const allResults: any[] = [];
+          let lastJobId: string | undefined;
+          let batchFailed = false;
 
-          if (!res.ok) {
-            const errData = await res.json().catch(() => ({}));
+          for (let ci = 0; ci < distribution.length; ci++) {
+            const entry = distribution[ci];
+            console.log(`[bulk-publish] [PreviewPublishStep] Sending campaign ${ci + 1}/${distribution.length}: account=${entry.accountId} page=${entry.pageId}`);
+
+            try {
+              const res = await authenticatedFetch('/api/meta/bulk-publish', {
+                method: 'POST',
+                body: JSON.stringify({
+                  distribution: [entry],
+                  campaignConfig: batch.campaignConfig,
+                  adsetTypes: adsetTypesForDistribution,
+                  adConfig: { ...adConfig, creativeFiles: creativePool },
+                }),
+              });
+
+              if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                allResults.push({ campaignIndex: entry.campaignIndex ?? ci, status: 'failed', error: errData.error || 'Erro HTTP' });
+                batchFailed = true;
+              } else {
+                const data = await res.json();
+                if (data.jobId) lastJobId = data.jobId;
+                allResults.push(...(data.results || []));
+              }
+            } catch (err: any) {
+              allResults.push({ campaignIndex: entry.campaignIndex ?? ci, status: 'failed', error: err.message });
+              batchFailed = true;
+            }
+
+            // Update UI progressively after each campaign
             updatePublishBatch(batch.id, {
-              status: 'failed',
-              results: [{ campaignIndex: 0, status: 'failed', error: errData.error || 'Erro HTTP' }],
+              status: 'publishing',
+              results: allResults,
+              completedCampaigns: allResults.filter((r) => r.status === 'success' || r.status === 'partial').length,
+              jobId: lastJobId,
             });
-            continue;
           }
 
-          const data = await res.json();
           updatePublishBatch(batch.id, {
-            status: 'completed',
-            results: data.results || [],
-            completedCampaigns: data.completedCampaigns || 0,
-            jobId: data.jobId,
+            status: batchFailed ? 'failed' : 'completed',
+            results: allResults,
+            completedCampaigns: allResults.filter((r) => r.status === 'success' || r.status === 'partial').length,
+            jobId: lastJobId,
           });
         } catch (err: any) {
           updatePublishBatch(batch.id, {
@@ -244,32 +267,51 @@ export default function PreviewPublishStep({ onSaved }: PreviewPublishStepProps)
         return;
       }
 
-      // adsetTypesForDistribution already has adsetCount synced — reuse for the API payload.
-      const res = await authenticatedFetch('/api/meta/bulk-publish', {
-        method: 'POST',
-        body: JSON.stringify({
-          distribution,
-          campaignConfig: batch.campaignConfig,
-          adsetTypes: adsetTypesForDistribution,
-          adConfig: { ...adConfig, creativeFiles: creativePool },
-        }),
-      });
+      // Send one campaign at a time (same pattern as handlePublish) to avoid timeout.
+      const allResults: any[] = [];
+      let lastJobId: string | undefined;
+      let batchFailed = false;
 
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
+      for (let ci = 0; ci < distribution.length; ci++) {
+        const entry = distribution[ci];
+        try {
+          const res = await authenticatedFetch('/api/meta/bulk-publish', {
+            method: 'POST',
+            body: JSON.stringify({
+              distribution: [entry],
+              campaignConfig: batch.campaignConfig,
+              adsetTypes: adsetTypesForDistribution,
+              adConfig: { ...adConfig, creativeFiles: creativePool },
+            }),
+          });
+
+          if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            allResults.push({ campaignIndex: entry.campaignIndex ?? ci, status: 'failed', error: errData.error || 'Erro HTTP' });
+            batchFailed = true;
+          } else {
+            const data = await res.json();
+            if (data.jobId) lastJobId = data.jobId;
+            allResults.push(...(data.results || []));
+          }
+        } catch (err: any) {
+          allResults.push({ campaignIndex: entry.campaignIndex ?? ci, status: 'failed', error: err.message });
+          batchFailed = true;
+        }
+
         updatePublishBatch(batchId, {
-          status: 'failed',
-          results: [{ campaignIndex: 0, status: 'failed', error: errData.error || 'Erro HTTP' }],
+          status: 'publishing',
+          results: allResults,
+          completedCampaigns: allResults.filter((r) => r.status === 'success' || r.status === 'partial').length,
+          jobId: lastJobId,
         });
-        return;
       }
 
-      const data = await res.json();
       updatePublishBatch(batchId, {
-        status: 'completed',
-        results: data.results || [],
-        completedCampaigns: data.completedCampaigns || 0,
-        jobId: data.jobId,
+        status: batchFailed ? 'failed' : 'completed',
+        results: allResults,
+        completedCampaigns: allResults.filter((r) => r.status === 'success' || r.status === 'partial').length,
+        jobId: lastJobId,
       });
     } catch (err: any) {
       updatePublishBatch(batchId, {
