@@ -109,6 +109,14 @@ export default function PreviewPublishStep({ onSaved }: PreviewPublishStepProps)
         updatePublishBatch(batch.id, { status: 'publishing' });
 
         try {
+          // Sync adsetCount BEFORE building distribution map, so capacity calculations
+          // use the same adsetCount that will be sent to the server.
+          // This prevents divergence: distribution says "1 ad/campaign" but server creates 50.
+          const adsetTypesForDistribution = batch.adsetTypes.map((t) => ({
+            ...t,
+            adsetCount: batch.adsetsPerCampaign,
+          }));
+
           // Build distribution map for this batch using the correct algorithm from distribution.ts
           // Distribute totalCampaigns evenly across accounts (floor + remainder pattern)
           const baseCount = Math.floor(batch.totalCampaigns / batch.accounts.length);
@@ -120,7 +128,7 @@ export default function PreviewPublishStep({ onSaved }: PreviewPublishStepProps)
               campaignCount: baseCount + (i < remainder ? 1 : 0),
             })),
             pages: batch.pages,
-            adsetTypes: batch.adsetTypes as unknown as AdsetTypeForDist[],
+            adsetTypes: adsetTypesForDistribution as unknown as AdsetTypeForDist[],
           });
 
           if (distributionResult.error) {
@@ -146,23 +154,17 @@ export default function PreviewPublishStep({ onSaved }: PreviewPublishStepProps)
           console.log(
             `[bulk-publish] [PreviewPublishStep] [${new Date().toISOString()}] ` +
             `Distribution plan: ${batch.accounts.length} accounts x ${batch.pages.length} pages x ${batch.totalCampaigns} campaigns = ` +
-            `${distribution.length} entries (expected ${expectedCount}) ${distribution.length === expectedCount ? '\u2713' : '\u2717'}`
+            `${distribution.length} entries (expected ${expectedCount}) ${distribution.length === expectedCount ? '\u2713' : '\u2717'} | ` +
+            `adsetCount=${adsetTypesForDistribution[0]?.adsetCount ?? 'n/a'} (adsetsPerCampaign=${batch.adsetsPerCampaign})`
           );
 
-          // Sync adsetCount in adsetTypes with adsetsPerCampaign before sending to server.
-          // Persisted data from older sessions may have adsetCount=1 even when adsetsPerCampaign=50,
-          // because the sync only happens via handleVolumeChange in BatchCard.
-          const adsetTypesForPublish = batch.adsetTypes.map((t) => ({
-            ...t,
-            adsetCount: batch.adsetsPerCampaign,
-          }));
-
+          // adsetTypesForDistribution already has adsetCount=adsetsPerCampaign — reuse for API payload.
           const res = await authenticatedFetch('/api/meta/bulk-publish', {
             method: 'POST',
             body: JSON.stringify({
               distribution,
               campaignConfig: batch.campaignConfig,
-              adsetTypes: adsetTypesForPublish,
+              adsetTypes: adsetTypesForDistribution,
               adConfig: { ...adConfig, creativeFiles: creativePool },
             }),
           });
@@ -203,6 +205,12 @@ export default function PreviewPublishStep({ onSaved }: PreviewPublishStepProps)
     updatePublishBatch(batchId, { status: 'publishing', results: [], completedCampaigns: 0 });
 
     try {
+      // Sync adsetCount BEFORE building distribution map (same fix as handlePublish).
+      const adsetTypesForDistribution = batch.adsetTypes.map((t) => ({
+        ...t,
+        adsetCount: batch.adsetsPerCampaign,
+      }));
+
       // Build distribution map using the correct algorithm from distribution.ts
       const baseCount = Math.floor(batch.totalCampaigns / batch.accounts.length);
       const remainder = batch.totalCampaigns % batch.accounts.length;
@@ -213,7 +221,7 @@ export default function PreviewPublishStep({ onSaved }: PreviewPublishStepProps)
           campaignCount: baseCount + (i < remainder ? 1 : 0),
         })),
         pages: batch.pages,
-        adsetTypes: batch.adsetTypes as unknown as AdsetTypeForDist[],
+        adsetTypes: adsetTypesForDistribution as unknown as AdsetTypeForDist[],
       });
 
       if (distributionResult.error) {
@@ -236,18 +244,13 @@ export default function PreviewPublishStep({ onSaved }: PreviewPublishStepProps)
         return;
       }
 
-      // Sync adsetCount with adsetsPerCampaign before retry (same fix as handlePublishAll)
-      const adsetTypesForRetry = batch.adsetTypes.map((t) => ({
-        ...t,
-        adsetCount: batch.adsetsPerCampaign,
-      }));
-
+      // adsetTypesForDistribution already has adsetCount synced — reuse for the API payload.
       const res = await authenticatedFetch('/api/meta/bulk-publish', {
         method: 'POST',
         body: JSON.stringify({
           distribution,
           campaignConfig: batch.campaignConfig,
-          adsetTypes: adsetTypesForRetry,
+          adsetTypes: adsetTypesForDistribution,
           adConfig: { ...adConfig, creativeFiles: creativePool },
         }),
       });

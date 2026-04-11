@@ -11,14 +11,18 @@ export const config = {
   maxDuration: 60,
 };
 
-const DELAY_MIN_MS = 800;
-const DELAY_MAX_MS = 2000;
+// Delays reduzidos para viabilizar bulk-publish dentro do timeout do Vercel (50s safety margin).
+// Com 50 adsets/campanha × 2 delays/adset × 1400ms médio antigo = 140s/campanha — inviável.
+// Com 50 adsets/campanha × 2 delays/adset × 200ms médio novo = 20s/campanha — viável.
+// A Meta API tem rate limit por Business Use Case (conta), não por intervalo entre chamadas.
+const DELAY_MIN_MS = 100;
+const DELAY_MAX_MS = 300;
 
 function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-/** Delay aleatorio entre min e max para simular cadencia humana */
+/** Delay breve entre chamadas à Meta API para evitar burst imediato (rate limit BUC). */
 function humanDelay() {
   const jitter = DELAY_MIN_MS + Math.random() * (DELAY_MAX_MS - DELAY_MIN_MS);
   return delay(Math.round(jitter));
